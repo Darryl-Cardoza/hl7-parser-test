@@ -6,7 +6,7 @@
 #import <Foundation/NSString.h>
 #import <Foundation/NSValue.h>
 
-@class ComposeAppAckDecision, ComposeAppAckDecisionAccept, ComposeAppAckDecisionError, ComposeAppAckDecisionReject, ComposeAppAckGenerator, ComposeAppAcknowledgmentData, ComposeAppCompleteHL7Message, ComposeAppComponentData, ComposeAppCustomSegmentData, ComposeAppDispenseData, ComposeAppErrorData, ComposeAppHL7Constants, ComposeAppHL7MessageBuilderCompanion, ComposeAppHL7Utils, ComposeAppHl7ParserCompanion, ComposeAppInventoryBinData, ComposeAppInventoryData, ComposeAppKotlinArray<T>, ComposeAppKotlinByteArray, ComposeAppKotlinByteIterator, ComposeAppKotlinException, ComposeAppKotlinIllegalStateException, ComposeAppKotlinRuntimeException, ComposeAppKotlinThrowable, ComposeAppMedicationData, ComposeAppMessageHeaderData, ComposeAppMshFields, ComposeAppMshVersionCapabilities, ComposeAppNoteData, ComposeAppOrderData, ComposeAppPatientData, ComposeAppRouteData, ComposeAppRxdVersionCapabilities, ComposeAppVisitData;
+@class ComposeAppAckDecision, ComposeAppAckDecisionAccept, ComposeAppAckDecisionError, ComposeAppAckDecisionReject, ComposeAppAckGenerator, ComposeAppAcknowledgmentData, ComposeAppCompleteHL7Message, ComposeAppComponentData, ComposeAppCustomSegmentData, ComposeAppDispenseData, ComposeAppEquVersionCapabilities, ComposeAppEquipmentData, ComposeAppErrorData, ComposeAppHL7Constants, ComposeAppHL7MessageBuilderCompanion, ComposeAppHL7Utils, ComposeAppHl7ParserCompanion, ComposeAppInvVersionCapabilities, ComposeAppInventoryBinData, ComposeAppInventoryData, ComposeAppInventoryItemData, ComposeAppKotlinArray<T>, ComposeAppKotlinByteArray, ComposeAppKotlinByteIterator, ComposeAppKotlinException, ComposeAppKotlinIllegalStateException, ComposeAppKotlinRuntimeException, ComposeAppKotlinThrowable, ComposeAppMedicationData, ComposeAppMessageHeaderData, ComposeAppMshFields, ComposeAppMshVersionCapabilities, ComposeAppNoteData, ComposeAppObservationData, ComposeAppOrderData, ComposeAppPatientData, ComposeAppPidVersionCapabilities, ComposeAppRouteData, ComposeAppRxcVersionCapabilities, ComposeAppRxdVersionCapabilities, ComposeAppRxeVersionCapabilities, ComposeAppRxrVersionCapabilities, ComposeAppVisitData;
 
 @protocol ComposeAppKotlinIterator;
 
@@ -144,6 +144,86 @@ __attribute__((swift_name("KotlinBoolean")))
 + (instancetype)numberWithBool:(BOOL)value;
 @end
 
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MshVersionCapabilities")))
+@interface ComposeAppMshVersionCapabilities : ComposeAppBase
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
++ (instancetype)mshVersionCapabilities __attribute__((swift_name("init()")));
+@property (class, readonly, getter=shared) ComposeAppMshVersionCapabilities *shared __attribute__((swift_name("shared")));
+- (int32_t)maxFieldVersion:(NSString *)version __attribute__((swift_name("maxField(version:)")));
+@end
+
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("EquVersionCapabilities")))
+@interface ComposeAppEquVersionCapabilities : ComposeAppBase
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
++ (instancetype)equVersionCapabilities __attribute__((swift_name("init()")));
+@property (class, readonly, getter=shared) ComposeAppEquVersionCapabilities *shared __attribute__((swift_name("shared")));
+- (int32_t)maxFieldVersion:(NSString *)version __attribute__((swift_name("maxField(version:)")));
+@end
+
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("InvVersionCapabilities")))
+@interface ComposeAppInvVersionCapabilities : ComposeAppBase
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
++ (instancetype)invVersionCapabilities __attribute__((swift_name("init()")));
+@property (class, readonly, getter=shared) ComposeAppInvVersionCapabilities *shared __attribute__((swift_name("shared")));
+- (int32_t)maxFieldVersion:(NSString *)version __attribute__((swift_name("maxField(version:)")));
+@end
+
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("PidVersionCapabilities")))
+@interface ComposeAppPidVersionCapabilities : ComposeAppBase
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
++ (instancetype)pidVersionCapabilities __attribute__((swift_name("init()")));
+@property (class, readonly, getter=shared) ComposeAppPidVersionCapabilities *shared __attribute__((swift_name("shared")));
+- (int32_t)maxFieldVersion:(NSString *)version __attribute__((swift_name("maxField(version:)")));
+@end
+
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("RxcVersionCapabilities")))
+@interface ComposeAppRxcVersionCapabilities : ComposeAppBase
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
++ (instancetype)rxcVersionCapabilities __attribute__((swift_name("init()")));
+@property (class, readonly, getter=shared) ComposeAppRxcVersionCapabilities *shared __attribute__((swift_name("shared")));
+- (int32_t)maxFieldVersion:(NSString *)version __attribute__((swift_name("maxField(version:)")));
+@end
+
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("RxdVersionCapabilities")))
+@interface ComposeAppRxdVersionCapabilities : ComposeAppBase
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
++ (instancetype)rxdVersionCapabilities __attribute__((swift_name("init()")));
+@property (class, readonly, getter=shared) ComposeAppRxdVersionCapabilities *shared __attribute__((swift_name("shared")));
+- (int32_t)maxFieldVersion:(NSString *)version __attribute__((swift_name("maxField(version:)")));
+@end
+
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("RxeVersionCapabilities")))
+@interface ComposeAppRxeVersionCapabilities : ComposeAppBase
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
++ (instancetype)rxeVersionCapabilities __attribute__((swift_name("init()")));
+@property (class, readonly, getter=shared) ComposeAppRxeVersionCapabilities *shared __attribute__((swift_name("shared")));
+- (int32_t)maxFieldVersion:(NSString *)version __attribute__((swift_name("maxField(version:)")));
+@end
+
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("RxrVersionCapabilities")))
+@interface ComposeAppRxrVersionCapabilities : ComposeAppBase
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
++ (instancetype)rxrVersionCapabilities __attribute__((swift_name("init()")));
+@property (class, readonly, getter=shared) ComposeAppRxrVersionCapabilities *shared __attribute__((swift_name("shared")));
+- (int32_t)maxFieldVersion:(NSString *)version __attribute__((swift_name("maxField(version:)")));
+@end
+
 __attribute__((swift_name("AckDecision")))
 @interface ComposeAppAckDecision : ComposeAppBase
 @end
@@ -200,6 +280,7 @@ __attribute__((swift_name("AckGenerator")))
  */
 - (NSString *)fallbackRejectReason:(NSString *)reason __attribute__((swift_name("fallbackReject(reason:)")));
 - (NSString *)generateMsh:(ComposeAppMshFields *)msh decision:(ComposeAppAckDecision *)decision __attribute__((swift_name("generate(msh:decision:)")));
+@property (readonly) NSString *now __attribute__((swift_name("now")));
 @end
 
 
@@ -289,26 +370,6 @@ __attribute__((swift_name("HL7MessageBuilder.Companion")))
 @end
 
 __attribute__((objc_subclassing_restricted))
-__attribute__((swift_name("MshVersionCapabilities")))
-@interface ComposeAppMshVersionCapabilities : ComposeAppBase
-+ (instancetype)alloc __attribute__((unavailable));
-+ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
-+ (instancetype)mshVersionCapabilities __attribute__((swift_name("init()")));
-@property (class, readonly, getter=shared) ComposeAppMshVersionCapabilities *shared __attribute__((swift_name("shared")));
-- (int32_t)maxFieldVersion:(NSString *)version __attribute__((swift_name("maxField(version:)")));
-@end
-
-__attribute__((objc_subclassing_restricted))
-__attribute__((swift_name("RxdVersionCapabilities")))
-@interface ComposeAppRxdVersionCapabilities : ComposeAppBase
-+ (instancetype)alloc __attribute__((unavailable));
-+ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
-+ (instancetype)rxdVersionCapabilities __attribute__((swift_name("init()")));
-@property (class, readonly, getter=shared) ComposeAppRxdVersionCapabilities *shared __attribute__((swift_name("shared")));
-- (int32_t)maxFieldVersion:(NSString *)version __attribute__((swift_name("maxField(version:)")));
-@end
-
-__attribute__((objc_subclassing_restricted))
 __attribute__((swift_name("AcknowledgmentData")))
 @interface ComposeAppAcknowledgmentData : ComposeAppBase
 - (instancetype)initWithAcknowledgmentCode:(NSString *)acknowledgmentCode messageControlId:(NSString *)messageControlId textMessage:(NSString * _Nullable)textMessage errorCondition:(NSString * _Nullable)errorCondition __attribute__((swift_name("init(acknowledgmentCode:messageControlId:textMessage:errorCondition:)"))) __attribute__((objc_designated_initializer));
@@ -337,8 +398,8 @@ __attribute__((swift_name("AcknowledgmentData")))
 __attribute__((objc_subclassing_restricted))
 __attribute__((swift_name("CompleteHL7Message")))
 @interface ComposeAppCompleteHL7Message : ComposeAppBase
-- (instancetype)initWithMessageId:(NSString *)messageId messageType:(NSString *)messageType triggerEvent:(NSString *)triggerEvent timestamp:(NSString *)timestamp sendingFacility:(NSString *)sendingFacility header:(ComposeAppMessageHeaderData *)header patient:(ComposeAppPatientData * _Nullable)patient visit:(ComposeAppVisitData * _Nullable)visit order:(ComposeAppOrderData * _Nullable)order medications:(NSArray<ComposeAppMedicationData *> *)medications routes:(NSArray<ComposeAppRouteData *> *)routes components:(NSArray<ComposeAppComponentData *> *)components dispenses:(NSArray<ComposeAppDispenseData *> *)dispenses inventory:(ComposeAppInventoryData * _Nullable)inventory acknowledgment:(ComposeAppAcknowledgmentData * _Nullable)acknowledgment notes:(NSArray<ComposeAppNoteData *> *)notes customSegments:(NSArray<ComposeAppCustomSegmentData *> *)customSegments errors:(NSArray<ComposeAppErrorData *> *)errors __attribute__((swift_name("init(messageId:messageType:triggerEvent:timestamp:sendingFacility:header:patient:visit:order:medications:routes:components:dispenses:inventory:acknowledgment:notes:customSegments:errors:)"))) __attribute__((objc_designated_initializer));
-- (ComposeAppCompleteHL7Message *)doCopyMessageId:(NSString *)messageId messageType:(NSString *)messageType triggerEvent:(NSString *)triggerEvent timestamp:(NSString *)timestamp sendingFacility:(NSString *)sendingFacility header:(ComposeAppMessageHeaderData *)header patient:(ComposeAppPatientData * _Nullable)patient visit:(ComposeAppVisitData * _Nullable)visit order:(ComposeAppOrderData * _Nullable)order medications:(NSArray<ComposeAppMedicationData *> *)medications routes:(NSArray<ComposeAppRouteData *> *)routes components:(NSArray<ComposeAppComponentData *> *)components dispenses:(NSArray<ComposeAppDispenseData *> *)dispenses inventory:(ComposeAppInventoryData * _Nullable)inventory acknowledgment:(ComposeAppAcknowledgmentData * _Nullable)acknowledgment notes:(NSArray<ComposeAppNoteData *> *)notes customSegments:(NSArray<ComposeAppCustomSegmentData *> *)customSegments errors:(NSArray<ComposeAppErrorData *> *)errors __attribute__((swift_name("doCopy(messageId:messageType:triggerEvent:timestamp:sendingFacility:header:patient:visit:order:medications:routes:components:dispenses:inventory:acknowledgment:notes:customSegments:errors:)")));
+- (instancetype)initWithMessageId:(NSString *)messageId messageType:(NSString *)messageType triggerEvent:(NSString *)triggerEvent timestamp:(NSString *)timestamp sendingFacility:(NSString *)sendingFacility header:(ComposeAppMessageHeaderData *)header patient:(ComposeAppPatientData * _Nullable)patient visit:(ComposeAppVisitData * _Nullable)visit order:(ComposeAppOrderData * _Nullable)order medications:(NSArray<ComposeAppMedicationData *> *)medications routes:(NSArray<ComposeAppRouteData *> *)routes components:(NSArray<ComposeAppComponentData *> *)components dispenses:(NSArray<ComposeAppDispenseData *> *)dispenses equipment:(ComposeAppEquipmentData * _Nullable)equipment inventoryItems:(NSArray<ComposeAppInventoryItemData *> *)inventoryItems inventory:(ComposeAppInventoryData * _Nullable)inventory acknowledgment:(ComposeAppAcknowledgmentData * _Nullable)acknowledgment notes:(NSArray<ComposeAppNoteData *> *)notes customSegments:(NSArray<ComposeAppCustomSegmentData *> *)customSegments obxSegments:(NSArray<ComposeAppObservationData *> *)obxSegments errors:(NSArray<ComposeAppErrorData *> *)errors __attribute__((swift_name("init(messageId:messageType:triggerEvent:timestamp:sendingFacility:header:patient:visit:order:medications:routes:components:dispenses:equipment:inventoryItems:inventory:acknowledgment:notes:customSegments:obxSegments:errors:)"))) __attribute__((objc_designated_initializer));
+- (ComposeAppCompleteHL7Message *)doCopyMessageId:(NSString *)messageId messageType:(NSString *)messageType triggerEvent:(NSString *)triggerEvent timestamp:(NSString *)timestamp sendingFacility:(NSString *)sendingFacility header:(ComposeAppMessageHeaderData *)header patient:(ComposeAppPatientData * _Nullable)patient visit:(ComposeAppVisitData * _Nullable)visit order:(ComposeAppOrderData * _Nullable)order medications:(NSArray<ComposeAppMedicationData *> *)medications routes:(NSArray<ComposeAppRouteData *> *)routes components:(NSArray<ComposeAppComponentData *> *)components dispenses:(NSArray<ComposeAppDispenseData *> *)dispenses equipment:(ComposeAppEquipmentData * _Nullable)equipment inventoryItems:(NSArray<ComposeAppInventoryItemData *> *)inventoryItems inventory:(ComposeAppInventoryData * _Nullable)inventory acknowledgment:(ComposeAppAcknowledgmentData * _Nullable)acknowledgment notes:(NSArray<ComposeAppNoteData *> *)notes customSegments:(NSArray<ComposeAppCustomSegmentData *> *)customSegments obxSegments:(NSArray<ComposeAppObservationData *> *)obxSegments errors:(NSArray<ComposeAppErrorData *> *)errors __attribute__((swift_name("doCopy(messageId:messageType:triggerEvent:timestamp:sendingFacility:header:patient:visit:order:medications:routes:components:dispenses:equipment:inventoryItems:inventory:acknowledgment:notes:customSegments:obxSegments:errors:)")));
 
 /**
  * Main HL7 message container holding all parsed segments
@@ -367,6 +428,9 @@ __attribute__((swift_name("CompleteHL7Message")))
 /** RXD: Medication dispensing records **/
 @property (readonly) NSArray<ComposeAppDispenseData *> *dispenses __attribute__((swift_name("dispenses")));
 
+/** EQU: Equipment detail for inventory messages **/
+@property (readonly) ComposeAppEquipmentData * _Nullable equipment __attribute__((swift_name("equipment")));
+
 /** ERR: HL7 processing and validation errors **/
 @property (readonly) NSArray<ComposeAppErrorData *> *errors __attribute__((swift_name("errors")));
 
@@ -375,6 +439,9 @@ __attribute__((swift_name("CompleteHL7Message")))
 
 /** EQU + INV: Inventory and equipment status **/
 @property (readonly) ComposeAppInventoryData * _Nullable inventory __attribute__((swift_name("inventory")));
+
+/** INV: Inventory detail segments (for INR^U06 requests and INU^U05 updates) **/
+@property (readonly) NSArray<ComposeAppInventoryItemData *> *inventoryItems __attribute__((swift_name("inventoryItems")));
 
 /** RXE: Medication order details **/
 @property (readonly) NSArray<ComposeAppMedicationData *> *medications __attribute__((swift_name("medications")));
@@ -387,6 +454,9 @@ __attribute__((swift_name("CompleteHL7Message")))
 
 /** NTE: Free-text notes and comments **/
 @property (readonly) NSArray<ComposeAppNoteData *> *notes __attribute__((swift_name("notes")));
+
+/** OBX HL7 segments **/
+@property (readonly) NSArray<ComposeAppObservationData *> *obxSegments __attribute__((swift_name("obxSegments")));
 
 /** ORC: Order control and order identifiers **/
 @property (readonly) ComposeAppOrderData * _Nullable order __attribute__((swift_name("order")));
@@ -560,6 +630,75 @@ __attribute__((swift_name("DispenseData")))
 @property (readonly) NSString * _Nullable unitText __attribute__((swift_name("unitText")));
 @end
 
+
+/**
+ * EQU - Equipment Detail Segment
+ * Used in INR^U06 and INU^U05 messages to identify robot/equipment
+ */
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("EquipmentData")))
+@interface ComposeAppEquipmentData : ComposeAppBase
+- (instancetype)initWithInstanceIdentifier:(NSString * _Nullable)instanceIdentifier equipmentId:(NSString * _Nullable)equipmentId equipmentName:(NSString * _Nullable)equipmentName equipmentCodingSystem:(NSString * _Nullable)equipmentCodingSystem locationId:(NSString * _Nullable)locationId locationName:(NSString * _Nullable)locationName locationCodingSystem:(NSString * _Nullable)locationCodingSystem equipmentTypeId:(NSString * _Nullable)equipmentTypeId equipmentTypeName:(NSString * _Nullable)equipmentTypeName equipmentTypeCodingSystem:(NSString * _Nullable)equipmentTypeCodingSystem equipmentState:(NSString * _Nullable)equipmentState lastUpdateDateTime:(NSString * _Nullable)lastUpdateDateTime eventDateTime:(NSString * _Nullable)eventDateTime alertLevel:(NSString * _Nullable)alertLevel equipmentStateReason:(NSString * _Nullable)equipmentStateReason localRemoteControlState:(NSString * _Nullable)localRemoteControlState alertLevelTimestamp:(NSString * _Nullable)alertLevelTimestamp __attribute__((swift_name("init(instanceIdentifier:equipmentId:equipmentName:equipmentCodingSystem:locationId:locationName:locationCodingSystem:equipmentTypeId:equipmentTypeName:equipmentTypeCodingSystem:equipmentState:lastUpdateDateTime:eventDateTime:alertLevel:equipmentStateReason:localRemoteControlState:alertLevelTimestamp:)"))) __attribute__((objc_designated_initializer));
+- (ComposeAppEquipmentData *)doCopyInstanceIdentifier:(NSString * _Nullable)instanceIdentifier equipmentId:(NSString * _Nullable)equipmentId equipmentName:(NSString * _Nullable)equipmentName equipmentCodingSystem:(NSString * _Nullable)equipmentCodingSystem locationId:(NSString * _Nullable)locationId locationName:(NSString * _Nullable)locationName locationCodingSystem:(NSString * _Nullable)locationCodingSystem equipmentTypeId:(NSString * _Nullable)equipmentTypeId equipmentTypeName:(NSString * _Nullable)equipmentTypeName equipmentTypeCodingSystem:(NSString * _Nullable)equipmentTypeCodingSystem equipmentState:(NSString * _Nullable)equipmentState lastUpdateDateTime:(NSString * _Nullable)lastUpdateDateTime eventDateTime:(NSString * _Nullable)eventDateTime alertLevel:(NSString * _Nullable)alertLevel equipmentStateReason:(NSString * _Nullable)equipmentStateReason localRemoteControlState:(NSString * _Nullable)localRemoteControlState alertLevelTimestamp:(NSString * _Nullable)alertLevelTimestamp __attribute__((swift_name("doCopy(instanceIdentifier:equipmentId:equipmentName:equipmentCodingSystem:locationId:locationName:locationCodingSystem:equipmentTypeId:equipmentTypeName:equipmentTypeCodingSystem:equipmentState:lastUpdateDateTime:eventDateTime:alertLevel:equipmentStateReason:localRemoteControlState:alertLevelTimestamp:)")));
+
+/**
+ * EQU - Equipment Detail Segment
+ * Used in INR^U06 and INU^U05 messages to identify robot/equipment
+ */
+- (BOOL)isEqual:(id _Nullable)other __attribute__((swift_name("isEqual(_:)")));
+
+/**
+ * EQU - Equipment Detail Segment
+ * Used in INR^U06 and INU^U05 messages to identify robot/equipment
+ */
+- (NSUInteger)hash __attribute__((swift_name("hash()")));
+
+/**
+ * EQU - Equipment Detail Segment
+ * Used in INR^U06 and INU^U05 messages to identify robot/equipment
+ */
+- (NSString *)description __attribute__((swift_name("description()")));
+
+/** EQU-8: Alert level **/
+@property (readonly) NSString * _Nullable alertLevel __attribute__((swift_name("alertLevel")));
+
+/** EQU-11: Alert level timestamp **/
+@property (readonly) NSString * _Nullable alertLevelTimestamp __attribute__((swift_name("alertLevelTimestamp")));
+@property (readonly) NSString * _Nullable equipmentCodingSystem __attribute__((swift_name("equipmentCodingSystem")));
+
+/** EQU-2: Equipment identifier (ID^Text^CodingSystem) **/
+@property (readonly) NSString * _Nullable equipmentId __attribute__((swift_name("equipmentId")));
+@property (readonly) NSString * _Nullable equipmentName __attribute__((swift_name("equipmentName")));
+
+/** EQU-5: Equipment state (A=Active, I=Inactive, etc.) **/
+@property (readonly) NSString * _Nullable equipmentState __attribute__((swift_name("equipmentState")));
+
+/** EQU-9: Equipment state reason **/
+@property (readonly) NSString * _Nullable equipmentStateReason __attribute__((swift_name("equipmentStateReason")));
+@property (readonly) NSString * _Nullable equipmentTypeCodingSystem __attribute__((swift_name("equipmentTypeCodingSystem")));
+
+/** EQU-4: Equipment type (ID^Text^CodingSystem) **/
+@property (readonly) NSString * _Nullable equipmentTypeId __attribute__((swift_name("equipmentTypeId")));
+@property (readonly) NSString * _Nullable equipmentTypeName __attribute__((swift_name("equipmentTypeName")));
+
+/** EQU-7: Event date/time **/
+@property (readonly) NSString * _Nullable eventDateTime __attribute__((swift_name("eventDateTime")));
+
+/** EQU-1: Equipment instance identifier **/
+@property (readonly) NSString * _Nullable instanceIdentifier __attribute__((swift_name("instanceIdentifier")));
+
+/** EQU-6: Last status/update datetime (YYYYMMDDHHMMSS) **/
+@property (readonly) NSString * _Nullable lastUpdateDateTime __attribute__((swift_name("lastUpdateDateTime")));
+
+/** EQU-10: Local/remote control state **/
+@property (readonly) NSString * _Nullable localRemoteControlState __attribute__((swift_name("localRemoteControlState")));
+@property (readonly) NSString * _Nullable locationCodingSystem __attribute__((swift_name("locationCodingSystem")));
+
+/** EQU-3: Equipment location (ID^Text^CodingSystem) **/
+@property (readonly) NSString * _Nullable locationId __attribute__((swift_name("locationId")));
+@property (readonly) NSString * _Nullable locationName __attribute__((swift_name("locationName")));
+@end
+
 __attribute__((objc_subclassing_restricted))
 __attribute__((swift_name("ErrorData")))
 @interface ComposeAppErrorData : ComposeAppBase
@@ -603,8 +742,8 @@ __attribute__((swift_name("ErrorData")))
 __attribute__((objc_subclassing_restricted))
 __attribute__((swift_name("InventoryBinData")))
 @interface ComposeAppInventoryBinData : ComposeAppBase
-- (instancetype)initWithSubstanceId:(NSString *)substanceId substanceName:(NSString * _Nullable)substanceName substanceCodeSystem:(NSString * _Nullable)substanceCodeSystem substanceStatus:(NSString * _Nullable)substanceStatus cellId:(NSString *)cellId cellLocation:(NSString * _Nullable)cellLocation quantityOnHand:(NSString * _Nullable)quantityOnHand availableQuantity:(NSString * _Nullable)availableQuantity quantityUnitCode:(NSString * _Nullable)quantityUnitCode quantityUnitText:(NSString * _Nullable)quantityUnitText expirationDate:(NSString * _Nullable)expirationDate lotNumber:(NSString * _Nullable)lotNumber manufacturerName:(NSString * _Nullable)manufacturerName supplierName:(NSString * _Nullable)supplierName onOrderQuantity:(NSString * _Nullable)onOrderQuantity __attribute__((swift_name("init(substanceId:substanceName:substanceCodeSystem:substanceStatus:cellId:cellLocation:quantityOnHand:availableQuantity:quantityUnitCode:quantityUnitText:expirationDate:lotNumber:manufacturerName:supplierName:onOrderQuantity:)"))) __attribute__((objc_designated_initializer));
-- (ComposeAppInventoryBinData *)doCopySubstanceId:(NSString *)substanceId substanceName:(NSString * _Nullable)substanceName substanceCodeSystem:(NSString * _Nullable)substanceCodeSystem substanceStatus:(NSString * _Nullable)substanceStatus cellId:(NSString *)cellId cellLocation:(NSString * _Nullable)cellLocation quantityOnHand:(NSString * _Nullable)quantityOnHand availableQuantity:(NSString * _Nullable)availableQuantity quantityUnitCode:(NSString * _Nullable)quantityUnitCode quantityUnitText:(NSString * _Nullable)quantityUnitText expirationDate:(NSString * _Nullable)expirationDate lotNumber:(NSString * _Nullable)lotNumber manufacturerName:(NSString * _Nullable)manufacturerName supplierName:(NSString * _Nullable)supplierName onOrderQuantity:(NSString * _Nullable)onOrderQuantity __attribute__((swift_name("doCopy(substanceId:substanceName:substanceCodeSystem:substanceStatus:cellId:cellLocation:quantityOnHand:availableQuantity:quantityUnitCode:quantityUnitText:expirationDate:lotNumber:manufacturerName:supplierName:onOrderQuantity:)")));
+- (instancetype)initWithSubstanceId:(NSString *)substanceId substanceName:(NSString * _Nullable)substanceName substanceCodeSystem:(NSString * _Nullable)substanceCodeSystem substanceStatus:(NSString * _Nullable)substanceStatus cellId:(NSString * _Nullable)cellId cellLocation:(NSString * _Nullable)cellLocation quantityOnHand:(NSString * _Nullable)quantityOnHand availableQuantity:(NSString * _Nullable)availableQuantity quantityUnitCode:(NSString * _Nullable)quantityUnitCode quantityUnitText:(NSString * _Nullable)quantityUnitText expirationDate:(NSString * _Nullable)expirationDate lotNumber:(NSString * _Nullable)lotNumber manufacturerName:(NSString * _Nullable)manufacturerName supplierName:(NSString * _Nullable)supplierName onOrderQuantity:(NSString * _Nullable)onOrderQuantity __attribute__((swift_name("init(substanceId:substanceName:substanceCodeSystem:substanceStatus:cellId:cellLocation:quantityOnHand:availableQuantity:quantityUnitCode:quantityUnitText:expirationDate:lotNumber:manufacturerName:supplierName:onOrderQuantity:)"))) __attribute__((objc_designated_initializer));
+- (ComposeAppInventoryBinData *)doCopySubstanceId:(NSString *)substanceId substanceName:(NSString * _Nullable)substanceName substanceCodeSystem:(NSString * _Nullable)substanceCodeSystem substanceStatus:(NSString * _Nullable)substanceStatus cellId:(NSString * _Nullable)cellId cellLocation:(NSString * _Nullable)cellLocation quantityOnHand:(NSString * _Nullable)quantityOnHand availableQuantity:(NSString * _Nullable)availableQuantity quantityUnitCode:(NSString * _Nullable)quantityUnitCode quantityUnitText:(NSString * _Nullable)quantityUnitText expirationDate:(NSString * _Nullable)expirationDate lotNumber:(NSString * _Nullable)lotNumber manufacturerName:(NSString * _Nullable)manufacturerName supplierName:(NSString * _Nullable)supplierName onOrderQuantity:(NSString * _Nullable)onOrderQuantity __attribute__((swift_name("doCopy(substanceId:substanceName:substanceCodeSystem:substanceStatus:cellId:cellLocation:quantityOnHand:availableQuantity:quantityUnitCode:quantityUnitText:expirationDate:lotNumber:manufacturerName:supplierName:onOrderQuantity:)")));
 - (BOOL)isEqual:(id _Nullable)other __attribute__((swift_name("isEqual(_:)")));
 - (NSUInteger)hash __attribute__((swift_name("hash()")));
 - (NSString *)description __attribute__((swift_name("description()")));
@@ -613,7 +752,7 @@ __attribute__((swift_name("InventoryBinData")))
 @property (readonly) NSString * _Nullable availableQuantity __attribute__((swift_name("availableQuantity")));
 
 /** Parsed container or bin identifier (INV-5) **/
-@property (readonly) NSString *cellId __attribute__((swift_name("cellId")));
+@property (readonly) NSString * _Nullable cellId __attribute__((swift_name("cellId")));
 
 /** Parsed physical location of the inventory bin **/
 @property (readonly) NSString * _Nullable cellLocation __attribute__((swift_name("cellLocation")));
@@ -684,6 +823,106 @@ __attribute__((swift_name("InventoryData")))
 
 /** Parsed date and time of the inventory event (EQU-2) **/
 @property (readonly) NSString * _Nullable eventDateTime __attribute__((swift_name("eventDateTime")));
+@end
+
+
+/**
+ * INV - Inventory Detail Segment
+ * Used in both INR^U06 (request) and INU^U05 (update) messages
+ */
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("InventoryItemData")))
+@interface ComposeAppInventoryItemData : ComposeAppBase
+- (instancetype)initWithSubstanceCode:(NSString * _Nullable)substanceCode substanceDescription:(NSString * _Nullable)substanceDescription substanceCodingSystem:(NSString * _Nullable)substanceCodingSystem substanceStatusCode:(NSString * _Nullable)substanceStatusCode substanceStatusDescription:(NSString * _Nullable)substanceStatusDescription substanceStatusCodingSystem:(NSString * _Nullable)substanceStatusCodingSystem substanceTypeCode:(NSString * _Nullable)substanceTypeCode substanceTypeDescription:(NSString * _Nullable)substanceTypeDescription substanceTypeCodingSystem:(NSString * _Nullable)substanceTypeCodingSystem containerId:(NSString * _Nullable)containerId containerName:(NSString * _Nullable)containerName containerCodingSystem:(NSString * _Nullable)containerCodingSystem containerCarrierId:(NSString * _Nullable)containerCarrierId positionWithinCarrier:(NSString * _Nullable)positionWithinCarrier initialQuantity:(NSString * _Nullable)initialQuantity currentQuantity:(NSString * _Nullable)currentQuantity availableQuantity:(NSString * _Nullable)availableQuantity consumptionQuantity:(NSString * _Nullable)consumptionQuantity quantityUnitCode:(NSString * _Nullable)quantityUnitCode quantityUnitDescription:(NSString * _Nullable)quantityUnitDescription quantityUnitCodingSystem:(NSString * _Nullable)quantityUnitCodingSystem expirationDateTime:(NSString * _Nullable)expirationDateTime firstUsedDateTime:(NSString * _Nullable)firstUsedDateTime onBoardStabilityDuration:(NSString * _Nullable)onBoardStabilityDuration testFluidIdentifier:(NSString * _Nullable)testFluidIdentifier lotNumber:(NSString * _Nullable)lotNumber manufacturerId:(NSString * _Nullable)manufacturerId supplierId:(NSString * _Nullable)supplierId onBoardStabilityTime:(NSString * _Nullable)onBoardStabilityTime targetValue:(NSString * _Nullable)targetValue __attribute__((swift_name("init(substanceCode:substanceDescription:substanceCodingSystem:substanceStatusCode:substanceStatusDescription:substanceStatusCodingSystem:substanceTypeCode:substanceTypeDescription:substanceTypeCodingSystem:containerId:containerName:containerCodingSystem:containerCarrierId:positionWithinCarrier:initialQuantity:currentQuantity:availableQuantity:consumptionQuantity:quantityUnitCode:quantityUnitDescription:quantityUnitCodingSystem:expirationDateTime:firstUsedDateTime:onBoardStabilityDuration:testFluidIdentifier:lotNumber:manufacturerId:supplierId:onBoardStabilityTime:targetValue:)"))) __attribute__((objc_designated_initializer));
+- (ComposeAppInventoryItemData *)doCopySubstanceCode:(NSString * _Nullable)substanceCode substanceDescription:(NSString * _Nullable)substanceDescription substanceCodingSystem:(NSString * _Nullable)substanceCodingSystem substanceStatusCode:(NSString * _Nullable)substanceStatusCode substanceStatusDescription:(NSString * _Nullable)substanceStatusDescription substanceStatusCodingSystem:(NSString * _Nullable)substanceStatusCodingSystem substanceTypeCode:(NSString * _Nullable)substanceTypeCode substanceTypeDescription:(NSString * _Nullable)substanceTypeDescription substanceTypeCodingSystem:(NSString * _Nullable)substanceTypeCodingSystem containerId:(NSString * _Nullable)containerId containerName:(NSString * _Nullable)containerName containerCodingSystem:(NSString * _Nullable)containerCodingSystem containerCarrierId:(NSString * _Nullable)containerCarrierId positionWithinCarrier:(NSString * _Nullable)positionWithinCarrier initialQuantity:(NSString * _Nullable)initialQuantity currentQuantity:(NSString * _Nullable)currentQuantity availableQuantity:(NSString * _Nullable)availableQuantity consumptionQuantity:(NSString * _Nullable)consumptionQuantity quantityUnitCode:(NSString * _Nullable)quantityUnitCode quantityUnitDescription:(NSString * _Nullable)quantityUnitDescription quantityUnitCodingSystem:(NSString * _Nullable)quantityUnitCodingSystem expirationDateTime:(NSString * _Nullable)expirationDateTime firstUsedDateTime:(NSString * _Nullable)firstUsedDateTime onBoardStabilityDuration:(NSString * _Nullable)onBoardStabilityDuration testFluidIdentifier:(NSString * _Nullable)testFluidIdentifier lotNumber:(NSString * _Nullable)lotNumber manufacturerId:(NSString * _Nullable)manufacturerId supplierId:(NSString * _Nullable)supplierId onBoardStabilityTime:(NSString * _Nullable)onBoardStabilityTime targetValue:(NSString * _Nullable)targetValue __attribute__((swift_name("doCopy(substanceCode:substanceDescription:substanceCodingSystem:substanceStatusCode:substanceStatusDescription:substanceStatusCodingSystem:substanceTypeCode:substanceTypeDescription:substanceTypeCodingSystem:containerId:containerName:containerCodingSystem:containerCarrierId:positionWithinCarrier:initialQuantity:currentQuantity:availableQuantity:consumptionQuantity:quantityUnitCode:quantityUnitDescription:quantityUnitCodingSystem:expirationDateTime:firstUsedDateTime:onBoardStabilityDuration:testFluidIdentifier:lotNumber:manufacturerId:supplierId:onBoardStabilityTime:targetValue:)")));
+
+/**
+ * INV - Inventory Detail Segment
+ * Used in both INR^U06 (request) and INU^U05 (update) messages
+ */
+- (BOOL)isEqual:(id _Nullable)other __attribute__((swift_name("isEqual(_:)")));
+
+/**
+ * INV - Inventory Detail Segment
+ * Used in both INR^U06 (request) and INU^U05 (update) messages
+ */
+- (NSUInteger)hash __attribute__((swift_name("hash()")));
+
+/**
+ * INV - Inventory Detail Segment
+ * Used in both INR^U06 (request) and INU^U05 (update) messages
+ */
+- (NSString *)description __attribute__((swift_name("description()")));
+
+/** INV-9: Available quantity (available for use) **/
+@property (readonly) NSString * _Nullable availableQuantity __attribute__((swift_name("availableQuantity")));
+
+/** INV-10: Consumption quantity / Usage per dispense **/
+@property (readonly) NSString * _Nullable consumptionQuantity __attribute__((swift_name("consumptionQuantity")));
+
+/** INV-5: Container carrier identifier **/
+@property (readonly) NSString * _Nullable containerCarrierId __attribute__((swift_name("containerCarrierId")));
+@property (readonly) NSString * _Nullable containerCodingSystem __attribute__((swift_name("containerCodingSystem")));
+
+/** INV-4: Inventory container identifier (CellID^CellName^CodingSystem) **/
+@property (readonly) NSString * _Nullable containerId __attribute__((swift_name("containerId")));
+@property (readonly) NSString * _Nullable containerName __attribute__((swift_name("containerName")));
+
+/** INV-8: Current quantity (physical count after cycle count) **/
+@property (readonly) NSString * _Nullable currentQuantity __attribute__((swift_name("currentQuantity")));
+
+/** INV-12: Expiration date/time (YYYYMMDD or YYYYMMDDHHMMSS) **/
+@property (readonly) NSString * _Nullable expirationDateTime __attribute__((swift_name("expirationDateTime")));
+
+/** INV-13: First used date/time **/
+@property (readonly) NSString * _Nullable firstUsedDateTime __attribute__((swift_name("firstUsedDateTime")));
+
+/** INV-7: Initial quantity (quantity before adjustment/count) **/
+@property (readonly) NSString * _Nullable initialQuantity __attribute__((swift_name("initialQuantity")));
+
+/** INV-16: Manufacturer lot number **/
+@property (readonly) NSString * _Nullable lotNumber __attribute__((swift_name("lotNumber")));
+
+/** INV-17: Manufacturer identifier **/
+@property (readonly) NSString * _Nullable manufacturerId __attribute__((swift_name("manufacturerId")));
+
+/** INV-14: On board stability duration **/
+@property (readonly) NSString * _Nullable onBoardStabilityDuration __attribute__((swift_name("onBoardStabilityDuration")));
+
+/** INV-19: On board stability time **/
+@property (readonly) NSString * _Nullable onBoardStabilityTime __attribute__((swift_name("onBoardStabilityTime")));
+
+/** INV-6: Position within carrier **/
+@property (readonly) NSString * _Nullable positionWithinCarrier __attribute__((swift_name("positionWithinCarrier")));
+
+/** INV-11: Quantity units (Code^Description^CodingSystem) **/
+@property (readonly) NSString * _Nullable quantityUnitCode __attribute__((swift_name("quantityUnitCode")));
+@property (readonly) NSString * _Nullable quantityUnitCodingSystem __attribute__((swift_name("quantityUnitCodingSystem")));
+@property (readonly) NSString * _Nullable quantityUnitDescription __attribute__((swift_name("quantityUnitDescription")));
+
+/** INV-1: Substance identifier (Code^Description^CodingSystem) **/
+@property (readonly) NSString * _Nullable substanceCode __attribute__((swift_name("substanceCode")));
+@property (readonly) NSString * _Nullable substanceCodingSystem __attribute__((swift_name("substanceCodingSystem")));
+@property (readonly) NSString * _Nullable substanceDescription __attribute__((swift_name("substanceDescription")));
+
+/** INV-2: Substance status (Code^Description^CodingSystem) **/
+@property (readonly) NSString * _Nullable substanceStatusCode __attribute__((swift_name("substanceStatusCode")));
+@property (readonly) NSString * _Nullable substanceStatusCodingSystem __attribute__((swift_name("substanceStatusCodingSystem")));
+@property (readonly) NSString * _Nullable substanceStatusDescription __attribute__((swift_name("substanceStatusDescription")));
+
+/** INV-3: Substance type (Code^Description^CodingSystem) **/
+@property (readonly) NSString * _Nullable substanceTypeCode __attribute__((swift_name("substanceTypeCode")));
+@property (readonly) NSString * _Nullable substanceTypeCodingSystem __attribute__((swift_name("substanceTypeCodingSystem")));
+@property (readonly) NSString * _Nullable substanceTypeDescription __attribute__((swift_name("substanceTypeDescription")));
+
+/** INV-18: Supplier identifier **/
+@property (readonly) NSString * _Nullable supplierId __attribute__((swift_name("supplierId")));
+
+/** INV-20: Target value **/
+@property (readonly) NSString * _Nullable targetValue __attribute__((swift_name("targetValue")));
+
+/** INV-15: Test/fluid identifier **/
+@property (readonly) NSString * _Nullable testFluidIdentifier __attribute__((swift_name("testFluidIdentifier")));
 @end
 
 __attribute__((objc_subclassing_restricted))
@@ -816,6 +1055,53 @@ __attribute__((swift_name("NoteData")))
 
 /** Parsed source of the comment (NTE-2) **/
 @property (readonly) NSString * _Nullable sourceOfComment __attribute__((swift_name("sourceOfComment")));
+@end
+
+
+/**
+ * Parsed representation of the HL7 OBX (Observation Result) segment.
+ */
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("ObservationData")))
+@interface ComposeAppObservationData : ComposeAppBase
+- (instancetype)initWithSetId:(NSString *)setId valueType:(NSString *)valueType observationId:(NSString *)observationId observationText:(NSString * _Nullable)observationText codingSystem:(NSString * _Nullable)codingSystem observationValue:(NSString *)observationValue resultStatus:(NSString *)resultStatus __attribute__((swift_name("init(setId:valueType:observationId:observationText:codingSystem:observationValue:resultStatus:)"))) __attribute__((objc_designated_initializer));
+- (ComposeAppObservationData *)doCopySetId:(NSString *)setId valueType:(NSString *)valueType observationId:(NSString *)observationId observationText:(NSString * _Nullable)observationText codingSystem:(NSString * _Nullable)codingSystem observationValue:(NSString *)observationValue resultStatus:(NSString *)resultStatus __attribute__((swift_name("doCopy(setId:valueType:observationId:observationText:codingSystem:observationValue:resultStatus:)")));
+
+/**
+ * Parsed representation of the HL7 OBX (Observation Result) segment.
+ */
+- (BOOL)isEqual:(id _Nullable)other __attribute__((swift_name("isEqual(_:)")));
+
+/**
+ * Parsed representation of the HL7 OBX (Observation Result) segment.
+ */
+- (NSUInteger)hash __attribute__((swift_name("hash()")));
+
+/**
+ * Parsed representation of the HL7 OBX (Observation Result) segment.
+ */
+- (NSString *)description __attribute__((swift_name("description()")));
+
+/** OBX-3.3: Coding System */
+@property (readonly) NSString * _Nullable codingSystem __attribute__((swift_name("codingSystem")));
+
+/** OBX-3.1: Observation Identifier Code */
+@property (readonly) NSString *observationId __attribute__((swift_name("observationId")));
+
+/** OBX-3.2: Observation Identifier Text */
+@property (readonly) NSString * _Nullable observationText __attribute__((swift_name("observationText")));
+
+/** OBX-5: Observation Value (URL, URI, text, number, etc.) */
+@property (readonly) NSString *observationValue __attribute__((swift_name("observationValue")));
+
+/** OBX-11: Result Status (F, P, C, etc.) */
+@property (readonly) NSString *resultStatus __attribute__((swift_name("resultStatus")));
+
+/** OBX-1: Set ID */
+@property (readonly) NSString *setId __attribute__((swift_name("setId")));
+
+/** OBX-2: Value Type (e.g., RP, ST, NM) */
+@property (readonly) NSString *valueType __attribute__((swift_name("valueType")));
 @end
 
 __attribute__((objc_subclassing_restricted))
@@ -985,22 +1271,6 @@ __attribute__((swift_name("VisitData")))
 @end
 
 __attribute__((objc_subclassing_restricted))
-__attribute__((swift_name("HL7Constants")))
-@interface ComposeAppHL7Constants : ComposeAppBase
-+ (instancetype)alloc __attribute__((unavailable));
-+ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
-+ (instancetype)hL7Constants __attribute__((swift_name("init()")));
-@property (class, readonly, getter=shared) ComposeAppHL7Constants *shared __attribute__((swift_name("shared")));
-@property (readonly) NSString *COMPONENT_SEPARATOR __attribute__((swift_name("COMPONENT_SEPARATOR")));
-@property (readonly) NSString *ENCODING_CHARACTERS __attribute__((swift_name("ENCODING_CHARACTERS")));
-@property (readonly) NSString *ESCAPE_CHARACTER __attribute__((swift_name("ESCAPE_CHARACTER")));
-@property (readonly) NSString *FIELD_SEPARATOR __attribute__((swift_name("FIELD_SEPARATOR")));
-@property (readonly) NSString *REPETITION_SEPARATOR __attribute__((swift_name("REPETITION_SEPARATOR")));
-@property (readonly) NSString *SEGMENT_TERMINATOR __attribute__((swift_name("SEGMENT_TERMINATOR")));
-@property (readonly) NSString *SUBCOMPONENT_SEPARATOR __attribute__((swift_name("SUBCOMPONENT_SEPARATOR")));
-@end
-
-__attribute__((objc_subclassing_restricted))
 __attribute__((swift_name("HL7Utils")))
 @interface ComposeAppHL7Utils : ComposeAppBase
 + (instancetype)alloc __attribute__((unavailable));
@@ -1023,6 +1293,22 @@ __attribute__((swift_name("HL7Utils")))
  * Other uncaught Kotlin exceptions are fatal.
 */
 - (void)generateMessageControlIdWithCompletionHandler:(void (^)(NSString * _Nullable, NSError * _Nullable))completionHandler __attribute__((swift_name("generateMessageControlId(completionHandler:)")));
+@end
+
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("HL7Constants")))
+@interface ComposeAppHL7Constants : ComposeAppBase
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
++ (instancetype)hL7Constants __attribute__((swift_name("init()")));
+@property (class, readonly, getter=shared) ComposeAppHL7Constants *shared __attribute__((swift_name("shared")));
+@property (readonly) NSString *COMPONENT_SEPARATOR __attribute__((swift_name("COMPONENT_SEPARATOR")));
+@property (readonly) NSString *ENCODING_CHARACTERS __attribute__((swift_name("ENCODING_CHARACTERS")));
+@property (readonly) NSString *ESCAPE_CHARACTER __attribute__((swift_name("ESCAPE_CHARACTER")));
+@property (readonly) NSString *FIELD_SEPARATOR __attribute__((swift_name("FIELD_SEPARATOR")));
+@property (readonly) NSString *REPETITION_SEPARATOR __attribute__((swift_name("REPETITION_SEPARATOR")));
+@property (readonly) NSString *SEGMENT_TERMINATOR __attribute__((swift_name("SEGMENT_TERMINATOR")));
+@property (readonly) NSString *SUBCOMPONENT_SEPARATOR __attribute__((swift_name("SUBCOMPONENT_SEPARATOR")));
 @end
 
 __attribute__((swift_name("KotlinThrowable")))
@@ -1066,16 +1352,10 @@ __attribute__((swift_name("Hl7ParseException")))
 @property (readonly) NSString * _Nullable segment __attribute__((swift_name("segment")));
 @end
 
-
-/***************** HL7 PARSER *******************/
 __attribute__((objc_subclassing_restricted))
 __attribute__((swift_name("Hl7Parser")))
 @interface ComposeAppHl7Parser : ComposeAppBase
-
-/***************** HL7 PARSER *******************/
 - (instancetype)init __attribute__((swift_name("init()"))) __attribute__((objc_designated_initializer));
-
-/***************** HL7 PARSER *******************/
 + (instancetype)new __attribute__((availability(swift, unavailable, message="use object initializers instead")));
 @property (class, readonly, getter=companion) ComposeAppHl7ParserCompanion *companion __attribute__((swift_name("companion")));
 
@@ -1102,6 +1382,7 @@ __attribute__((swift_name("Hl7Parser.Companion")))
  * Recommended: (sending_facility + placer_order_id + order_control)
  */
 - (NSString *)generateIdempotencyKey __attribute__((swift_name("generateIdempotencyKey()")));
+- (NSString *)generateInventoryIdempotencyKey __attribute__((swift_name("generateInventoryIdempotencyKey()")));
 
 /**
  * Alternative idempotency key using message control ID
@@ -1134,18 +1415,7 @@ __attribute__((swift_name("CurrentLocalDateTime_iosKt")))
 __attribute__((objc_subclassing_restricted))
 __attribute__((swift_name("EquBuilderKt")))
 @interface ComposeAppEquBuilderKt : ComposeAppBase
-+ (NSString *)buildEQUInventory:(ComposeAppInventoryData *)inventory __attribute__((swift_name("buildEQU(inventory:)")));
-@end
-
-__attribute__((objc_subclassing_restricted))
-__attribute__((swift_name("EquParserKt")))
-@interface ComposeAppEquParserKt : ComposeAppBase
-
-/**
- * Parses inventory equipment and associated inventory bins.
- * Combines EQU (equipment) with related INV (bin) segments.
- */
-+ (ComposeAppInventoryData * _Nullable)parseInventorySegments:(NSDictionary<NSString *, NSArray<NSArray<NSString *> *> *> *)segments compSep:(NSString *)compSep __attribute__((swift_name("parseInventory(segments:compSep:)")));
++ (NSString *)buildEQUInventory:(ComposeAppInventoryData *)inventory hl7Version:(NSString *)hl7Version __attribute__((swift_name("buildEQU(inventory:hl7Version:)")));
 @end
 
 __attribute__((objc_subclassing_restricted))
@@ -1157,7 +1427,7 @@ __attribute__((swift_name("HL7ParserKt")))
 __attribute__((objc_subclassing_restricted))
 __attribute__((swift_name("InvBuilderKt")))
 @interface ComposeAppInvBuilderKt : ComposeAppBase
-+ (NSString *)buildINVBin:(ComposeAppInventoryBinData *)bin __attribute__((swift_name("buildINV(bin:)")));
++ (NSString *)buildINVBin:(ComposeAppInventoryBinData *)bin hl7Version:(NSString *)hl7Version __attribute__((swift_name("buildINV(bin:hl7Version:)")));
 @end
 
 __attribute__((objc_subclassing_restricted))
@@ -1169,6 +1439,24 @@ __attribute__((swift_name("InvParserKt")))
  * Each INV represents a single storage bin or container.
  */
 + (ComposeAppInventoryBinData *)parseInventoryBinInv:(NSArray<NSString *> *)inv compSep:(NSString *)compSep __attribute__((swift_name("parseInventoryBin(inv:compSep:)")));
+@end
+
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("InventoryParserKt")))
+@interface ComposeAppInventoryParserKt : ComposeAppBase
+
+/**
+ * Parses EQU (Equipment Detail) segment
+ * Used in INR^U06 and INU^U05 messages
+ */
++ (ComposeAppEquipmentData * _Nullable)parseEquipmentSegments:(NSDictionary<NSString *, NSArray<NSArray<NSString *> *> *> *)segments compSep:(NSString *)compSep __attribute__((swift_name("parseEquipment(segments:compSep:)")));
+
+/**
+ * Parses INV (Inventory Detail) segments
+ * Supports both INR^U06 (request) and INU^U05 (update) messages
+ * Returns list of inventory items (one per cell/bin)
+ */
++ (NSArray<ComposeAppInventoryItemData *> *)parseInventoryItemsSegments:(NSDictionary<NSString *, NSArray<NSArray<NSString *> *> *> *)segments compSep:(NSString *)compSep __attribute__((swift_name("parseInventoryItems(segments:compSep:)")));
 @end
 
 __attribute__((objc_subclassing_restricted))
@@ -1191,8 +1479,13 @@ __attribute__((swift_name("MshParserKt")))
 @interface ComposeAppMshParserKt : ComposeAppBase
 
 /**
- * Parses the MSH segment and extracts message-level metadata.
- * MSH must be parsed first because it defines separators and message identity.
+ * Parses an HL7 MSH segment (HL7 v2.1 – v2.8).
+ *
+ * HL7 MSH rules:
+ * - MSH-1 (field separator) is the 4th character in the segment.
+ * - MSH-2 (encoding characters) immediately follows the field separator.
+ * - Fields are positional and may be missing but must be preserved.
+ * - Parser must be version-agnostic and tolerate extra fields.
  */
 + (ComposeAppMessageHeaderData *)mshParserMsh:(NSString *)msh __attribute__((swift_name("mshParser(msh:)")));
 @end
@@ -1217,7 +1510,7 @@ __attribute__((swift_name("OrcParserKt")))
 __attribute__((objc_subclassing_restricted))
 __attribute__((swift_name("PidBuilderKt")))
 @interface ComposeAppPidBuilderKt : ComposeAppBase
-+ (NSString *)buildPIDPatient:(ComposeAppPatientData *)patient __attribute__((swift_name("buildPID(patient:)")));
++ (NSString *)buildPIDPatient:(ComposeAppPatientData *)patient hl7Version:(NSString *)hl7Version __attribute__((swift_name("buildPID(patient:hl7Version:)")));
 @end
 
 __attribute__((objc_subclassing_restricted))
@@ -1254,8 +1547,9 @@ __attribute__((swift_name("RxcBuilderKt")))
 
 /**
  * Builds the HL7 RXC (Pharmacy/Treatment Component) segment.
+ * Version-safe for HL7 v2.1 → v2.8
  */
-+ (NSString *)buildRXCComponent:(ComposeAppComponentData *)component __attribute__((swift_name("buildRXC(component:)")));
++ (NSString *)buildRXCComponent:(ComposeAppComponentData *)component hl7Version:(NSString *)hl7Version __attribute__((swift_name("buildRXC(component:hl7Version:)")));
 @end
 
 __attribute__((objc_subclassing_restricted))
@@ -1301,8 +1595,9 @@ __attribute__((swift_name("RxeBuilderKt")))
 
 /**
  * Builds the HL7 RXE (Pharmacy/Treatment Encoded Order) segment.
+ * Version-safe for HL7 v2.1 → v2.8
  */
-+ (NSString *)buildRXEMedication:(ComposeAppMedicationData *)medication __attribute__((swift_name("buildRXE(medication:)")));
++ (NSString *)buildRXEMedication:(ComposeAppMedicationData *)medication hl7Version:(NSString *)hl7Version __attribute__((swift_name("buildRXE(medication:hl7Version:)")));
 @end
 
 __attribute__((objc_subclassing_restricted))
@@ -1319,7 +1614,12 @@ __attribute__((swift_name("RxeParserKt")))
 __attribute__((objc_subclassing_restricted))
 __attribute__((swift_name("RxrBuilderKt")))
 @interface ComposeAppRxrBuilderKt : ComposeAppBase
-+ (NSString *)buildRXRRoute:(ComposeAppRouteData *)route __attribute__((swift_name("buildRXR(route:)")));
+
+/**
+ * Builds the HL7 RXR (Pharmacy/Treatment Route) segment.
+ * Version-safe for HL7 v2.1 → v2.8
+ */
++ (NSString *)buildRXRRoute:(ComposeAppRouteData *)route hl7Version:(NSString *)hl7Version __attribute__((swift_name("buildRXR(route:hl7Version:)")));
 @end
 
 __attribute__((objc_subclassing_restricted))

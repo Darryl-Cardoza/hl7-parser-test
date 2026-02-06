@@ -1,4 +1,4 @@
-package org.rite.hl7.builder.patient
+package com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.patient
 
 import org.rite.hl7.domain.model.VisitData
 import org.rite.hl7.domain.utils.HL7Utils

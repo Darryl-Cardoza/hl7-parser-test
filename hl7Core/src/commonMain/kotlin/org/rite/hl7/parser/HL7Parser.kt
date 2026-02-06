@@ -7,9 +7,10 @@ import org.rite.hl7.domain.model.ErrorData
 import org.rite.hl7.domain.model.MessageHeaderData
 import org.rite.hl7.domain.model.NoteData
 import org.rite.hl7.parser.header.mshParser
+import org.rite.hl7.parser.inventory.parseEquipment
 import org.rite.hl7.parser.patient.parseVisit
 import org.rite.hl7.parser.patient.patientParser
-import org.rite.hl7.parser.inventory.parseInventory
+import org.rite.hl7.parser.inventory.parseInventoryItems
 import org.rite.hl7.parser.order.parseOrder
 import org.rite.hl7.parser.pharmacy.parseComponents
 import org.rite.hl7.parser.pharmacy.parseDispenses
@@ -17,7 +18,7 @@ import org.rite.hl7.parser.pharmacy.parseMedications
 import org.rite.hl7.parser.pharmacy.parseRoutes
 
 
-/***************** HL7 PARSER *******************/
+//==================== HL7 PARSER ====================//
 
 class Hl7Parser {
 
@@ -31,6 +32,7 @@ class Hl7Parser {
 
     /*** Parse HL7 message received over (TCP) ***/
     fun parseMllpMessage(mllpWrapped: ByteArray): CompleteHL7Message {
+
         /** Remove MLLP framing bytes and extract HL7 text**/
         val hl7Content = stripMllpFraming(mllpWrapped)
         return parse(hl7Content)
@@ -105,25 +107,25 @@ class Hl7Parser {
             order = parseOrder(segmentMap, compSep),
 
             /** Parsed medication orders (RXE) **/
-            medications = parseMedications(
-                segmentMap,
-                compSep
-            ),
+            medications = parseMedications(segmentMap, compSep),
 
             /** Parsed administration routes (RXR) **/
             routes = parseRoutes(segmentMap, compSep),
 
             /** Parsed compound medication components (RXC) **/
-            components = parseComponents(
-                segmentMap,
-                compSep
-            ),
+            components = parseComponents(segmentMap, compSep),
 
             /** Parsed dispense records (RXD) **/
             dispenses = parseDispenses(segmentMap, compSep),
 
+
+            equipment = parseEquipment(segmentMap, compSep),
+
+            /** Parsed inventory items (INV) - for cycle count messages **/
+            inventoryItems = parseInventoryItems(segmentMap, compSep),
+
             /** Parsed inventory and equipment data (EQU/INV) **/
-            inventory = parseInventory(segmentMap, compSep),
+//            inventory = parseInventory(segmentMap, compSep),
 
             /** Parsed acknowledgment response (MSA/ERR) **/
             acknowledgment = parseAcknowledgment(segmentMap),
@@ -315,12 +317,12 @@ fun parseHl7Timestamp(hl7Time: String): String? {
     if (hl7Time.isBlank()) return null
     return try {
         when (hl7Time.length) {
-            8 -> "${hl7Time.take(4)}-${hl7Time.substring(4, 6)}-${hl7Time.substring(6, 8)}"
-            12 -> "${hl7Time.take(4)}-${hl7Time.substring(4, 6)}-${
+            8 -> "${hl7Time.substring(0, 4)}-${hl7Time.substring(4, 6)}-${hl7Time.substring(6, 8)}"
+            12 -> "${hl7Time.substring(0, 4)}-${hl7Time.substring(4, 6)}-${
                 hl7Time.substring(6, 8)
             } ${hl7Time.substring(8, 10)}:${hl7Time.substring(10, 12)}:00"
 
-            14 -> "${hl7Time.take(4)}-${hl7Time.substring(4, 6)}-${
+            14 -> "${hl7Time.substring(0, 4)}-${hl7Time.substring(4, 6)}-${
                 hl7Time.substring(6, 8)
             } ${hl7Time.substring(8, 10)}:${hl7Time.substring(10, 12)}:${hl7Time.substring(12, 14)}"
 
@@ -350,4 +352,12 @@ fun CompleteHL7Message.generateIdempotencyKey(): String {
  */
 fun CompleteHL7Message.generateMessageIdempotencyKey(): String {
     return "${sendingFacility}_${messageId}"
+}
+
+
+fun CompleteHL7Message.generateInventoryIdempotencyKey(): String {
+    val facility = sendingFacility
+    val equipmentId = equipment?.equipmentId ?: "UNKNOWN"
+    val timestamp = this.timestamp
+    return "${facility}_${equipmentId}_${timestamp}"
 }

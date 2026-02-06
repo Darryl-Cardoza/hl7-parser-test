@@ -1,4 +1,4 @@
-package org.rite.hl7.builder.order
+package com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.order
 
 import org.rite.hl7.domain.model.OrderData
 import org.rite.hl7.domain.utils.HL7Utils

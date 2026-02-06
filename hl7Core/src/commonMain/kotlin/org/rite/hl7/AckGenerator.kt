@@ -1,6 +1,5 @@
 package org.rite.hl7
 
-
 import org.rite.hl7.util.currentLocalDateTime
 import kotlin.random.Random
 
@@ -10,12 +9,12 @@ import kotlin.random.Random
 
 
 object AckGenerator {
+    val now = currentLocalDateTime()
+
     fun generate(
         msh: MshFields,
         decision: AckDecision
     ): String {
-        val now = currentLocalDateTime()
-
         val ackCode = when (decision) {
             AckDecision.Accept -> "AA"
             is AckDecision.Error -> "AE"
@@ -53,13 +52,13 @@ object AckGenerator {
      */
     fun fallbackReject(reason: String): String {
         val id = randomControlId()
-        val now = currentLocalDateTime()
 
         return buildString {
             append("MSH|^~\\&|SERVER|DEVICE|||$now||ACK|$id|P|2.5\r")
             append("MSA|AR|$id|$reason\r")
         }
     }
+
 
 
     /**

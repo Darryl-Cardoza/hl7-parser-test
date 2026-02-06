@@ -51,7 +51,7 @@ data class InventoryBinData(
     val substanceStatus: String? = null,
 
     /** Parsed container or bin identifier (INV-5) **/
-    val cellId: String,
+    val cellId: String? =  null,
 
     /** Parsed physical location of the inventory bin **/
     val cellLocation: String? = null,

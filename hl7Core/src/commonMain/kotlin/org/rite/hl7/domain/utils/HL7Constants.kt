@@ -1,4 +1,4 @@
-package org.rite.hl7.domain.utils
+package org.rite.hl7.hl7.domain.utils
 
 object HL7Constants {
 

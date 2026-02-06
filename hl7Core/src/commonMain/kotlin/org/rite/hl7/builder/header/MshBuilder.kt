@@ -1,5 +1,6 @@
 package org.rite.hl7.builder.header
 
+import com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.header.MshVersionCapabilities
 import org.rite.hl7.domain.model.MessageHeaderData
 import org.rite.hl7.domain.utils.HL7Utils
 import org.rite.hl7.util.currentLocalDateTime
