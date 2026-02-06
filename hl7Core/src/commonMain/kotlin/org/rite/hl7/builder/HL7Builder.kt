@@ -1,20 +1,19 @@
 package org.rite.hl7.builder
 
+import org.rite.hl7.domain.model.ObservationData
 import org.rite.hl7.builder.header.buildMSH
-import org.rite.hl7.builder.inventory.buildEQU
-import org.rite.hl7.builder.inventory.buildINV
-import org.rite.hl7.builder.order.buildORC
-import org.rite.hl7.builder.patient.buildPID
-import org.rite.hl7.builder.patient.buildPV1
+import com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.order.buildORC
+import com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.patient.buildPID
+import com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.patient.buildPV1
 import org.rite.hl7.builder.pharmacy.rxc.buildRXC
 import org.rite.hl7.builder.pharmacy.rxd.buildRXD
 import org.rite.hl7.builder.pharmacy.rxe.buildRXE
-import org.rite.hl7.builder.pharmacy.rxr.buildRXR
+import com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.pharmacy.rxr.buildRXR
 import org.rite.hl7.domain.model.AcknowledgmentData
 import org.rite.hl7.domain.model.CompleteHL7Message
 import org.rite.hl7.domain.model.CustomSegmentData
 import org.rite.hl7.domain.model.ErrorData
-import org.rite.hl7.domain.utils.HL7Constants
+import org.rite.hl7.hl7.domain.utils.HL7Constants
 import org.rite.hl7.domain.utils.HL7Utils
 import org.rite.hl7.domain.model.NoteData
 
@@ -51,42 +50,16 @@ class HL7MessageBuilder {
         message.order?.let { segments.add(buildORC(it)) }
 
         // Medication segments (if present)
-        message.medications.forEach { segments.add(
-            buildRXE(
-                it
-            )
-        ) }
+        message.medications.forEach { segments.add(buildRXE(it)) }
 
         // Route segments (if present)
-        message.routes.forEach { segments.add(
-            buildRXR(
-                it
-            )
-        ) }
+        message.routes.forEach { segments.add(buildRXR(it)) }
 
         // Component segments (if present)
-        message.components.forEach { segments.add(
-            buildRXC(
-                it
-            )
-        ) }
+        message.components.forEach { segments.add(buildRXC(it)) }
 
         // Dispense segments (if present)
-        message.dispenses.forEach { segments.add(
-            buildRXD(
-                it
-            )
-        ) }
-
-        // Inventory segments (if present)
-        message.inventory?.let {
-            segments.add(buildEQU(it))
-            it.bins.forEach { bin -> segments.add(
-                buildINV(
-                    bin
-                )
-            ) }
-        }
+        message.dispenses.forEach { segments.add(buildRXD(it)) }
 
         // Acknowledgment segment (if present)
         message.acknowledgment?.let { segments.add(buildMSA(it)) }
@@ -97,7 +70,10 @@ class HL7MessageBuilder {
         // Note segments (if present)
         message.notes.forEach { segments.add(buildNTE(it)) }
 
+        // OBX Segment (if present)
+        message.obxSegments.forEach { segments.add(buildObxSegment(it)) }
         // Custom Z-segments (if present)
+
         message.customSegments.forEach { segments.add(buildCustomSegment(it)) }
 
         return segments.joinToString(HL7Constants.SEGMENT_TERMINATOR) +
@@ -115,7 +91,6 @@ class HL7MessageBuilder {
     }
 
     // ==================== SEGMENT BUILDERS ====================
-
 
 
     private fun buildMSA(ack: AcknowledgmentData): String {
@@ -196,6 +171,41 @@ class HL7MessageBuilder {
         return fields.joinToString(FIELD_SEP)
     }
 
+        private fun buildObxSegment(obx: ObservationData): String {
+            val fields = mutableListOf("OBX")
+
+            // OBX-1: Set ID
+            fields.add(obx.setId)
+
+            // OBX-2: Value Type
+            fields.add(obx.valueType)
+
+            // OBX-3: Observation Identifier (CE)
+            // OBX-3.1^OBX-3.2^OBX-3.3
+            fields.add(
+                listOfNotNull(
+                    obx.observationId,
+                    obx.observationText,
+                    obx.codingSystem
+                ).joinToString(COMPONENT_SEP)
+            )
+
+            // OBX-4: Observation Sub-ID (optional, unused)
+            fields.add("")
+
+            // OBX-5: Observation Value
+            fields.add(obx.observationValue)
+
+            // OBX-6 → OBX-10 (unused placeholders)
+            repeat(5) { fields.add("") }
+
+            // OBX-11: Result Status
+            fields.add(obx.resultStatus)
+
+            return fields.joinToString(FIELD_SEP)
+        }
+
+
     // ==================== HELPER FUNCTIONS ====================
 
     private fun buildComponent(vararg parts: String): String {
@@ -252,7 +262,6 @@ class HL7MessageBuilder {
 
     private fun buildInventoryUpdate(message: CompleteHL7Message): String {
         require(message.inventory != null) { "Inventory segment required for INU^U05" }
-        require(message.inventory.bins.isNotEmpty()) { "At least one inventory bin required for INU^U05" }
         return build(message)
     }
 

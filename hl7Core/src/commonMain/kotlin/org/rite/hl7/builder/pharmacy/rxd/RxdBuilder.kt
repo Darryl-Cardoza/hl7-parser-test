@@ -1,5 +1,6 @@
 package org.rite.hl7.builder.pharmacy.rxd
 
+import com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.pharmacy.rxd.RxdVersionCapabilities
 import org.rite.hl7.domain.model.DispenseData
 import org.rite.hl7.domain.utils.HL7Utils
 import org.rite.hl7.domain.utils.HL7Utils.buildComponent

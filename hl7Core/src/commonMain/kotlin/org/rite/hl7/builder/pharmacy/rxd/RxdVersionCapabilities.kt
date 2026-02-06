@@ -1,4 +1,4 @@
-package org.rite.hl7.builder.pharmacy.rxd
+package com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.pharmacy.rxd
 
 object RxdVersionCapabilities {
 

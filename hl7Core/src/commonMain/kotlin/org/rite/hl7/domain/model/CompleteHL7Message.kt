@@ -44,6 +44,12 @@ data class CompleteHL7Message(
     /** RXD: Medication dispensing records **/
     val dispenses: List<DispenseData> = emptyList(),
 
+    /** EQU: Equipment detail for inventory messages **/
+    val equipment: EquipmentData? = null,
+
+    /** INV: Inventory detail segments (for INR^U06 requests and INU^U05 updates) **/
+    val inventoryItems: List<InventoryItemData> = emptyList(),
+
     /** EQU + INV: Inventory and equipment status **/
     val inventory: InventoryData? = null,
 
@@ -55,6 +61,12 @@ data class CompleteHL7Message(
 
     /** Z-segments: Custom non-standard HL7 segments **/
     val customSegments: List<CustomSegmentData> = emptyList(),
+
+
+    /** OBX HL7 segments **/
+    val obxSegments: List<ObservationData> = emptyList(),
+
+
 
     /** ERR: HL7 processing and validation errors **/
     val errors: List<ErrorData> = emptyList()

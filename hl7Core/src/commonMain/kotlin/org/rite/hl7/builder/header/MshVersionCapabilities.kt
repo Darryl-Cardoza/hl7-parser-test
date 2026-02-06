@@ -1,4 +1,4 @@
-package org.rite.hl7.builder.header
+package com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.header
 
 object MshVersionCapabilities {
 
