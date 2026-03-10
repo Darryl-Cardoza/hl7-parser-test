@@ -1,4 +1,4 @@
-# Mobile Rite HL7 Parser Builder
+# MobRite HL7 Parser Builder
 
 A **Kotlin Multiplatform (KMP)** library designed for **HL7 message parsing and building** used in **Clinical Message Processing (CMP)** systems.
 
