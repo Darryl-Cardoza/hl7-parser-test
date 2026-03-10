@@ -1,276 +1,437 @@
 # Mobile Rite HL7 Parser Builder
 
-A comprehensive Kotlin Multiplatform (KMP) solution for parsing and building HL7 messages in clinical and healthcare applications. This repository is dedicated to CMP (Clinical Message Processing) HL7 message handling, supporting both Android and iOS platforms with a shared codebase.
+A **Kotlin Multiplatform (KMP)** library designed for **HL7 message parsing and building** used in **Clinical Message Processing (CMP)** systems.
 
-## Overview
-
-The **Mobile Rite HL7 Parser Builder** is designed to streamline HL7 message processing in mobile healthcare applications. It provides robust parsing, validation, and building capabilities for HL7 messages across multiple platforms, ensuring consistency and reliability in clinical data exchange.
-
-### Key Features
-
-- **Cross-Platform Support**: Native Android and iOS applications using Kotlin Multiplatform
-- **HL7 Message Parsing**: Parse and extract data from standard HL7 v2 messages
-- **Message Building**: Construct valid HL7 messages programmatically
-- **CMP Integration**: Optimized for Clinical Message Processing workflows
-- **Shared Business Logic**: Common code base for both Android and iOS reduces maintenance overhead
-- **Type-Safe Operations**: Leverage Kotlin's type system for safer message handling
-
-## Technology Stack
-
-### Languages
-- **Kotlin** (46.9%) - Primary language for multiplatform logic
-- **Objective-C** (52.7%) - iOS native integration
-- **Swift** (0.4%) - iOS interoperability layer
-
-### Framework
-- **Kotlin Multiplatform Mobile (KMM)** - Shared codebase for Android and iOS
-- **Compose Multiplatform** - Modern UI toolkit
-
-## Project Structure
-
-```
-mob_rite_hl7_parser_builder/
-├── composeApp/                           # Shared Compose Multiplatform code
-│   └── src/
-│       ├── commonMain/kotlin/           # Common code for all targets
-│       ├── androidMain/kotlin/          # Android-specific implementations
-│       ├── iosMain/kotlin/              # iOS-specific implementations (Kotlin)
-│       └── jvmMain/kotlin/              # JVM-specific code (if applicable)
-├── iosApp/                               # iOS application entry point
-│   ├── iosApp/                          # iOS app with SwiftUI
-│   └── [other iOS configurations]
-└── gradle/                               # Gradle build system files
-```
-
-### Directory Breakdown
-
-- **[/composeApp](./composeApp/src)** - Shared code across Compose Multiplatform applications
-  - **[commonMain](./composeApp/src/commonMain/kotlin)** - Code shared across all targets (Android, iOS, JVM)
-  - **[androidMain](./composeApp/src/androidMain/kotlin)** - Android-specific implementations
-  - **[iosMain](./composeApp/src/iosMain/kotlin)** - iOS-specific implementations (Kotlin/Native)
-    - Use for Apple framework integrations (e.g., CoreCrypto, Security framework)
-  - **[jvmMain](./composeApp/src/jvmMain/kotlin)** - Desktop/JVM-specific code
-
-- **[/iosApp](./iosApp)** - iOS application
-  - Contains the iOS app entry point required for the iOS platform
-  - SwiftUI code and iOS-specific configurations reside here
-  - Even with shared UI logic, this folder is necessary for app deployment
-
-## Getting Started
-
-### Prerequisites
-
-- Kotlin 1.9.0 or higher
-- Gradle 8.0+
-- For Android: Android Studio and Android SDK
-- For iOS: Xcode 14+ and macOS
-- Java Development Kit (JDK) 11+
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/Rite-Technologies-23/mob_rite_hl7_parser_builder.git
-cd mob_rite_hl7_parser_builder
-```
-
-2. Build the project:
-```bash
-# On macOS/Linux
-./gradlew build
-
-# On Windows
-.\gradlew.bat build
-```
-
-## Build and Run
-
-### Android Application
-
-To build and run the development version of the Android app:
-
-**macOS/Linux:**
-```shell
-./gradlew :composeApp:assembleDebug
-```
-
-**Windows:**
-```shell
-.\gradlew.bat :composeApp:assembleDebug
-```
-
-Alternatively, use the run configuration from your IDE's toolbar for a one-click build and deploy experience.
-
-### iOS Application
-
-To build and run the development version of the iOS app:
-
-1. **Using IDE:**
-   - Use the run configuration from your IDE's toolbar
-
-2. **Using Xcode:**
-   - Open the [/iosApp](./iosApp) directory in Xcode
-   - Select your target device or simulator
-   - Click the Run button
-
-**Note:** Even though UI logic is shared via Compose Multiplatform, the iOS app requires a native entry point in this directory for proper deployment and SwiftUI integration.
-
-## HL7 Parsing Usage
-
-### Basic Example: Parsing an HL7 Message
-
-```kotlin
-// Example HL7 message
-val hl7Message = "MSH|^~\\&|SENDAPP|SENDHOSP|RECAPP|RECHOSP|20230315153045||ADT^A01|MSG00001|P|2.5..."
-
-// Parse the message (implementation details in commonMain)
-val parsedMessage = HL7Parser.parse(hl7Message)
-
-// Access segments
-val mshSegment = parsedMessage.getSegment("MSH")
-val pidSegment = parsedMessage.getSegment("PID")
-
-// Extract specific fields
-val messageType = mshSegment.getField(9)
-val sendingApplication = mshSegment.getField(3)
-```
-
-### Building an HL7 Message
-
-```kotlin
-// Create a new HL7 message builder
-val builder = HL7MessageBuilder()
-    .addMSHSegment(
-        sendingApplication = "SENDAPP",
-        sendingFacility = "SENDHOSP",
-        receivingApplication = "RECAPP",
-        receivingFacility = "RECHOSP",
-        timestamp = getCurrentTimestamp()
-    )
-    .addPIDSegment(
-        patientID = "12345",
-        patientName = "Doe, John",
-        dateOfBirth = "19800101",
-        gender = "M"
-    )
-
-val hl7Message = builder.build()
-```
-
-## Development Workflow
-
-### Adding Platform-Specific Code
-
-#### For Android:
-Place your Android-specific code in `composeApp/src/androidMain/kotlin/`
-
-#### For iOS:
-Place your iOS-specific Kotlin code in `composeApp/src/iosMain/kotlin/`
-For native Swift code, place it in `iosApp/iosApp/`
-
-### Testing
-
-```bash
-# Run all tests
-./gradlew test
-
-# Run Android tests
-./gradlew :composeApp:testDebug
-
-# Run iOS tests
-./gradlew :composeApp:iosSimulatorArm64Test
-```
-
-## Contributing
-
-We welcome contributions to improve the HL7 parser and builder functionality. Please follow these guidelines:
-
-1. Create a feature branch from `main`
-2. Make your changes with clear, descriptive commits
-3. Ensure all tests pass
-4. Submit a pull request with a detailed description of your changes
-
-## Project Guidelines
-
-- Use Kotlin idioms and best practices
-- Write unit tests for all new functionality
-- Maintain backward compatibility when possible
-- Document complex algorithms and unusual implementations
-- Follow the existing code structure and naming conventions
-
-## Common Tasks
-
-### Updating Dependencies
-
-```bash
-./gradlew dependencies --refresh-dependencies
-```
-
-### Cleaning Build Artifacts
-
-```bash
-# macOS/Linux
-./gradlew clean
-
-# Windows
-.\\gradlew.bat clean
-```
-
-### Building Release Versions
-
-```bash
-# Android Release
-./gradlew :composeApp:assembleRelease
-
-# iOS Release
-# Use Xcode's build scheme or configure in build.gradle.kts
-```
-
-## Architecture
-
-The project follows a modular architecture pattern:
-
-- **Common Module** (`commonMain`) - Shared HL7 parsing/building logic, data models
-- **Platform Modules** (`androidMain`, `iosMain`) - Platform-specific implementations and optimizations
-- **UI Layer** - Compose Multiplatform for cross-platform user interfaces
-- **Integration Layer** - Native platform integrations via expect/actual declarations
-
-## Troubleshooting
-
-### iOS Build Issues
-
-If you encounter iOS build issues:
-1. Ensure Xcode is up to date
-2. Clean build folder: `Cmd + Shift + K`
-3. Delete derived data: `~/Library/Developer/Xcode/DerivedData`
-4. Rebuild the project
-
-### Android Build Issues
-
-If Gradle fails to sync:
-1. Run `./gradlew clean`
-2. Invalidate caches and restart IDE
-3. Check Java version: `java -version` (should be 11+)
-
-## Resources
-
-- [Kotlin Multiplatform Documentation](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)
-- [HL7 v2 Standard](https://www.hl7.org/implement/standards/product_brief.cfm?product_id=185)
-- [Compose Multiplatform](https://www.jetbrains.com/help/compose-multiplatform/)
-- [Kotlin Documentation](https://kotlinlang.org/docs/)
-
-## License
-
-Please refer to the LICENSE file in the repository for licensing information.
-
-## Support
-
-For issues, questions, or feature requests, please open an issue on the [GitHub repository](https://github.com/Rite-Technologies-23/mob_rite_hl7_parser_builder).
-
-## Contact
-
-For more information about Rite Technologies, visit [Rite Technologies](https://www.rite-technologies.com)
+The project provides a unified HL7 toolkit capable of running across **Android, iOS, Desktop JVM**, and other Kotlin-supported platforms while maintaining a single shared codebase.
 
 ---
 
-**Last Updated:** March 2026
+# 📖 Overview
+
+Healthcare systems rely heavily on **HL7 (Health Level 7)** messages for exchanging clinical and operational data between systems such as:
+
+- Pharmacy Management Systems (PMS)
+- Electronic Medical Records (EMR)
+- Laboratory Information Systems (LIS)
+- Clinical Message Processing (CMP) engines
+- Hospital Information Systems (HIS)
+
+Implementing HL7 support across multiple platforms can be complex due to:
+
+- Message formatting rules
+- Segment validation
+- Encoding rules
+- Platform-specific parsing logic
+
+This library solves those problems by providing a **single Kotlin Multiplatform HL7 engine**.
+
+---
+
+# 🎯 Use Cases
+
+| System | Usage |
+|------|------|
+Pharmacy Systems | Prescription processing |
+Hospital Systems | Patient admission updates |
+Laboratory Systems | Lab result transmission |
+Clinical Middleware | HL7 message routing |
+Healthcare Mobile Apps | HL7 message parsing |
+
+---
+
+# ✨ Features
+
+## Core HL7 Capabilities
+
+- HL7 message parsing
+- HL7 message building
+- Segment validation
+- Field extraction
+- Message serialization
+- Error handling
+
+---
+
+## Parser Features
+
+- Token-based parsing engine
+- Segment validation
+- Field indexing support
+- HL7 delimiter handling
+- Structured message model output
+
+---
+
+## Builder Features
+
+- Fluent message builder API
+- Segment creation helpers
+- Field insertion utilities
+- HL7 message serialization
+
+---
+
+## Platform Support
+
+| Platform | Supported |
+|--------|--------|
+Android | ✅ |
+iOS | ✅ |
+Desktop JVM | ✅ |
+Kotlin Multiplatform | ✅ |
+
+---
+
+# 🚀 Usage Process
+
+### 1. Add Library
+
+### Android
+
+Add dependency in `build.gradle.kts` if uploaded to maven else use as local package for android or swiftpackage for iOS
+
+```kotlin
+dependencies {
+    implementation("com.rite.hl7:parser:1.0.0")
+}
+```
+
+---
+
+### iOS
+
+Add Swift Package via GitHub:
+
+```
+https://github.com/Rite-Technologies-23/mobile_rite_hl7_parser_builder
+```
+
+---
+
+# 📱 Android Integration (CMP Local Package)
+
+### Step 1 — Add Module
+
+Clone repository:
+
+```bash
+git clone https://github.com/Rite-Technologies-23/mobile_rite_hl7_parser_builder.git
+```
+
+Move module into project:
+
+```
+your-project/
+  libraries/
+     hl7-parser/
+```
+
+---
+
+### Step 2 — Update `settings.gradle.kts`
+
+```kotlin
+include(":libraries:hl7-parser")
+include(":app")
+```
+
+---
+
+### Step 3 — Add Dependency
+
+```kotlin
+dependencies {
+    implementation(project(":libraries:hl7-parser"))
+}
+```
+
+---
+
+### Step 4 — Android Usage Example
+
+```kotlin
+val parser = HL7Parser()
+
+val message = """
+MSH|^~\&|APP|FACILITY
+PID|1||12345
+""".trimIndent()
+
+val result = parser.parse(message)
+
+println(result.segments)
+```
+
+---
+
+# 🍎 iOS Integration (Swift Package)
+
+### Option A — Xcode UI
+
+1. Open Xcode
+2. File → Add Packages
+3. Enter GitHub URL
+
+```
+https://github.com/Rite-Technologies-23/mobile_rite_hl7_parser_builder
+```
+
+---
+
+### Option B — Package.swift
+
+```swift
+.package(
+    url: "https://github.com/Rite-Technologies-23/mobile_rite_hl7_parser_builder",
+    from: "1.0.0"
+)
+```
+
+---
+
+### Swift Usage Example
+
+```swift
+let parser = HL7Parser()
+
+let message = """
+MSH|^~\\&|APP|FACILITY
+PID|1||12345
+"""
+
+let parsed = parser.parse(message: message)
+print(parsed)
+```
+
+---
+
+# 📦 HL7 Parsing Example
+
+```kotlin
+val parser = HL7Parser()
+
+val message = """
+MSH|^~\&|APP|FACILITY
+PID|1||12345||DOE^JOHN
+""".trimIndent()
+
+val result = parser.parse(message)
+
+println(result.getSegment("PID"))
+```
+
+---
+
+# 🏗️ HL7 Message Builder Example
+
+```kotlin
+val message = HL7MessageBuilder()
+    .addSegment("MSH")
+    .addField("APP")
+    .addField("FACILITY")
+    .addSegment("PID")
+    .addField("12345")
+    .build()
+
+println(message)
+```
+
+---
+
+# 📁 Project Structure
+
+```
+mobile_rite_hl7_parser_builder
+│
+├── composeApp
+│   ├── src
+│   │   ├── commonMain
+│   │   ├── androidMain
+│   │   ├── iosMain
+│   │   └── jvmMain
+│
+├── iosApp
+│   ├── iosApp
+│   └── iosAppTests
+│
+├── gradle
+├── build.gradle.kts
+├── settings.gradle.kts
+└── README.md
+```
+
+---
+
+# 📁 Detailed Directory Breakdown
+
+| Directory | Purpose |
+|---------|--------|
+composeApp/commonMain | Shared business logic |
+composeApp/androidMain | Android specific code |
+composeApp/iosMain | iOS specific code |
+composeApp/jvmMain | Desktop support |
+iosApp | iOS application wrapper |
+
+---
+
+# 🏗️ Architecture Overview
+
+```
+Application Layer
+      │
+      ▼
+Presentation Layer
+      │
+      ▼
+Business Logic Layer
+      │
+      ▼
+HL7 Parser / Builder Engine
+      │
+      ▼
+Platform Layer
+(Android / iOS / JVM)
+```
+
+---
+
+# 🔄 Message Parsing Flow
+
+```
+HL7 Message
+      │
+      ▼
+Tokenizer
+      │
+      ▼
+Segment Parser
+      │
+      ▼
+Field Mapping
+      │
+      ▼
+Model Objects
+```
+
+---
+
+# 🔄 Message Building Flow
+
+```
+Builder API
+     │
+     ▼
+Add Segments
+     │
+     ▼
+Add Fields
+     │
+     ▼
+Validation
+     │
+     ▼
+Serialize HL7 Message
+```
+
+---
+
+# 📊 Architecture Patterns
+
+| Pattern | Usage |
+|------|------|
+Builder | HL7 message creation |
+Factory | Parser creation |
+Strategy | Validation logic |
+Adapter | Platform integration |
+Singleton | Parser configuration |
+
+---
+
+# 🔗 Module Dependency Graph
+
+```
+Application
+   │
+   ▼
+HL7 Parser Library
+   │
+   ▼
+Common HL7 Engine
+   │
+   ▼
+Platform Implementations
+(Android / iOS / JVM)
+```
+
+---
+
+# 🔄 Data Flow
+
+```
+Incoming HL7 Message
+      │
+      ▼
+Parser Engine
+      │
+      ▼
+Structured HL7 Model
+      │
+      ▼
+Application Logic
+```
+
+---
+
+# 🧪 Testing Architecture
+
+| Test Type | Description |
+|---------|-----------|
+Unit Tests | Parser functionality |
+Integration Tests | End-to-end HL7 parsing |
+Platform Tests | Android / iOS integration |
+
+Run tests:
+
+```
+./gradlew test
+```
+
+---
+
+# 🛠 Development Workflow
+
+### Build Android
+
+```
+./gradlew :composeApp:assembleDebug
+```
+
+### Run Tests
+
+```
+./gradlew test
+```
+
+
+
+---
+
+# 🧯 Troubleshooting
+
+### Android Build Issues
+
+Run clean:
+
+```
+./gradlew clean
+```
+
+
+
+
+---
+
+# 📞 Support
+
+Maintained by **Rite Technologies**
+
