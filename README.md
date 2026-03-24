@@ -1,143 +1,105 @@
+Here’s your **final polished README.md** with:
+
+
 # MobRite HL7 Parser Builder
 
-A **Kotlin Multiplatform (KMP)** library designed for **HL7 message parsing and building** used in **Clinical Message Processing (CMP)** systems.
-
-The project provides a unified HL7 toolkit capable of running across **Android, iOS, Desktop JVM**, and other Kotlin-supported platforms while maintaining a single shared codebase.
+> A Kotlin Multiplatform (KMP) library for HL7 message parsing and building across Android, iOS, and JVM.
 
 ---
 
-# 📖 Overview
+## 📌 About
+This library provides a **cross-platform HL7 engine** for healthcare systems like PMS, EMR, LIS, and CMP.
 
-Healthcare systems rely heavily on **HL7 (Health Level 7)** messages for exchanging clinical and operational data between systems such as:
+It enables:
+- Unified HL7 parsing logic
+- Message building with fluent APIs
+- Platform-independent implementation using KMP
 
-- Pharmacy Management Systems (PMS)
-- Electronic Medical Records (EMR)
-- Laboratory Information Systems (LIS)
-- Clinical Message Processing (CMP) engines
-- Hospital Information Systems (HIS)
+---
 
-Implementing HL7 support across multiple platforms can be complex due to:
+# 📚 Table of Contents
 
-- Message formatting rules
+- [✨ What's Included](#-whats-included)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [📋 Prerequisites](#-prerequisites)
+- [🚀 Project Setup (Step by Step)](#-project-setup-step-by-step)
+- [🏃 Running the Project](#-running-the-project)
+- [🧪 Testing](#-testing)
+- [📁 Folder Structure Overview](#-folder-structure-overview)
+- [📁 Detailed File Structure](#-detailed-file-structure)
+- [⚙️ Configuration Details](#️-configuration-details)
+- [📦 Adding a New Module](#-adding-a-new-module)
+- [🍎 iOS Integration](#-ios-integration)
+- [🤖 Android Integration](#-android-integration)
+
+---
+
+# ✨ What's Included
+
+- HL7 Parser
+- HL7 Builder
 - Segment validation
-- Encoding rules
-- Platform-specific parsing logic
-
-This library solves those problems by providing a **single Kotlin Multiplatform HL7 engine**.
+- Cross-platform support (KMP)
+- Structured HL7 model output
 
 ---
 
-# 🎯 Use Cases
+# 🛠️ Tech Stack
 
-| System | Usage |
-|------|------|
-Pharmacy Systems | Prescription processing |
-Hospital Systems | Patient admission updates |
-Laboratory Systems | Lab result transmission |
-Clinical Middleware | HL7 message routing |
-Healthcare Mobile Apps | HL7 message parsing |
+- Kotlin Multiplatform (KMP)
+- Gradle Kotlin DSL
+- Swift Package Manager (SPM)
+- JVM / Android / iOS
 
 ---
 
-# ✨ Features
+# 📋 Prerequisites
 
-## Core HL7 Capabilities
-
-- HL7 message parsing
-- HL7 message building
-- Segment validation
-- Field extraction
-- Message serialization
-- Error handling
+- Kotlin 1.9+
+- Android Studio / IntelliJ
+- Xcode (for iOS)
+- Gradle
 
 ---
 
-## Parser Features
+# 🚀 Project Setup (Step by Step)
 
-- Token-based parsing engine
-- Segment validation
-- Field indexing support
-- HL7 delimiter handling
-- Structured message model output
-
----
-
-## Builder Features
-
-- Fluent message builder API
-- Segment creation helpers
-- Field insertion utilities
-- HL7 message serialization
-
----
-
-## Platform Support
-
-| Platform | Supported |
-|--------|--------|
-Android | ✅ |
-iOS | ✅ |
-Desktop JVM | ✅ |
-Kotlin Multiplatform | ✅ |
-
----
-
-# 🚀 Usage Process
-
-### 1. Add Library
-
-### Android
-
-Add dependency in `build.gradle.kts` if uploaded to maven else use as local package for android or swiftpackage for iOS
-
-```kotlin
-dependencies {
-    implementation("com.rite.hl7:parser:1.0.0")
-}
-```
-
----
-
-### iOS
-
-Add Swift Package via GitHub:
-
-```
-https://github.com/Rite-Technologies-23/mobile_rite_hl7_parser_builder
-```
-
----
-
-# 📱 Android Integration (CMP Local Package)
-
-### Step 1 — Add Module
-
-Clone repository:
+## 1. Clone Repository
 
 ```bash
 git clone https://github.com/Rite-Technologies-23/mobile_rite_hl7_parser_builder.git
-```
+````
 
-Move module into project:
+---
+
+## 2. Use as Local Library
+
+### Project Structure
 
 ```
 your-project/
-  libraries/
-     hl7-parser/
+│
+├── libraries/
+│   └── hl7-parser/
 ```
 
 ---
 
-### Step 2 — Update `settings.gradle.kts`
+# 🤖 Android Integration
+
+> ⚠️ Note: Library is **NOT published to Maven yet**, use as **local Gradle module**
+
+---
+
+## Step 1 — Include Module
 
 ```kotlin
 include(":libraries:hl7-parser")
-include(":app")
 ```
 
 ---
 
-### Step 3 — Add Dependency
+## Step 2 — Add Dependency
 
 ```kotlin
 dependencies {
@@ -147,7 +109,7 @@ dependencies {
 
 ---
 
-### Step 4 — Android Usage Example
+## Step 3 — Usage
 
 ```kotlin
 val parser = HL7Parser()
@@ -158,19 +120,16 @@ PID|1||12345
 """.trimIndent()
 
 val result = parser.parse(message)
-
 println(result.segments)
 ```
 
 ---
 
-# 🍎 iOS Integration (Swift Package)
+# 🍎 iOS Integration
 
-### Option A — Xcode UI
+## Option 1 — Swift Package (Remote)
 
-1. Open Xcode
-2. File → Add Packages
-3. Enter GitHub URL
+Add package via Xcode:
 
 ```
 https://github.com/Rite-Technologies-23/mobile_rite_hl7_parser_builder
@@ -178,18 +137,28 @@ https://github.com/Rite-Technologies-23/mobile_rite_hl7_parser_builder
 
 ---
 
-### Option B — Package.swift
+## Option 2 — Local Swift Package 
+
+### Step 1 — Add Local Package
+
+* Open Xcode
+* File → Add Packages
+* Select **Add Local**
+* Choose cloned repo folder
+
+---
+
+### Step 2 — Package.swift (Manual)
 
 ```swift
 .package(
-    url: "https://github.com/Rite-Technologies-23/mobile_rite_hl7_parser_builder",
-    from: "1.0.0"
+    path: "../mobile_rite_hl7_parser_builder"
 )
 ```
 
 ---
 
-### Swift Usage Example
+## Swift Usage
 
 ```swift
 let parser = HL7Parser()
@@ -205,229 +174,155 @@ print(parsed)
 
 ---
 
-# 📦 HL7 Parsing Example
+# 🏃 Running the Project
 
-```kotlin
-val parser = HL7Parser()
+### Android
 
-val message = """
-MSH|^~\&|APP|FACILITY
-PID|1||12345||DOE^JOHN
-""".trimIndent()
-
-val result = parser.parse(message)
-
-println(result.getSegment("PID"))
-```
-
----
-
-# 🏗️ HL7 Message Builder Example
-
-```kotlin
-val message = HL7MessageBuilder()
-    .addSegment("MSH")
-    .addField("APP")
-    .addField("FACILITY")
-    .addSegment("PID")
-    .addField("12345")
-    .build()
-
-println(message)
-```
-
----
-
-# 📁 Project Structure
-
-```
-mobile_rite_hl7_parser_builder
-│
-├── composeApp
-│   ├── src
-│   │   ├── commonMain
-│   │   ├── androidMain
-│   │   ├── iosMain
-│   │   └── jvmMain
-│
-├── iosApp
-│   ├── iosApp
-│   └── iosAppTests
-│
-├── gradle
-├── build.gradle.kts
-├── settings.gradle.kts
-└── README.md
-```
-
----
-
-# 📁 Detailed Directory Breakdown
-
-| Directory | Purpose |
-|---------|--------|
-composeApp/commonMain | Shared business logic |
-composeApp/androidMain | Android specific code |
-composeApp/iosMain | iOS specific code |
-composeApp/jvmMain | Desktop support |
-iosApp | iOS application wrapper |
-
----
-
-# 🏗️ Architecture Overview
-
-```
-Application Layer
-      │
-      ▼
-Presentation Layer
-      │
-      ▼
-Business Logic Layer
-      │
-      ▼
-HL7 Parser / Builder Engine
-      │
-      ▼
-Platform Layer
-(Android / iOS / JVM)
-```
-
----
-
-# 🔄 Message Parsing Flow
-
-```
-HL7 Message
-      │
-      ▼
-Tokenizer
-      │
-      ▼
-Segment Parser
-      │
-      ▼
-Field Mapping
-      │
-      ▼
-Model Objects
-```
-
----
-
-# 🔄 Message Building Flow
-
-```
-Builder API
-     │
-     ▼
-Add Segments
-     │
-     ▼
-Add Fields
-     │
-     ▼
-Validation
-     │
-     ▼
-Serialize HL7 Message
-```
-
----
-
-# 📊 Architecture Patterns
-
-| Pattern | Usage |
-|------|------|
-Builder | HL7 message creation |
-Factory | Parser creation |
-Strategy | Validation logic |
-Adapter | Platform integration |
-Singleton | Parser configuration |
-
----
-
-# 🔗 Module Dependency Graph
-
-```
-Application
-   │
-   ▼
-HL7 Parser Library
-   │
-   ▼
-Common HL7 Engine
-   │
-   ▼
-Platform Implementations
-(Android / iOS / JVM)
-```
-
----
-
-# 🔄 Data Flow
-
-```
-Incoming HL7 Message
-      │
-      ▼
-Parser Engine
-      │
-      ▼
-Structured HL7 Model
-      │
-      ▼
-Application Logic
-```
-
----
-
-# 🧪 Testing Architecture
-
-| Test Type | Description |
-|---------|-----------|
-Unit Tests | Parser functionality |
-Integration Tests | End-to-end HL7 parsing |
-Platform Tests | Android / iOS integration |
-
-Run tests:
-
-```
-./gradlew test
-```
-
----
-
-# 🛠 Development Workflow
-
-### Build Android
-
-```
+```bash
 ./gradlew :composeApp:assembleDebug
 ```
 
-### Run Tests
+---
 
-```
-./gradlew test
-```
+### iOS
 
-
+* Run via Xcode (iosApp target)
 
 ---
 
-# 🧯 Troubleshooting
+# 🧪 Testing
 
-### Android Build Issues
-
-Run clean:
-
-```
-./gradlew clean
+```bash
+./gradlew test
 ```
 
+> ✅ Add unit tests if not present (parser + builder recommended)
 
+---
 
+# 📁 Folder Structure Overview
+
+```
+MOBRITE_HL7_PARSER_BUILDER
+│
+├── composeApp
+├── hl7Core
+├── iosApp
+├── gradle
+├── build.gradle.kts
+├── settings.gradle.kts
+```
+
+---
+
+# 📁 Detailed File Structure
+
+```
+hl7Core/
+│
+├── src/
+│   ├── commonMain/
+│   │   └── kotlin/org/rite/hl7/
+│   │
+│   │   ├── builder/
+│   │   │   ├── header/
+│   │   │   ├── inventory/
+│   │   │   ├── order/
+│   │   │   ├── patient/
+│   │   │   ├── pharmacy/
+│   │   │   └── HL7Builder.kt
+│   │
+│   │   ├── domain/
+│   │   │   ├── model/
+│   │   │   └── utils/
+│   │
+│   │   ├── parser/
+│   │   │   ├── header/
+│   │   │   ├── inventory/
+│   │   │   ├── order/
+│   │   │   ├── patient/
+│   │   │   ├── pharmacy/
+│   │   │   ├── HL7Parser.kt
+│   │   │   └── HL7ParserException.kt
+│   │
+│   │   ├── util/
+│   │   │   └── AckGenerator.kt
+│
+│   ├── androidMain/
+│   └── iosMain/
+│
+├── swiftpackage/
+├── build.gradle.kts
+```
+
+---
+
+## 📌 Directory Explanation
+
+| Folder      | Description              |
+| ----------- | ------------------------ |
+| builder     | HL7 message construction |
+| parser      | HL7 message parsing      |
+| domain      | Data models & utilities  |
+| util        | Helper utilities         |
+| androidMain | Android-specific code    |
+| iosMain     | iOS-specific code        |
+
+---
+
+# ⚙️ Configuration Details
+
+## Gradle
+
+```kotlin
+implementation(project(":libraries:hl7-parser"))
+```
+
+---
+
+## Swift Package
+
+```swift
+.package(
+    url: "https://github.com/Rite-Technologies-23/mobile_rite_hl7_parser_builder",
+    from: "1.0.0"
+)
+```
+
+---
+
+# 📦 Adding a New Module
+
+## Step 1 — Create Module
+
+```
+libraries/new-module/
+```
+
+---
+
+## Step 2 — Register
+
+```kotlin
+include(":libraries:new-module")
+```
+
+---
+
+## Step 3 — Use
+
+```kotlin
+implementation(project(":libraries:new-module"))
+```
+
+---
+
+# ✅ Best Practices
+
+* Add **About section** in all repositories
+* Keep modules independent
+* Maintain **unit tests**
+* Follow KMP folder conventions
 
 ---
 
