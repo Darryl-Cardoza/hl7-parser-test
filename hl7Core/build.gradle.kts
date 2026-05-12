@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -15,8 +14,9 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
+        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
@@ -25,12 +25,7 @@ kotlin {
             isStatic = true
         }
     }
-    multiplatformSwiftPackage {
-        swiftToolsVersion("5.3")
-        targetPlatforms {
-            iOS { v("13") }
-        }
-    }
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
@@ -49,6 +44,15 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+    }
+}
+
+multiplatformSwiftPackage {
+    swiftToolsVersion("5.3")
+    outputDirectory(File(projectDir, "swiftpackage"))
+    packageName("ComposeApp")
+    targetPlatforms {
+        iOS { v("13") }
     }
 }
 
@@ -78,4 +82,3 @@ android {
 dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
-
