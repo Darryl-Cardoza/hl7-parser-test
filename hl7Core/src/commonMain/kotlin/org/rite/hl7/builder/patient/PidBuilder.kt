@@ -55,7 +55,7 @@ fun buildPID(
 
     val maxField = PidVersionCapabilities.maxField(hl7Version)
 
-    return HL7Utils.buildSegment(
+    return HL7Utils.buildSegmentTrimmed(
         "PID",
         *allFields.take(maxField).toTypedArray()
     )

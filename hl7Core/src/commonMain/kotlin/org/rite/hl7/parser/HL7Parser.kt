@@ -6,6 +6,8 @@ import org.rite.hl7.domain.model.CustomSegmentData
 import org.rite.hl7.domain.model.ErrorData
 import org.rite.hl7.domain.model.MessageHeaderData
 import org.rite.hl7.domain.model.NoteData
+import org.rite.hl7.domain.model.TxnPriority
+import org.rite.hl7.domain.model.ZinData
 import org.rite.hl7.parser.header.mshParser
 import org.rite.hl7.parser.inventory.parseEquipment
 import org.rite.hl7.parser.patient.parseVisit
@@ -16,6 +18,7 @@ import org.rite.hl7.parser.pharmacy.parseComponents
 import org.rite.hl7.parser.pharmacy.parseDispenses
 import org.rite.hl7.parser.pharmacy.parseMedications
 import org.rite.hl7.parser.pharmacy.parseRoutes
+import org.rite.hl7.parser.observation.parseObservations
 
 
 //==================== HL7 PARSER ====================//
@@ -133,7 +136,16 @@ class Hl7Parser {
             /** Parsed notes and comments (NTE) **/
             notes = parseNotes(segmentMap),
 
-            /** Parsed custom Z-segments **/
+            /** Parsed OBX observation/result segments **/
+            obxSegments = parseObservations(segmentMap, compSep),
+
+            /** Parsed ZIN segments — typed inventory count rows per drug **/
+            zinSegments = parseZinSegments(segmentMap),
+
+            /** Parsed ZPR priority — STAT/URGENT/ROUTINE/TIMED/UNKNOWN **/
+            priority = parsePriority(segmentMap),
+
+            /** Parsed custom Z-segments (non-ZIN, non-ZPR) **/
             customSegments = parseCustomSegments(
                 segmentMap,
                 header.fieldSeparator
@@ -171,7 +183,17 @@ class Hl7Parser {
 
         segments.forEach { segment ->
             val fields = segment.split(sep)
-            val name = fields.first().take(3)
+            val rawName = fields.first()
+
+            // Normalize vendor-prefixed OBX variants (e.g. FOBX → OBX).
+            // Some systems prefix OBX with the result status character.
+            val name = when {
+                rawName.endsWith("OBX") && rawName.length == 4 -> "OBX"
+                else -> rawName.take(3)
+            }
+
+            // When FOBX is normalized to OBX, the segment already carries its
+            // result status in OBX-11, so no field adjustment is needed.
             map.getOrPut(name) { mutableListOf() }.add(fields)
         }
         return map
@@ -267,30 +289,65 @@ class Hl7Parser {
     }
 
     /**
-     * Parses custom Z-segments (Zxx) and captures all fields dynamically.
-     * Preserves vendor-specific or non-standard HL7 extensions.
+     * Parses ZIN segments into typed [ZinData] objects.
+     *
+     * Format: ZIN|setId|dispenseType|quantity|lotNumber|expiry
+     * Qualifiers: OPENED, SEALED, NA, EXPECTED_ON_HAND (or any custom value)
+     */
+    private fun parseZinSegments(
+        segments: Map<String, List<List<String>>>
+    ): List<ZinData> {
+        return (segments["ZIN"] ?: emptyList()).mapNotNull { fields ->
+            val setId = fields.getOrNull(1)?.toIntOrNull() ?: return@mapNotNull null
+            val dispenseType = fields.getOrNull(2)?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val quantity = fields.getOrNull(3)?.toIntOrNull() ?: 0
+            ZinData(
+                setId        = setId,
+                dispenseType = dispenseType,
+                quantity     = quantity,
+                lotNumber    = fields.getOrNull(4)?.takeIf { it.isNotBlank() },
+                expiry       = fields.getOrNull(5)?.takeIf { it.isNotBlank() }
+            )
+        }
+    }
+
+    /**
+     * Parses ZPR segment and extracts transaction priority.
+     *
+     * Expected format: ZPR|<setId>|PRIORITY|<STAT|URGENT|ROUTINE|TIMED>|...
+     * Returns [TxnPriority.UNKNOWN] if the segment is absent or the qualifier is not PRIORITY.
+     */
+    private fun parsePriority(
+        segments: Map<String, List<List<String>>>
+    ): TxnPriority {
+        val priorityValue = (segments["ZPR"] ?: emptyList())
+            .firstOrNull { fields -> fields.getOrNull(2)?.uppercase() == "PRIORITY" }
+            ?.getOrNull(3)
+        return TxnPriority.fromString(priorityValue)
+    }
+
+    /**
+     * Parses all remaining custom Z-segments (Zxx) dynamically.
+     * ZIN and ZPR are excluded here — they have dedicated typed parsers above.
+     * Every other Z-segment is preserved with full field map for app-level handling.
      */
     private fun parseCustomSegments(
         segments: Map<String, List<List<String>>>,
         fieldSep: String
     ): List<CustomSegmentData> {
 
-        /** Collection of parsed custom segments **/
+        // Segments with dedicated typed parsers — excluded from generic custom bucket
+        val handledZSegments = setOf("ZIN", "ZPR")
+
         val customSegments = mutableListOf<CustomSegmentData>()
 
-        /** Iterate through all segments **/
         segments.forEach { (segmentType, segmentList) ->
-
-            /** Process only Z-segments **/
-            if (segmentType.startsWith("Z")) {
+            if (segmentType.startsWith("Z") && segmentType !in handledZSegments) {
                 segmentList.forEach { fields ->
-
-                    /** Capture all fields dynamically with field index **/
                     val allFields = fields.drop(1).mapIndexed { index, value ->
                         index + 1 to value
                     }.toMap()
 
-                    /** Build and add parsed custom segment **/
                     customSegments.add(
                         CustomSegmentData(
                             segmentType = segmentType,

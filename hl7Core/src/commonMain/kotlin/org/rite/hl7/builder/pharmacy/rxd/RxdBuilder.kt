@@ -113,10 +113,9 @@ fun buildRXD(
         dispense.substanceManufacturerName ?: ""
     )
 
-    /** Truncate safely for HL7 version */
     val maxField = RxdVersionCapabilities.maxField(hl7Version)
 
-    return HL7Utils.buildSegment(
+    return HL7Utils.buildSegmentTrimmed(
         "RXD",
         *allFields.take(maxField).toTypedArray()
     )

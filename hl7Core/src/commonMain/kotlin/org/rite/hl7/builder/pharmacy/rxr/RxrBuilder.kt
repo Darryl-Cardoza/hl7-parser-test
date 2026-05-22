@@ -44,7 +44,7 @@ fun buildRXR(
 
     val maxField = RxrVersionCapabilities.maxField(hl7Version)
 
-    return HL7Utils.buildSegment(
+    return HL7Utils.buildSegmentTrimmed(
         "RXR",
         *allFields.take(maxField).toTypedArray()
     )

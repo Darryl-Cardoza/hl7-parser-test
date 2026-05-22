@@ -48,4 +48,20 @@ object HL7Utils {
             append(HL7Constants.FIELD_SEPARATOR)
             append(fields.joinToString(HL7Constants.FIELD_SEPARATOR))
         }
+
+    /**
+     * Same as buildSegment but drops trailing empty fields.
+     * Use this for all version-aware builders so the wire output is minimal and clean.
+     * Mid-message empty fields (positional placeholders) are preserved.
+     */
+    fun buildSegmentTrimmed(segmentType: String, vararg fields: String): String {
+        val trimmed = fields.toList().dropLastWhile { it.isEmpty() }
+        return buildString {
+            append(segmentType)
+            if (trimmed.isNotEmpty()) {
+                append(HL7Constants.FIELD_SEPARATOR)
+                append(trimmed.joinToString(HL7Constants.FIELD_SEPARATOR))
+            }
+        }
+    }
 }

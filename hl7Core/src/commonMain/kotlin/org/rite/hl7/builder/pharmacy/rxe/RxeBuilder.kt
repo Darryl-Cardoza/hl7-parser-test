@@ -116,10 +116,9 @@ fun buildRXE(
         medication.pharmacyInstructions ?: ""
     )
 
-    /** Truncate fields safely based on HL7 version */
     val maxField = RxeVersionCapabilities.maxField(hl7Version)
 
-    return HL7Utils.buildSegment(
+    return HL7Utils.buildSegmentTrimmed(
         "RXE",
         *allFields.take(maxField).toTypedArray()
     )
