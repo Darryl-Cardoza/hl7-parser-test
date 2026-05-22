@@ -9,6 +9,9 @@ import org.rite.hl7.builder.pharmacy.rxc.buildRXC
 import org.rite.hl7.builder.pharmacy.rxd.buildRXD
 import org.rite.hl7.builder.pharmacy.rxe.buildRXE
 import com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.pharmacy.rxr.buildRXR
+import com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.inventory.buildINVResponseSegment
+import com.rite.pillcounting.core.hl7.hl7MessageHandler.builder.inventory.buildZINSegment
+import org.rite.hl7.builder.observation.ObxVersionCapabilities
 import org.rite.hl7.domain.model.AcknowledgmentData
 import org.rite.hl7.domain.model.CompleteHL7Message
 import org.rite.hl7.domain.model.CustomSegmentData
@@ -32,34 +35,44 @@ class HL7MessageBuilder {
         private const val SUBCOMPONENT_SEP = "&"
     }
 
+    // Tracks the HL7 version of the message being built, used for version-aware segment builders
+    private var currentVersion: String = "2.5"
+
     /**
      * Build complete HL7 message from CompleteHL7Message data class
      */
     fun build(message: CompleteHL7Message): String {
+        currentVersion = message.header.versionId
         val segments = mutableListOf<String>()
         // Required segments
         segments.add(buildMSH(message.header))
 
         // Patient segment (if present)
-        message.patient?.let { segments.add(buildPID(it)) }
+        message.patient?.let { segments.add(buildPID(it, currentVersion)) }
 
         // Visit segment (if present)
-        message.visit?.let { segments.add(buildPV1(it)) }
+        message.visit?.let { segments.add(buildPV1(it, currentVersion)) }
 
         // Order segment (if present)
-        message.order?.let { segments.add(buildORC(it)) }
+        message.order?.let { segments.add(buildORC(it, currentVersion)) }
 
         // Medication segments (if present)
-        message.medications.forEach { segments.add(buildRXE(it)) }
+        message.medications.forEach { segments.add(buildRXE(it, currentVersion)) }
 
         // Route segments (if present)
-        message.routes.forEach { segments.add(buildRXR(it)) }
+        message.routes.forEach { segments.add(buildRXR(it, currentVersion)) }
 
         // Component segments (if present)
-        message.components.forEach { segments.add(buildRXC(it)) }
+        message.components.forEach { segments.add(buildRXC(it, currentVersion)) }
 
         // Dispense segments (if present)
-        message.dispenses.forEach { segments.add(buildRXD(it)) }
+        message.dispenses.forEach { segments.add(buildRXD(it, currentVersion)) }
+
+        // Inventory count response: INV+ZIN interleaved per drug (INR^U05)
+        message.inventoryResponseItems.forEach { item ->
+            segments.add(buildINVResponseSegment(item, message.header.versionId))
+            item.zinRows.forEach { row -> segments.add(buildZINSegment(item.setId, row)) }
+        }
 
         // Acknowledgment segment (if present)
         message.acknowledgment?.let { segments.add(buildMSA(it)) }
@@ -171,39 +184,46 @@ class HL7MessageBuilder {
         return fields.joinToString(FIELD_SEP)
     }
 
-        private fun buildObxSegment(obx: ObservationData): String {
-            val fields = mutableListOf("OBX")
+    private fun buildObxSegment(obx: ObservationData): String {
+        // OBX-3: Observation Identifier (code^text^codingSystem)
+        val obsId = buildComponent(
+            obx.observationId,
+            obx.observationText ?: "",
+            obx.codingSystem ?: ""
+        )
 
-            // OBX-1: Set ID
-            fields.add(obx.setId)
+        // Full OBX field list — positional, version-trimmed below
+        val allFields = listOf(
+            obx.setId,                              // OBX-1
+            obx.valueType,                          // OBX-2
+            obsId,                                  // OBX-3
+            obx.subId ?: "",                        // OBX-4
+            obx.observationValue,                   // OBX-5
+            obx.units ?: "",                        // OBX-6
+            obx.referenceRange ?: "",               // OBX-7
+            obx.abnormalFlags ?: "",                // OBX-8
+            obx.probability ?: "",                  // OBX-9
+            obx.natureOfAbnormalTest ?: "",         // OBX-10
+            obx.resultStatus,                       // OBX-11
+            obx.effectiveDateOfReferenceRange ?: "", // OBX-12 (v2.2+)
+            obx.userDefinedAccessChecks ?: "",      // OBX-13 (v2.2+)
+            obx.dateTimeOfObservation ?: "",        // OBX-14 (v2.2+)
+            obx.producerId ?: "",                   // OBX-15 (v2.2+)
+            obx.responsibleObserver ?: "",          // OBX-16 (v2.2+)
+            obx.observationMethod ?: "",            // OBX-17 (v2.2+)
+            obx.equipmentInstanceIdentifier ?: "",  // OBX-18 (v2.4+)
+            obx.dateTimeOfAnalysis ?: ""            // OBX-19 (v2.4+)
+        )
 
-            // OBX-2: Value Type
-            fields.add(obx.valueType)
+        val maxField = ObxVersionCapabilities.maxField(currentVersion)
+        val trimmed = allFields.take(maxField).dropLastWhile { it.isEmpty() }
 
-            // OBX-3: Observation Identifier (CE)
-            // OBX-3.1^OBX-3.2^OBX-3.3
-            fields.add(
-                listOfNotNull(
-                    obx.observationId,
-                    obx.observationText,
-                    obx.codingSystem
-                ).joinToString(COMPONENT_SEP)
-            )
-
-            // OBX-4: Observation Sub-ID (optional, unused)
-            fields.add("")
-
-            // OBX-5: Observation Value
-            fields.add(obx.observationValue)
-
-            // OBX-6 → OBX-10 (unused placeholders)
-            repeat(5) { fields.add("") }
-
-            // OBX-11: Result Status
-            fields.add(obx.resultStatus)
-
-            return fields.joinToString(FIELD_SEP)
+        return buildString {
+            append("OBX")
+            append(FIELD_SEP)
+            append(trimmed.joinToString(FIELD_SEP))
         }
+    }
 
 
     // ==================== HELPER FUNCTIONS ====================
@@ -261,7 +281,9 @@ class HL7MessageBuilder {
     }
 
     private fun buildInventoryUpdate(message: CompleteHL7Message): String {
-        require(message.inventory != null) { "Inventory segment required for INU^U05" }
+        require(message.inventory != null || message.inventoryResponseItems.isNotEmpty()) {
+            "Inventory segment or inventoryResponseItems required for INU^U05"
+        }
         return build(message)
     }
 

@@ -103,10 +103,12 @@ fun buildMSH(header: MessageHeaderData): String {
     val maxFieldIndex = MshVersionCapabilities.maxField(header.versionId)
 
     /**
-     * Serialize only the allowed fields and join them
-     * using the configured field separator.
+     * Serialize only the allowed fields.
+     * Trim trailing empty fields so the segment matches the minimal wire format
+     * (e.g. "MSH|...|2.5" instead of "MSH|...|2.5|||||||||").
+     * Positional fields that are truly empty in the middle are preserved.
      */
-    return allFields
-        .take(maxFieldIndex + 1)
-        .joinToString(header.fieldSeparator)
+    val fields = allFields.take(maxFieldIndex + 1)
+    val trimmed = fields.dropLastWhile { it.isEmpty() }
+    return trimmed.joinToString(header.fieldSeparator)
 }
