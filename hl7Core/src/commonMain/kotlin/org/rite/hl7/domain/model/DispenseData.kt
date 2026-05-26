@@ -74,5 +74,11 @@ data class DispenseData(
     val cellId: String? = null,
 
     /** Parsed automation-specific dispensing cell location **/
-    val cellLocation: String? = null
+    val cellLocation: String? = null,
+
+    /** Parsed dispense priority code from ZPR-1 (e.g. STAT, ROUTINE, URGENT) **/
+    val dispensePriority: String? = null,
+
+    /** Parsed dispense priority description from ZPR-2 **/
+    val dispensePriorityText: String? = null
 )
