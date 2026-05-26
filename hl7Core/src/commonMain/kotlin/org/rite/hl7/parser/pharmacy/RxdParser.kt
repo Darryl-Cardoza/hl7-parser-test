@@ -5,14 +5,23 @@ import org.rite.hl7.domain.model.DispenseData
 /**
  * Parses RXD segments and extracts actual medication dispense information.
  * Each RXD represents what was physically dispensed to the patient.
+ * ZPR (Z-segment) is correlated by index to supply dispense priority.
  */
 fun parseDispenses(
     segments: Map<String, List<List<String>>>,
     compSep: String
 ): List<DispenseData> {
 
+    val zprSegments = segments["ZPR"] ?: emptyList()
+
     /** Iterate over all RXD segments (multiple dispenses allowed) **/
-    return (segments["RXD"] ?: emptyList()).map { rxd ->
+    return (segments["RXD"] ?: emptyList()).mapIndexed { index, rxd ->
+
+        /** Match ZPR by position — nth ZPR applies to nth RXD **/
+        val zpr = zprSegments.getOrNull(index)
+
+        /** Parsed dispense priority from ZPR (Z-segment, pharmacy priority extension) **/
+        val zprPriorityParts = zpr?.getOrNull(1)?.split(compSep) ?: emptyList()
 
         /** Parsed dispensed drug identifier from RXD-2 **/
         val drugParts = rxd.getOrElse(2) { "" }.split(compSep)
@@ -52,7 +61,11 @@ fun parseDispenses(
 
             /** Automation-specific fields (non-standard HL7) **/
             cellId = rxd.getOrNull(11)?.takeIf { it.isNotBlank() },
-            cellLocation = rxd.getOrNull(19)?.takeIf { it.isNotBlank() }
+            cellLocation = rxd.getOrNull(19)?.takeIf { it.isNotBlank() },
+
+            /** ZPR Z-segment: dispense priority fields **/
+            dispensePriority = zprPriorityParts.getOrNull(0)?.takeIf { it.isNotBlank() },
+            dispensePriorityText = zprPriorityParts.getOrNull(1)?.takeIf { it.isNotBlank() }
         )
     }
 }
