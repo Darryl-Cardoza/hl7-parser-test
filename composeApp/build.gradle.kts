@@ -22,6 +22,16 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+
+            // Stack canary: emit __stack_chk_guard/__stack_chk_fail in every function
+            binaryOption("stackProtector", "all")
+
+            // Forward hardening + ARC flags to the native linker so the resulting
+            // Mach-O binary carries the expected markers for security scanners.
+            linkerOpts += listOf(
+                "-fstack-protector-all",
+                "-fobjc-arc"
+            )
         }
     }
     
