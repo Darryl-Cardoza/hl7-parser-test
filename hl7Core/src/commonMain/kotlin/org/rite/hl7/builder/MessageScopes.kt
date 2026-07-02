@@ -41,6 +41,7 @@ class RdsO13Scope : MessageScope() {
     fun rxr(block: (RXRBuilder) -> Unit) = add(RXRBuilder(), block)
     fun rxc(block: (RXCBuilder) -> Unit) = add(RXCBuilder(), block)
     fun nte(block: (NTEBuilder) -> Unit) = add(NTEBuilder(), block)
+    fun obx(block: (OBXBuilder) -> Unit) = add(OBXBuilder(), block)   // repeating
     fun zsn(block: (ZSNBuilder) -> Unit) = add(ZSNBuilder(), block)   // repeating
     fun zsv(block: (ZSVBuilder) -> Unit) = add(ZSVBuilder(), block)
 }

@@ -157,11 +157,12 @@ class OBXBuilder : HL7SegmentBuilder("OBX") {
     var setId: String? = null
     var valueType: String? = null
     var observationId: String? = null
+    var observationText: String? = null
     var observationValue: String? = null
     var units: String? = null
     var resultStatus: String? = null
     override fun apply() {
-        set(1, setId); set(2, valueType); set(3, 1, observationId)
+        set(1, setId); set(2, valueType); set(3, 1, observationId); set(3, 2, observationText)
         set(5, observationValue); set(6, 1, units); set(11, resultStatus)
     }
 }

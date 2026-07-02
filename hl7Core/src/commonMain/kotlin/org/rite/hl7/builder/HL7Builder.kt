@@ -38,10 +38,10 @@ class HL7Builder private constructor(
 ) {
 
     fun rdsO13(block: RdsO13Scope.() -> Unit): HL7Message =
-        assemble("RDS^O13", RdsO13Scope().apply(block))
+        assembleVersioned(RdsO13Scope().apply(block), pre25 = "RDS^O01", from25 = "RDS^O13")
 
     fun rdeO11(block: RdeO11Scope.() -> Unit): HL7Message =
-        assemble("RDE^O11", RdeO11Scope().apply(block))
+        assembleVersioned(RdeO11Scope().apply(block), pre25 = "RDE^O01", from25 = "RDE^O11")
 
     fun inrU05(block: InrU05Scope.() -> Unit): HL7Message =
         assemble("INR^U05", InrU05Scope().apply(block))
@@ -70,6 +70,18 @@ class HL7Builder private constructor(
             registry.wrap(b.build(delimiters, version))
         }
         return HL7Message(typed, delimiters, version)
+    }
+
+    /**
+     * Like [assemble], but picks the MSH-9 trigger event by resolved version:
+     * [pre25] for HL7 < 2.5 (e.g. "RDS^O01"), [from25] for 2.5 and later
+     * (e.g. "RDS^O13"). Version is resolved from the scope's MSH-12 if set,
+     * else [defaultVersion].
+     */
+    private fun assembleVersioned(scope: MessageScope, pre25: String, from25: String): HL7Message {
+        val version = HL7Version.from(scope.mshBuilder.versionId ?: defaultVersion.wire)
+        val messageType = if (version.ordinal < HL7Version.V25.ordinal) pre25 else from25
+        return assemble(messageType, scope)
     }
 
     /** Fluent builder for [HL7Builder]. */
