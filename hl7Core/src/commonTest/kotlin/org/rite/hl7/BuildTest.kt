@@ -55,7 +55,7 @@ class BuildTest {
             msh { it.sendingApplication = "WMS"; it.messageControlId = "MSG-002" }
             inv {
                 it.setId = "1"
-                it.inventoryLocationIdentifier = "00069015505"
+                it.substanceCode = "00069015505"
                 it.substanceName = "Drug Name"
                 it.substanceCodeSystem = "NDC"
                 it.inventoryOnHandQuantity = "150"

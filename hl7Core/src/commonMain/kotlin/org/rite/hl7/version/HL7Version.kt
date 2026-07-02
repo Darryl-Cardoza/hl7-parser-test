@@ -14,6 +14,7 @@ enum class HL7Version(val wire: String) {
     V251("2.5.1"),
     V26("2.6"),
     V27("2.7"),
+    V271("2.7.1"),
     V28("2.8");
 
     companion object {

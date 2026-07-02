@@ -178,7 +178,7 @@ class EQUBuilder : HL7SegmentBuilder("EQU") {
 
 class INVBuilder : HL7SegmentBuilder("INV") {
     var setId: String? = null
-    var inventoryLocationIdentifier: String? = null   // NDC (INV-2.1)
+    var substanceCode: String? = null                 // NDC (INV-2.1)
     var substanceName: String? = null                 // INV-2.2
     var substanceCodeSystem: String? = null           // INV-2.3
     var lotNumber: String? = null
@@ -187,7 +187,7 @@ class INVBuilder : HL7SegmentBuilder("INV") {
     var units: String? = null
     override fun apply() {
         set(1, setId)
-        set(2, 1, inventoryLocationIdentifier); set(2, 2, substanceName); set(2, 3, substanceCodeSystem)
+        set(2, 1, substanceCode); set(2, 2, substanceName); set(2, 3, substanceCodeSystem)
         set(3, lotNumber); set(4, expirationDate); set(5, inventoryOnHandQuantity); set(6, units)
     }
 }
