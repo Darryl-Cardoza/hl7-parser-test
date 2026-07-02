@@ -9,6 +9,6 @@ import androidx.compose.ui.tooling.preview.Preview
 @Preview
 fun App() {
     MaterialTheme {
-
+        HL7DemoScreen()
     }
 }
