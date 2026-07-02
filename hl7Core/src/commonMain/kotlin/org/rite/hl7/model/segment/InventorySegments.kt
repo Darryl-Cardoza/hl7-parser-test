@@ -26,7 +26,7 @@ class EQUSegment(raw: HL7Segment) : TypedSegment(raw) {
  */
 class INVSegment(raw: HL7Segment) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
-    val inventoryLocationIdentifier: String get() = component(2, 1)  // NDC (INV-2.1)
+    val substanceCode: String get() = component(2, 1)  // NDC (INV-2.1)
     val substanceName: String get() = component(2, 2)
     val substanceCodeSystem: String get() = component(2, 3)
     val lotNumber: String get() = fieldValue(3)

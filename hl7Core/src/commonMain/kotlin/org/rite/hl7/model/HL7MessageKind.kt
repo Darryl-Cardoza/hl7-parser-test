@@ -8,8 +8,8 @@ import org.rite.hl7.model.segment.ZADSegment
  * trigger event, ORC-1, and payload.
  */
 enum class HL7MessageKind {
-    DISPENSE,            // RDS^O13 with ORC-1=RE
-    DISPENSE_ORDER,      // RDE^O11
+    DISPENSE,            // RDS^O13 (or RDS^O01 pre-2.5) with ORC-1=RE
+    DISPENSE_ORDER,      // RDE^O11 (or RDE^O01 pre-2.5)
     CANCEL_ORDER,        // ORC-1=CA on any type
     INVENTORY_RESPONSE,  // INR^U05
     INVENTORY_ADJUSTMENT,// INR^U06 carrying ZAD
@@ -28,8 +28,8 @@ enum class HL7MessageKind {
 
             return when {
                 control == "CA" -> CANCEL_ORDER
-                type == "RDS" && trigger == "O13" -> DISPENSE
-                type == "RDE" && trigger == "O11" -> DISPENSE_ORDER
+                type == "RDS" && (trigger == "O13" || trigger == "O01") -> DISPENSE
+                type == "RDE" && (trigger == "O11" || trigger == "O01") -> DISPENSE_ORDER
                 type == "INR" && trigger == "U05" -> INVENTORY_RESPONSE
                 type == "INR" && trigger == "U06" ->
                     if (message.segmentNamed(ZADSegment.NAME) != null) INVENTORY_ADJUSTMENT

@@ -14,7 +14,7 @@ import org.rite.hl7.parser.HL7ParseResult
  * (INR^U06) workflows. One [HL7] facade instance is enough for a whole app —
  * it pre-registers the ZSN/ZSV/ZAD extension segments.
  */
-class HL7Workflows(private val hl7: HL7 = HL7(version = "2.5")) {
+class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version = version)) {
 
     // ---------------------------------------------------------------
     // Dispense
@@ -134,7 +134,7 @@ class HL7Workflows(private val hl7: HL7 = HL7(version = "2.5")) {
             }
             inv {
                 it.setId = "1"
-                it.inventoryLocationIdentifier = ndc
+                it.substanceCode = ndc
                 it.substanceName = substanceName
                 it.substanceCodeSystem = "NDC"
                 it.inventoryOnHandQuantity = onHandQuantity
@@ -169,7 +169,7 @@ class HL7Workflows(private val hl7: HL7 = HL7(version = "2.5")) {
                 val adjustments = invRows.mapIndexed { index, inv ->
                     val zad = zadRows.getOrNull(index)
                     InventoryAdjustment(
-                        ndc = inv.inventoryLocationIdentifier,
+                        ndc = inv.substanceCode,
                         substanceName = inv.substanceName,
                         onHandQuantity = inv.inventoryOnHandQuantity,
                         units = inv.units,

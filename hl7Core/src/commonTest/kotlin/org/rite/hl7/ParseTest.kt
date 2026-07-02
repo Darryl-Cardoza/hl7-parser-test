@@ -49,7 +49,7 @@ class ParseTest {
 
         val inv = message.segment<INVSegment>("INV")
         assertNotNull(inv)
-        assertEquals("00069015505", inv.inventoryLocationIdentifier)
+        assertEquals("00069015505", inv.substanceCode)
         assertEquals("150", inv.inventoryOnHandQuantity)
 
         val zad = message.segment<ZADSegment>("ZAD")
