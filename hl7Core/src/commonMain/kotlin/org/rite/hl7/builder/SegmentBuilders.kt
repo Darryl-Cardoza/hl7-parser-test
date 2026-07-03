@@ -261,9 +261,13 @@ class ZSNBuilder : HL7SegmentBuilder("ZSN") {
     var lotNumber: String? = null
     var expirationDate: String? = null
     var transactionType: String? = null
+    var quantityFromThisStockItem: String? = null
+    var captureSource: String? = null
+    var captureTimestamp: String? = null
     override fun apply() {
         set(1, setId); set(2, packageSerialNumber); set(3, nationalDrugCode)
         set(4, lotNumber); set(5, expirationDate); set(6, transactionType)
+        set(7, quantityFromThisStockItem); set(8, captureSource); set(9, captureTimestamp)
     }
 }
 
@@ -273,9 +277,14 @@ class ZSVBuilder : HL7SegmentBuilder("ZSV") {
     var validationTimestamp: String? = null
     var validatorId: String? = null
     var rejectionReason: String? = null
+    var dispensedNdc: String? = null
+    var scannedNdc: String? = null
+    var scanSource: String? = null
+    var matchStrength: String? = null
     override fun apply() {
         set(1, setId); set(2, validationStatus); set(3, validationTimestamp)
         set(4, validatorId); set(5, rejectionReason)
+        set(6, dispensedNdc); set(7, scannedNdc); set(8, scanSource); set(9, matchStrength)
     }
 }
 
@@ -286,8 +295,30 @@ class ZADBuilder : HL7SegmentBuilder("ZAD") {
     var adjustmentReason: String? = null
     var adjustmentDateTime: String? = null
     var approvedBy: String? = null
+    var comment: String? = null
     override fun apply() {
         set(1, setId); set(2, adjustmentType); set(3, adjustmentQuantity)
         set(4, adjustmentReason); set(5, adjustmentDateTime); set(6, approvedBy)
+        set(7, comment)
     }
+}
+
+/** ZAD-3 default reason codes (configurable per site). */
+object ZadReasonCode {
+    const val CYCLE_COUNT = "CYCLE_COUNT"
+    const val PO_RECEIPT = "PO_RECEIPT"
+    const val TRANSFER_IN = "TRANSFER_IN"
+    const val TRANSFER_OUT = "TRANSFER_OUT"
+    const val RETURN_TO_SUPPLIER = "RETURN_TO_SUPPLIER"
+    const val BROKEN = "BROKEN"
+    const val PHYSICAL_INVENTORY = "PHYSICAL_INVENTORY"
+    const val EXPIRED = "EXPIRED"
+}
+
+/** ZSV-4 validation result values. */
+object ZsvValidationResult {
+    const val MATCH = "MATCH"
+    const val SUBSTITUTION = "SUBSTITUTION"
+    const val OVERRIDE = "OVERRIDE"
+    const val MISMATCH = "MISMATCH"
 }
