@@ -302,7 +302,7 @@ class ZADBuilder : HL7SegmentBuilder("ZAD") {
     }
 }
 
-/** ZAD-3 default reason codes (configurable per site). */
+/** ZAD-4 default reason codes (configurable per site; open string, not a hard enum). */
 object ZadReasonCode {
     const val CYCLE_COUNT = "CYCLE_COUNT"
     const val PO_RECEIPT = "PO_RECEIPT"
@@ -312,6 +312,8 @@ object ZadReasonCode {
     const val BROKEN = "BROKEN"
     const val PHYSICAL_INVENTORY = "PHYSICAL_INVENTORY"
     const val EXPIRED = "EXPIRED"
+    const val DAMAGED_IN_TRANSIT = "DAMAGED_IN_TRANSIT"
+    const val TOTALLY_MADE_UP = "TOTALLY_MADE_UP"
 }
 
 /** ZSV-4 validation result values. */
@@ -320,4 +322,31 @@ object ZsvValidationResult {
     const val SUBSTITUTION = "SUBSTITUTION"
     const val OVERRIDE = "OVERRIDE"
     const val MISMATCH = "MISMATCH"
+}
+
+/** ZSV-8 match strength values. Expected populated when validationResult is MATCH or SUBSTITUTION. */
+object ZsvMatchStrength {
+    /** 11-digit NDC exact match. */
+    const val EXACT = "EXACT"
+    /** GPI-equivalent generic match. */
+    const val GENERIC = "GENERIC"
+    /** 10-digit NDC fallback match. */
+    const val NDC10 = "NDC10"
+}
+
+/** Scan/capture source values shared by ZSV-5 (scanSource) and ZSN-8 (captureSource). */
+object ScanSource {
+    /** 2D DataMatrix. */
+    const val GS1 = "GS1"
+    /** UPC-A/GTIN linear barcode. */
+    const val NDC_LINEAR = "NDC_LINEAR"
+    const val MANUAL = "MANUAL"
+    /** ZSN-8 only. */
+    const val UNKNOWN = "UNKNOWN"
+}
+
+/** ZSN-6 transaction type values. */
+object ZsnTransactionType {
+    const val DISPENSE = "D"
+    const val RETURN = "R"
 }
