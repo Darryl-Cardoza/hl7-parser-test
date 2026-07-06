@@ -10,7 +10,7 @@ import org.rite.hl7.model.ast.HL7Segment
  * generic [HL7Segment] into its typed view. Register on the parser/builder via
  * `registerCustomSegment(...)`.
  *
- * The built-in Z-segments (ZSN, ZSV, ZAD, ZIN, ZPR) ship as ready-made
+ * The built-in Z-segments (ZSN, ZSV, ZAD, ZIN, ZPR, ZNI) ship as ready-made
  * definitions (see their companion objects, e.g. [org.rite.hl7.model.segment.ZSNSegment.Definition]).
  */
 open class SegmentDefinition(

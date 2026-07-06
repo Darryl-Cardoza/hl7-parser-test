@@ -31,24 +31,28 @@ class ZSNSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /**
- * ZSV — Stock Bottle Validation Assertion. New §13 extension.
+ * ZSV — Stock-bottle Validation segment. New §13 extension.
  *
  * Field map (project-authoritative):
- * `ZSV|setId|validationStatus|validationTimestamp|validatorId|rejectionReason|dispensedNdc|scannedNdc|scanSource|matchStrength`
- * validationStatus: VA = valid, VR = rejected.
- * scanSource: GS1 / NDC_LINEAR / MANUAL.
- * matchStrength: EXACT / GENERIC / NDC10 — required when validationStatus indicates a match/substitution.
+ * `ZSV|setId|dispensedNdc|scannedNdc|validationResult|scanSource|validator|validationTimestamp|matchStrength`
+ * dispensedNdc: echoes RXD-2.1 — the NDC the system expected.
+ * scannedNdc: what the device actually read from the bottle barcode.
+ * validationResult: MATCH / SUBSTITUTION / OVERRIDE / MISMATCH.
+ * scanSource: GS1 (2D DataMatrix) / NDC_LINEAR (UPC-A/GTIN) / MANUAL.
+ * validator: XCN — user_id^^first-name of the operator who performed the scan.
+ * validationTimestamp: yyyyMMddHHmmss — when the scan was accepted.
+ * matchStrength: EXACT (11-digit NDC) / GENERIC (GPI-equivalent) / NDC10 (10-digit fallback).
+ *   Required when validationResult is MATCH or SUBSTITUTION.
  */
 class ZSVSegment(raw: HL7Segment) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
-    val validationStatus: String get() = fieldValue(2)
-    val validationTimestamp: String get() = fieldValue(3)
-    val validatorId: String get() = fieldValue(4)
-    val rejectionReason: String get() = fieldValue(5)
-    val dispensedNdc: String get() = fieldValue(6)
-    val scannedNdc: String get() = fieldValue(7)
-    val scanSource: String get() = fieldValue(8)
-    val matchStrength: String get() = fieldValue(9)
+    val dispensedNdc: String get() = fieldValue(2)
+    val scannedNdc: String get() = fieldValue(3)
+    val validationResult: String get() = fieldValue(4)
+    val scanSource: String get() = fieldValue(5)
+    val validator: String get() = fieldValue(6)
+    val validationTimestamp: String get() = fieldValue(7)
+    val matchStrength: String get() = fieldValue(8)
 
     companion object {
         const val NAME = "ZSV"
@@ -76,5 +80,44 @@ class ZADSegment(raw: HL7Segment) : TypedSegment(raw) {
     companion object {
         const val NAME = "ZAD"
         val Definition = SegmentDefinition(NAME) { ZADSegment(it) }
+    }
+}
+
+/**
+ * ZNI — Eyecon Native Interface order packet (Computer → Eyecon, "CtoE").
+ * Source: Avery Weigh-Tronix GSE-02 "Eyecon Native Interface Protocol" (X25).
+ *
+ * Field map (minimum valid packet = fields 1-14; max = fields 1-15):
+ * `ZNI|mode|ndc|stockBottleBarcode|drugName|stockBottleVerification|userName|countType||packetVersion|patientName|fillerOrderNumber|substitutionStatus|dispenseAmount|prescriptionNumber|fillNumber`
+ * mode: B/b buffer, I/i immediate, C cycle count, Q query inventory.
+ * stockBottleVerification: A always / N never / U user-choice / blank defer to Eyecon setting.
+ * substitutionStatus: Y/N/A (default A).
+ * Field 8 is reserved for future use and always sent blank.
+ *
+ * Note: the EtoC result packet reuses the "ZNI" segment name with a different field map
+ * (fields 1-15 mirrored, result data starting at field 16) — direction must be
+ * determined from MSH-9 before assuming this order-packet shape applies.
+ */
+class ZNISegment(raw: HL7Segment) : TypedSegment(raw) {
+    val mode: String get() = fieldValue(1)
+    val ndc: String get() = fieldValue(2)
+    val stockBottleBarcode: String get() = fieldValue(3)
+    val drugName: String get() = fieldValue(4)
+    val stockBottleVerification: String get() = fieldValue(5)
+    val userName: String get() = fieldValue(6)
+    val countType: String get() = fieldValue(7)
+    // field 8 reserved for future use
+    val packetVersion: String get() = fieldValue(9)
+    val patientFamilyName: String get() = component(10, 1)
+    val patientGivenName: String get() = component(10, 2)
+    val fillerOrderNumber: String get() = fieldValue(11)
+    val substitutionStatus: String get() = fieldValue(12)
+    val dispenseAmount: String get() = fieldValue(13)
+    val prescriptionNumber: String get() = fieldValue(14)
+    val fillNumber: String get() = fieldValue(15)
+
+    companion object {
+        const val NAME = "ZNI"
+        val Definition = SegmentDefinition(NAME) { ZNISegment(it) }
     }
 }
