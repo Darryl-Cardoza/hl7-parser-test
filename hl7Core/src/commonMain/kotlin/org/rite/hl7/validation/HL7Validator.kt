@@ -3,7 +3,6 @@ package org.rite.hl7.validation
 import org.rite.hl7.model.HL7Message
 import org.rite.hl7.model.segment.QPDSegment
 import org.rite.hl7.model.segment.ZADSegment
-import org.rite.hl7.model.segment.ZSVSegment
 
 /**
  * Validates a parsed [HL7Message] against required-field, message-shape, and
@@ -14,7 +13,6 @@ import org.rite.hl7.model.segment.ZSVSegment
  *  - QBP^Q11: QPD-1 must equal the configured query name → else AR.
  *  - ZAD: adjustmentType and adjustmentReason must be recognized → else AR;
  *    a reason that requires a comment must have one → else AE.
- *  - ZSV: a rejected validation (VR) must carry a rejection reason → else AE.
  *
  * Construct with a [ValidationConfig] to override the site defaults.
  */
@@ -26,7 +24,6 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         validateHeader(message, issues)
         validateQuery(message, issues)
         validateAdjustments(message, issues)
-        validateStockValidation(message, issues)
 
         return ValidationResult(issues)
     }
@@ -86,15 +83,4 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         }
     }
 
-    private fun validateStockValidation(message: HL7Message, issues: MutableList<ValidationIssue>) {
-        for (zsv in message.segments<ZSVSegment>(ZSVSegment.NAME)) {
-            if (zsv.validationStatus == "VR" && zsv.rejectionReason.isBlank()) {
-                issues += ValidationIssue(
-                    AckSeverity.ERROR,
-                    "Rejected validation must carry a rejection reason",
-                    "ZSV", "5", "207",
-                )
-            }
-        }
-    }
 }

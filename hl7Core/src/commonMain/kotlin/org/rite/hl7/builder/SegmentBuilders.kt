@@ -273,18 +273,17 @@ class ZSNBuilder : HL7SegmentBuilder("ZSN") {
 
 class ZSVBuilder : HL7SegmentBuilder("ZSV") {
     var setId: String? = null
-    var validationStatus: String? = null
-    var validationTimestamp: String? = null
-    var validatorId: String? = null
-    var rejectionReason: String? = null
     var dispensedNdc: String? = null
     var scannedNdc: String? = null
+    var validationResult: String? = null
     var scanSource: String? = null
+    var validator: String? = null
+    var validationTimestamp: String? = null
     var matchStrength: String? = null
     override fun apply() {
-        set(1, setId); set(2, validationStatus); set(3, validationTimestamp)
-        set(4, validatorId); set(5, rejectionReason)
-        set(6, dispensedNdc); set(7, scannedNdc); set(8, scanSource); set(9, matchStrength)
+        set(1, setId); set(2, dispensedNdc); set(3, scannedNdc)
+        set(4, validationResult); set(5, scanSource); set(6, validator)
+        set(7, validationTimestamp); set(8, matchStrength)
     }
 }
 

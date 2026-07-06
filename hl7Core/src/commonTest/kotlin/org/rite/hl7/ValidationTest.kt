@@ -1,7 +1,6 @@
 package org.rite.hl7
 
 import org.rite.hl7.model.segment.ZADSegment
-import org.rite.hl7.model.segment.ZSVSegment
 import org.rite.hl7.parser.HL7Parser
 import org.rite.hl7.validation.AckSeverity
 import org.rite.hl7.validation.HL7Validator
@@ -13,7 +12,6 @@ class ValidationTest {
 
     private fun parser() = HL7Parser.Builder()
         .registerCustomSegment(ZADSegment.Definition)
-        .registerCustomSegment(ZSVSegment.Definition)
         .build()
 
     private fun parse(raw: String) =
@@ -51,16 +49,6 @@ class ValidationTest {
         val result = HL7Validator().validate(msg)
         assertEquals(AckSeverity.REJECT, result.worst)
         assertTrue(result.issues.any { it.errorText == "Unsupported query" })
-    }
-
-    @Test
-    fun rejectedValidationWithoutReasonIsError() {
-        val msg = parse(
-            "MSH|^~\\&|A|B|C|D|20260101||RDS^O13|1|P|2.5\r" +
-                "ZSV|1|VR|20260101|JD"
-        )
-        val result = HL7Validator().validate(msg)
-        assertEquals(AckSeverity.ERROR, result.worst)
     }
 
     @Test
