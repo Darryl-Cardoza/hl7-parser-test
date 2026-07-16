@@ -176,19 +176,20 @@ class EQUBuilder : HL7SegmentBuilder("EQU") {
     }
 }
 
+/** Field positions per HL7 v2.5.1 standard INV layout (see [org.rite.hl7.model.segment.INVSegment]). */
 class INVBuilder : HL7SegmentBuilder("INV") {
-    var setId: String? = null
-    var substanceCode: String? = null                 // NDC (INV-2.1)
-    var substanceName: String? = null                 // INV-2.2
-    var substanceCodeSystem: String? = null           // INV-2.3
-    var lotNumber: String? = null
-    var expirationDate: String? = null
-    var inventoryOnHandQuantity: String? = null
-    var units: String? = null
+    var substanceCode: String? = null                 // NDC (INV-1.1)
+    var substanceName: String? = null                 // INV-1.2
+    var substanceCodeSystem: String? = null           // INV-1.3
+    var lotNumber: String? = null                      // INV-16
+    var expirationDate: String? = null                // INV-12
+    var inventoryOnHandQuantity: String? = null        // INV-8 (Current Quantity)
+    var units: String? = null                          // INV-11 (Quantity Units)
     override fun apply() {
-        set(1, setId)
-        set(2, 1, substanceCode); set(2, 2, substanceName); set(2, 3, substanceCodeSystem)
-        set(3, lotNumber); set(4, expirationDate); set(5, inventoryOnHandQuantity); set(6, units)
+        set(1, 1, substanceCode); set(1, 2, substanceName); set(1, 3, substanceCodeSystem)
+        set(8, inventoryOnHandQuantity); set(11, units)
+        set(12, expirationDate)
+        set(16, lotNumber)
     }
 }
 
@@ -300,6 +301,82 @@ class ZADBuilder : HL7SegmentBuilder("ZAD") {
         set(4, adjustmentReason); set(5, adjustmentDateTime); set(6, approvedBy)
         set(7, comment)
     }
+}
+
+/** ZUI order-data-packet builder (RDE^O11, PMSS → VIVID). */
+class ZUIOrderBuilder : HL7SegmentBuilder("ZUI") {
+    var ndc: String? = null
+    var drugName: String? = null
+    var patientFamilyName: String? = null
+    var patientGivenName: String? = null
+    var transactionOrderId: String? = null
+    var dispenseQuantity: String? = null
+    var rxNumber: String? = null
+    var fillNumber: String? = null
+    override fun apply() {
+        set(1, ndc); set(2, drugName)
+        set(3, 1, patientFamilyName); set(3, 2, patientGivenName)
+        set(4, transactionOrderId); set(5, dispenseQuantity)
+        set(6, rxNumber); set(7, fillNumber)
+    }
+}
+
+/** ZUI pharmacy-dispense-message builder (RDS, VIVID → PMSS). */
+class ZUIDispenseBuilder : HL7SegmentBuilder("ZUI") {
+    var ndc: String? = null
+    var vividUserName: String? = null
+    var transactionOrderId: String? = null
+    var rxNumber: String? = null
+    var fillNumber: String? = null
+    var dispensedQuantity: String? = null
+    var transactionStatus: String? = null
+    var drugImage: String? = null
+    var drugLotNumber: String? = null
+    var drugSerialNumber: String? = null
+    var drugExpirationDate: String? = null
+    override fun apply() {
+        set(1, ndc); set(2, vividUserName); set(3, transactionOrderId)
+        set(4, rxNumber); set(5, fillNumber); set(6, dispensedQuantity)
+        set(7, transactionStatus); set(8, drugImage); set(9, drugLotNumber)
+        set(10, drugSerialNumber); set(11, drugExpirationDate)
+    }
+}
+
+/** ZNI Eyecon-to-Computer dispense result builder (fields 1-15 mirrored, result data from field 16). */
+class ZNIBuilder : HL7SegmentBuilder("ZNI") {
+    var mode: String? = null
+    var ndc: String? = null
+    var stockBottleBarcode: String? = null
+    var drugName: String? = null
+    var stockBottleVerification: String? = null
+    var userName: String? = null
+    var countType: String? = null
+    var packetVersion: String? = null
+    var patientFamilyName: String? = null
+    var patientGivenName: String? = null
+    var fillerOrderNumber: String? = null
+    var substitutionStatus: String? = null
+    var dispenseAmount: String? = null
+    var prescriptionNumber: String? = null
+    var fillNumber: String? = null
+    var resultStatus: String? = null
+    override fun apply() {
+        set(1, mode); set(2, ndc); set(3, stockBottleBarcode); set(4, drugName)
+        set(5, stockBottleVerification); set(6, userName); set(7, countType)
+        set(9, packetVersion)
+        set(10, 1, patientFamilyName); set(10, 2, patientGivenName)
+        set(11, fillerOrderNumber); set(12, substitutionStatus)
+        set(13, dispenseAmount); set(14, prescriptionNumber); set(15, fillNumber)
+        set(16, resultStatus)
+    }
+}
+
+/** ZUI dispense-message transaction status values (Pharmacy Dispense Message field 8). */
+object ZuiTransactionStatus {
+    const val DONE = "Done"
+    const val CANCELLED = "Cancelled"
+    const val PARTIAL = "Partial"
+    const val OVERFILL = "Overfill"
 }
 
 /** ZAD-4 default reason codes (configurable per site; open string, not a hard enum). */

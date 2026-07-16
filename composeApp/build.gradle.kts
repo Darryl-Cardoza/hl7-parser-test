@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -15,6 +16,8 @@ kotlin {
         }
     }
     
+    val xcf = XCFramework("ComposeApp")
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -32,6 +35,8 @@ kotlin {
                 "-fstack-protector-all",
                 "-fobjc-arc"
             )
+
+            xcf.add(this)
         }
     }
     

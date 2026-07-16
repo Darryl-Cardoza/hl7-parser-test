@@ -133,7 +133,7 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
                 it.messageControlId = controlId
             }
             inv {
-                it.setId = "1"
+//                it.setId = "1"
                 it.substanceCode = ndc
                 it.substanceName = substanceName
                 it.substanceCodeSystem = "NDC"
