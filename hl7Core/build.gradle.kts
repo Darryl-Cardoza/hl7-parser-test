@@ -1,8 +1,10 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Locale
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.kotlinxSerialization)
     id("com.chromaticnoise.multiplatform-swiftpackage") version "2.0.3"
 }
 
@@ -25,6 +27,9 @@ kotlin {
     }
 
     sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlinx.serialization.json)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -154,4 +159,65 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+}
+
+// Embeds hl7Core/specSource/**/*.json as Kotlin string constants at build time.
+// Real resource bundles don't survive this module's static xcframework + lipo
+// merge (no working mechanism without the Compose resources plugin), so spec
+// JSON is compiled directly into the binary instead.
+val specSourceDir = layout.projectDirectory.dir("specSource")
+val generatedSpecsDir = layout.buildDirectory.dir("generated/specs/commonMain/kotlin")
+
+val generateSpecConstants = tasks.register("generateSpecConstants") {
+    inputs.dir(specSourceDir)
+    val outputDir = generatedSpecsDir
+    outputs.dir(outputDir)
+
+    doLast {
+        val outDir = outputDir.get().asFile
+        outDir.deleteRecursively()
+        val pkgDir = File(outDir, "org/rite/hl7/spec")
+        pkgDir.mkdirs()
+
+        val entries = specSourceDir.asFile.walkTopDown()
+            .filter { it.isFile && it.extension == "json" }
+            .sortedBy { it.path }
+            .map { file ->
+                val relative = file.relativeTo(specSourceDir.asFile).invariantSeparatorsPath
+                val key = relative.removeSuffix(".json")
+                val escaped = file.readText()
+                    .replace("\\", "\\\\")
+                    .replace("$", "\${'$'}")
+                    .replace("\"\"\"", "\\\"\\\"\\\"")
+                key to escaped
+            }
+            .toList()
+
+        val body = buildString {
+            appendLine("package org.rite.hl7.spec")
+            appendLine()
+            appendLine("// GENERATED FILE. Do not edit by hand — edit hl7Core/specSource/**/*.json instead.")
+            appendLine("internal object GeneratedSpecs {")
+            appendLine("    val jsonByKey: Map<String, String> = mapOf(")
+            for ((key, json) in entries) {
+                appendLine("        \"$key\" to \"\"\"$json\"\"\",")
+            }
+            appendLine("    )")
+            appendLine("}")
+        }
+
+        File(pkgDir, "GeneratedSpecs.kt").writeText(body)
+    }
+}
+
+kotlin {
+    sourceSets {
+        commonMain {
+            kotlin.srcDir(generateSpecConstants.map { generatedSpecsDir.get() })
+        }
+    }
+}
+
+tasks.matching { it.name.startsWith("compileKotlin") || it.name.startsWith("compile") }.configureEach {
+    dependsOn(generateSpecConstants)
 }

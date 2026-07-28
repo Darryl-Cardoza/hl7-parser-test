@@ -19,36 +19,27 @@ class EQUSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /**
- * INV — Inventory Detail (HL7 v2.5.1 §Clinical Laboratory Automation).
+ * INV — Inventory Detail (project-specific compact layout used for the
+ * warehouse/PMS inventory sync). Wire example:
+ * `INV|1|00069015505^Drug Name^NDC|LOT-A|20251201|150|EA`
  *
- * This PMS sends a compressed variant of the standard field layout — it
- * does not populate the standard INV-7..INV-11 quantity/units fields.
- * Actual wire example:
- * `INV|0527-3161-32^Olanzapine^NDC|||320B`
- *
- * Field map (standard positions, values as actually sent by this PMS):
- * - INV-1 Substance Identifier (CE) — NDC^name^codingSystem
- * - INV-2 Substance Status — required by spec, left empty by this PMS
- * - INV-3 Substance Type — left empty by this PMS
- * - INV-4 Inventory Container Identifier — repurposed by this PMS to carry a
- *   merged quantity+unit token (e.g. "320B" = quantity 320, unit "B")
- *   instead of a container id, since INV-7..INV-11 aren't populated.
+ * Field map:
+ * - INV-1 Set ID
+ * - INV-2 Substance Identifier (CE) — NDC^name^codingSystem
+ * - INV-3 Lot Number
+ * - INV-4 Expiration Date
+ * - INV-5 On-Hand Quantity
+ * - INV-6 Quantity Units
  */
 class INVSegment(raw: HL7Segment) : TypedSegment(raw) {
-    val substanceCode: String get() = component(1, 1)  // NDC (INV-1.1)
-    val substanceName: String get() = component(1, 2)
-    val substanceCodeSystem: String get() = component(1, 3)
-    val lotNumber: String get() = fieldValue(16)        // Manufacturer Lot Number (INV-16)
-    val expirationDate: String get() = fieldValue(12)   // Expiration Date/Time (INV-12)
-
-    /** Raw merged quantity+unit token this PMS sends in INV-4, e.g. "320B". */
-    private val quantityUnitToken: String get() = fieldValue(4)
-
-    val inventoryOnHandQuantity: String
-        get() = quantityUnitToken.takeWhile { it.isDigit() }
-
-    val units: String
-        get() = quantityUnitToken.dropWhile { it.isDigit() }
+    val setId: String get() = fieldValue(1)
+    val substanceCode: String get() = component(2, 1)
+    val substanceName: String get() = component(2, 2)
+    val substanceCodeSystem: String get() = component(2, 3)
+    val lotNumber: String get() = fieldValue(3)
+    val expirationDate: String get() = fieldValue(4)
+    val inventoryOnHandQuantity: String get() = fieldValue(5)
+    val units: String get() = fieldValue(6)
 
     companion object {
         const val NAME = "INV"

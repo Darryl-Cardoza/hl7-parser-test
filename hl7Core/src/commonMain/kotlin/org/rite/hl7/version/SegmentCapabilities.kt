@@ -2,7 +2,6 @@ package org.rite.hl7.version
 
 /**
  * Single registry of the maximum field count a segment carries per HL7 version.
- * Replaces the old per-segment `*VersionCapabilities` objects.
  *
  * Used on the BUILD side to trim trailing fields beyond the version cap, and
  * available on the PARSE side for version-aware validation. Unknown segments
