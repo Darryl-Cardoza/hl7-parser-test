@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -15,6 +16,8 @@ kotlin {
         }
     }
     
+    val xcf = XCFramework("ComposeApp")
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -22,6 +25,18 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+
+            // Stack canary: emit __stack_chk_guard/__stack_chk_fail in every function
+            binaryOption("stackProtector", "all")
+
+            // Forward hardening + ARC flags to the native linker so the resulting
+            // Mach-O binary carries the expected markers for security scanners.
+            linkerOpts += listOf(
+                "-fstack-protector-all",
+                "-fobjc-arc"
+            )
+
+            xcf.add(this)
         }
     }
     
