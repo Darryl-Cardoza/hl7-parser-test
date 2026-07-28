@@ -42,8 +42,8 @@ class RXDSegment(raw: HL7Segment) : TypedSegment(raw) {
     val actualDosageFormCode: String get() = component(6, 1)
     val prescriptionNumber: String get() = fieldValue(7)
     val dispensingProviderId: String get() = component(10, 1)
-    val dispensingProviderFamilyName: String get() = component(10, 2)
-    val dispensingProviderGivenName: String get() = component(10, 3)
+
+
     val substitutionStatus: String get() = fieldValue(11)
     val lotNumber: String get() = fieldValue(15)
     val expirationDate: String get() = fieldValue(16)

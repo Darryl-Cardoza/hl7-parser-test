@@ -123,13 +123,16 @@ class RXDBuilder : HL7SegmentBuilder("RXD") {
     var actualDispenseUnits: String? = null
     var prescriptionNumber: String? = null
     var dispensingProviderId: String? = null
+    var dispensingProviderFamilyName: String? = null
+    var dispensingProviderGivenName: String? = null
     var lotNumber: String? = null
     var expirationDate: String? = null
     override fun apply() {
         set(1, dispenseSubIdCounter)
         set(2, 1, dispenseGiveCode); set(2, 2, dispenseGiveName); set(2, 3, dispenseGiveCodeSystem)
         set(3, dateTimeDispensed); set(4, actualDispenseAmount); set(5, 1, actualDispenseUnits)
-        set(7, prescriptionNumber); set(10, 1, dispensingProviderId)
+        set(7, prescriptionNumber)
+        set(10, 1, dispensingProviderId); set(10, 2, dispensingProviderFamilyName); set(10, 3, dispensingProviderGivenName)
         set(15, lotNumber); set(16, expirationDate)
     }
 }
@@ -176,20 +179,21 @@ class EQUBuilder : HL7SegmentBuilder("EQU") {
     }
 }
 
-/** Field positions per HL7 v2.5.1 standard INV layout (see [org.rite.hl7.model.segment.INVSegment]). */
+/** Field positions per [org.rite.hl7.model.segment.INVSegment]'s project-specific compact layout. */
 class INVBuilder : HL7SegmentBuilder("INV") {
-    var substanceCode: String? = null                 // NDC (INV-1.1)
-    var substanceName: String? = null                 // INV-1.2
-    var substanceCodeSystem: String? = null           // INV-1.3
-    var lotNumber: String? = null                      // INV-16
-    var expirationDate: String? = null                // INV-12
-    var inventoryOnHandQuantity: String? = null        // INV-8 (Current Quantity)
-    var units: String? = null                          // INV-11 (Quantity Units)
+    var setId: String? = null                          // INV-1
+    var substanceCode: String? = null                   // NDC (INV-2.1)
+    var substanceName: String? = null                   // INV-2.2
+    var substanceCodeSystem: String? = null             // INV-2.3
+    var lotNumber: String? = null                       // INV-3
+    var expirationDate: String? = null                  // INV-4
+    var inventoryOnHandQuantity: String? = null         // INV-5
+    var units: String? = null                           // INV-6
     override fun apply() {
-        set(1, 1, substanceCode); set(1, 2, substanceName); set(1, 3, substanceCodeSystem)
-        set(8, inventoryOnHandQuantity); set(11, units)
-        set(12, expirationDate)
-        set(16, lotNumber)
+        set(1, setId)
+        set(2, 1, substanceCode); set(2, 2, substanceName); set(2, 3, substanceCodeSystem)
+        set(3, lotNumber); set(4, expirationDate)
+        set(5, inventoryOnHandQuantity); set(6, units)
     }
 }
 
