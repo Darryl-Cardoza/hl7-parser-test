@@ -13,6 +13,12 @@ data class ValidationConfig(
     val expectedQueryName: String = DEFAULT_QUERY_NAME,
     /** Adjustment reasons that require a non-empty comment (currently none in the user layout). */
     val commentRequiredReasons: Set<String> = emptySet(),
+    /** ORC-1 order control codes the PMS recognizes for dispense orders. */
+    val knownOrderControlCodes: Set<String> = DEFAULT_ORDER_CONTROL_CODES,
+    /** ZPR-3 priority values the PMS recognizes (matched case-insensitively). */
+    val knownPriorities: Set<String> = DEFAULT_PRIORITIES,
+    /** Maximum accepted whole-pill dispense/adjustment quantity. */
+    val maxQuantity: Int = DEFAULT_MAX_QUANTITY,
 ) {
     companion object {
         val DEFAULT_ADJUSTMENT_REASONS = setOf(
@@ -22,6 +28,9 @@ data class ValidationConfig(
         )
         val DEFAULT_ADJUSTMENT_TYPES = setOf("LOSS", "GAIN", "ADD", "SUBTRACT", "OVERWRITE", "+", "-", "O")
         const val DEFAULT_QUERY_NAME = "IHE PCC StockOnHandQuery"
+        val DEFAULT_ORDER_CONTROL_CODES = setOf("NW", "XO", "CA")
+        val DEFAULT_PRIORITIES = setOf("HIGH", "ROUTINE")
+        const val DEFAULT_MAX_QUANTITY = 9999
 
         val DEFAULT = ValidationConfig()
     }

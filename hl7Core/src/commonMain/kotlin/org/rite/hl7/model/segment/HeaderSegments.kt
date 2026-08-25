@@ -15,8 +15,16 @@ class MSHSegment(raw: HL7Segment) : TypedSegment(raw) {
     val dateTimeOfMessage: String get() = fieldValue(7)
     val security: String get() = fieldValue(8)
     val messageType: String get() = fieldValue(9)            // full MSH-9, e.g. "RDS^O13"
-    val messageCode: String get() = component(9, 1)          // MSH-9.1, e.g. "RDS"
-    val triggerEvent: String get() = component(9, 2)         // MSH-9.2, e.g. "O13"
+
+    // Some PMS integrations send MSH-9 as a plain space-separated pair
+    // ("RDS O13") instead of the standard "^"-componentized form. Fall back
+    // to splitting on whitespace only when there's no real MSH-9.2.
+    private val spaceSeparatedMessageType: List<String>?
+        get() = component(9, 1).takeIf { component(9, 2).isBlank() && it.contains(' ') }
+            ?.trim()?.split(Regex("\\s+"))?.takeIf { it.size == 2 }
+
+    val messageCode: String get() = spaceSeparatedMessageType?.get(0) ?: component(9, 1)          // MSH-9.1, e.g. "RDS"
+    val triggerEvent: String get() = spaceSeparatedMessageType?.get(1) ?: component(9, 2)         // MSH-9.2, e.g. "O13"
     val messageControlId: String get() = fieldValue(10)
     val processingId: String get() = fieldValue(11)
     val versionId: String get() = fieldValue(12)
