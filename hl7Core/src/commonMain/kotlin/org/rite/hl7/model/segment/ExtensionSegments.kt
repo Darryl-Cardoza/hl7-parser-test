@@ -31,6 +31,54 @@ class ZSNSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /**
+ * ZCC — Device Inventory Row with GS1 (24-field vendor cycle-count payload,
+ * e.g. Parata robot). Flattens what the [INVSegment]/[OBXSegment] device-sync
+ * pair split across multiple segments into one row per drug. New extension.
+ *
+ * Field map (project-authoritative):
+ * `ZCC|ndcCode|drugName|drugType|manufacturer|manufacturerCode|gtin|cellLocation|totalQuantity|sealedCount|sealedContainers|openCount|openContainers|lotNumber|serialNumber|expirationDate|manufacturingDate|unitOfMeasure|packageSize|reorderLevel|stockStatus|imagePaths|countStatus|operatorName|notes`
+ * drugType: TABLET / CAPSULE / LIQUID / INJECTION.
+ * unitOfMeasure: CE — code^text^codingSystem (e.g. "TAB^Tablets^UCUM").
+ * stockStatus: OK / LOW / CRITICAL / EMPTY.
+ * imagePaths: `~`-repeated (standard HL7 repetition separator) — see [imagePaths].
+ * countStatus: COMPLETE / IN_PROGRESS / EMPTY.
+ */
+class ZCCSegment(raw: HL7Segment) : TypedSegment(raw) {
+    val ndcCode: String get() = fieldValue(1)
+    val drugName: String get() = fieldValue(2)
+    val drugType: String get() = fieldValue(3)
+    val manufacturer: String get() = fieldValue(4)
+    val manufacturerCode: String get() = fieldValue(5)
+    val gtin: String get() = fieldValue(6)
+    val cellLocation: String get() = fieldValue(7)
+    val totalQuantity: String get() = fieldValue(8)
+    val sealedCount: String get() = fieldValue(9)
+    val sealedContainers: String get() = fieldValue(10)
+    val openCount: String get() = fieldValue(11)
+    val openContainers: String get() = fieldValue(12)
+    val lotNumber: String get() = fieldValue(13)
+    val serialNumber: String get() = fieldValue(14)
+    val expirationDate: String get() = fieldValue(15)
+    val manufacturingDate: String get() = fieldValue(16)
+    val unitOfMeasureCode: String get() = component(17, 1)
+    val unitOfMeasureText: String get() = component(17, 2)
+    val unitOfMeasureCodeSystem: String get() = component(17, 3)
+    val packageSize: String get() = fieldValue(18)
+    val reorderLevel: String get() = fieldValue(19)
+    val stockStatus: String get() = fieldValue(20)
+    val imagePaths: List<String> get() = repetitions(21)
+    val countStatus: String get() = fieldValue(22)
+    val operatorName: String get() = fieldValue(23)
+    val notes: String get() = fieldValue(24)
+
+    companion object {
+        const val NAME = "ZCC"
+        /** Register on parser/builder via `registerCustomSegment(ZCCSegment.Definition)`. */
+        val Definition = SegmentDefinition(NAME) { ZCCSegment(it) }
+    }
+}
+
+/**
  * ZSV — Stock-bottle Validation segment. New §13 extension.
  *
  * Field map (project-authoritative):

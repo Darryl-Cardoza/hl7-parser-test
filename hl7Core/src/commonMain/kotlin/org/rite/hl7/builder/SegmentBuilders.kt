@@ -161,12 +161,14 @@ class OBXBuilder : HL7SegmentBuilder("OBX") {
     var valueType: String? = null
     var observationId: String? = null
     var observationText: String? = null
+    /** OBX-4 — Observation Sub-ID. Set to a parent INV row's Set-ID (INV-1) to link this OBX to that bottle; leave null for message-level OBX rows (e.g. OPERATOR_ID/OPERATOR_NAME). */
+    var subId: String? = null
     var observationValue: String? = null
     var units: String? = null
     var resultStatus: String? = null
     override fun apply() {
         set(1, setId); set(2, valueType); set(3, 1, observationId); set(3, 2, observationText)
-        set(5, observationValue); set(6, 1, units); set(11, resultStatus)
+        set(4, subId); set(5, observationValue); set(6, 1, units); set(11, resultStatus)
     }
 }
 
@@ -194,6 +196,86 @@ class INVBuilder : HL7SegmentBuilder("INV") {
         set(2, 1, substanceCode); set(2, 2, substanceName); set(2, 3, substanceCodeSystem)
         set(3, lotNumber); set(4, expirationDate)
         set(5, inventoryOnHandQuantity); set(6, units)
+    }
+}
+
+/**
+ * INV — Device Inventory Sync row (vendor cycle-count payload, e.g. Parata
+ * robot INU^U05). Distinct field layout from [INVBuilder]'s project-compact
+ * INV; both share the wire segment name "INV" — see [org.rite.hl7.model.segment.INVSegment]
+ * for how readers tell the two apart.
+ */
+class DeviceINVBuilder : HL7SegmentBuilder("INV") {
+    var itemCode: String? = null                        // INV-1.1
+    var itemName: String? = null                         // INV-1.2
+    var statusCode: String? = null                        // INV-2.1
+    var statusText: String? = null                        // INV-2.2
+    var typeCode: String? = null                          // INV-3.1
+    var typeText: String? = null                          // INV-3.2
+    var locationCode: String? = null                      // INV-4.1
+    var locationText: String? = null                      // INV-4.2
+    var quantityOnHand: String? = null                   // INV-7
+    var quantityAvailable: String? = null                // INV-8
+    var quantityExpected: String? = null                 // INV-9
+    var packageSize: String? = null                      // INV-10
+    var unitsCode: String? = null                         // INV-11.1
+    var unitsText: String? = null                         // INV-11.2
+    var expirationDate: String? = null                   // INV-12
+    var lotNumber: String? = null                         // INV-15
+    override fun apply() {
+        set(1, 1, itemCode); set(1, 2, itemName)
+        set(2, 1, statusCode); set(2, 2, statusText)
+        set(3, 1, typeCode); set(3, 2, typeText)
+        set(4, 1, locationCode); set(4, 2, locationText)
+        set(7, quantityOnHand); set(8, quantityAvailable); set(9, quantityExpected)
+        set(10, packageSize)
+        set(11, 1, unitsCode); set(11, 2, unitsText)
+        set(12, expirationDate)
+        set(15, lotNumber)
+    }
+}
+
+/**
+ * INV — Inventory Count Result row (standard-first redesign, INU^U05 count
+ * response per `plan/inu-u05-field-spec.md`). Distinct field layout from
+ * [DeviceINVBuilder] (Parata-style, no leading Set-ID) and [INVBuilder]
+ * (project-compact) — all three share the wire segment name "INV"; see
+ * [org.rite.hl7.model.segment.INVSegment] for how readers tell them apart.
+ *
+ * Wire example:
+ * `INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384||||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123`
+ */
+class InventoryCountINVBuilder : HL7SegmentBuilder("INV") {
+    var setId: String? = null                            // INV-1
+    var itemCode: String? = null                          // INV-2.1 (NDC)
+    var itemName: String? = null                          // INV-2.2
+    var codingSystem: String? = "L"                       // INV-2.3
+    var serialNumber: String? = null                      // INV-2.4 — distinguishes otherwise-identical bottles
+    var gtin: String? = null                              // INV-2.5
+    var statusCode: String? = "A"                         // INV-3.1
+    var statusText: String? = "Active"                    // INV-3.2
+    var statusTable: String? = "HL70383"                  // INV-3.3
+    var typeCode: String? = "DRUG"                        // INV-4.1
+    var typeText: String? = "Drug"                        // INV-4.2
+    var typeTable: String? = "HL70384"                    // INV-4.3
+    var quantityOnHand: String? = null                   // INV-7 — sealed + open combined
+    var quantityAvailable: String? = null                // INV-8
+    var quantityExpected: String? = null                 // INV-9
+    var unitsCode: String? = null                         // INV-10.1
+    var unitsText: String? = null                         // INV-10.2
+    var unitsCodeSystem: String? = null                   // INV-10.3
+    var expirationDate: String? = null                   // INV-12
+    var lotNumber: String? = null                         // INV-15
+    override fun apply() {
+        set(1, setId)
+        set(2, 1, itemCode); set(2, 2, itemName); set(2, 3, codingSystem)
+        set(2, 4, serialNumber); set(2, 5, gtin)
+        set(3, 1, statusCode); set(3, 2, statusText); set(3, 3, statusTable)
+        set(4, 1, typeCode); set(4, 2, typeText); set(4, 3, typeTable)
+        set(7, quantityOnHand); set(8, quantityAvailable); set(9, quantityExpected)
+        set(10, 1, unitsCode); set(10, 2, unitsText); set(10, 3, unitsCodeSystem)
+        set(12, expirationDate)
+        set(15, lotNumber)
     }
 }
 
@@ -258,6 +340,48 @@ class QAKBuilder : HL7SegmentBuilder("QAK") {
 }
 
 // --- New extension Z-segment builders ---
+
+/** Field positions per [org.rite.hl7.model.segment.ZCCSegment] — 24-field device inventory row with GS1. */
+class ZCCBuilder : HL7SegmentBuilder("ZCC") {
+    var ndcCode: String? = null
+    var drugName: String? = null
+    var drugType: String? = null
+    var manufacturer: String? = null
+    var manufacturerCode: String? = null
+    var gtin: String? = null
+    var cellLocation: String? = null
+    var totalQuantity: String? = null
+    var sealedCount: String? = null
+    var sealedContainers: String? = null
+    var openCount: String? = null
+    var openContainers: String? = null
+    var lotNumber: String? = null
+    var serialNumber: String? = null
+    var expirationDate: String? = null
+    var manufacturingDate: String? = null
+    var unitOfMeasureCode: String? = null
+    var unitOfMeasureText: String? = null
+    var unitOfMeasureCodeSystem: String? = null
+    var packageSize: String? = null
+    var reorderLevel: String? = null
+    var stockStatus: String? = null
+    var imagePaths: List<String>? = null
+    var countStatus: String? = null
+    var operatorName: String? = null
+    var notes: String? = null
+    override fun apply() {
+        set(1, ndcCode); set(2, drugName); set(3, drugType)
+        set(4, manufacturer); set(5, manufacturerCode); set(6, gtin); set(7, cellLocation)
+        set(8, totalQuantity); set(9, sealedCount); set(10, sealedContainers)
+        set(11, openCount); set(12, openContainers)
+        set(13, lotNumber); set(14, serialNumber)
+        set(15, expirationDate); set(16, manufacturingDate)
+        set(17, 1, unitOfMeasureCode); set(17, 2, unitOfMeasureText); set(17, 3, unitOfMeasureCodeSystem)
+        set(18, packageSize); set(19, reorderLevel); set(20, stockStatus)
+        setRepeated(21, imagePaths)
+        set(22, countStatus); set(23, operatorName); set(24, notes)
+    }
+}
 
 class ZSNBuilder : HL7SegmentBuilder("ZSN") {
     var setId: String? = null

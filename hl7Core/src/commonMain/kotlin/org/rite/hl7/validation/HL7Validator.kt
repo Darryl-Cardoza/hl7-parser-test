@@ -10,6 +10,7 @@ import org.rite.hl7.model.segment.QPDSegment
 import org.rite.hl7.model.segment.RXESegment
 import org.rite.hl7.model.segment.ZADSegment
 import org.rite.hl7.model.segment.ZINSegment
+import org.rite.hl7.model.segment.ZCCSegment
 import org.rite.hl7.model.segment.ZNISegment
 import org.rite.hl7.model.segment.ZPRSegment
 import org.rite.hl7.model.segment.ZUISegment
@@ -312,28 +313,81 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         if (message.kind != HL7MessageKind.INVENTORY_RESPONSE && message.kind != HL7MessageKind.INVENTORY_UPDATE) return
 
         val invSegments = message.segments<INVSegment>(INVSegment.NAME)
-        if (invSegments.isEmpty()) {
+        // ZCC flattens the INV/OBX device-sync pair into one row — its own presence satisfies this.
+        if (invSegments.isEmpty() && message.segmentNamed(ZCCSegment.NAME) == null) {
             issues += ValidationIssue(AckSeverity.REJECT, "Missing INV segment", "INV", "0", "410")
-        } else {
+        } else if (invSegments.isNotEmpty()) {
             invSegments.forEachIndexed { index, inv ->
                 val position = index + 1
-                when {
-                    inv.substanceCode.isBlank() -> issues += ValidationIssue(
-                        AckSeverity.REJECT, "Missing NDC in INV $position", "INV", "2", "411",
-                    )
-                    !isValidNdc(inv.substanceCode) -> issues += ValidationIssue(
-                        AckSeverity.REJECT, "Invalid NDC in INV $position", "INV", "2", "411",
-                    )
+                if (inv.fieldCount > INVSegment.DEVICE_SYNC_FIELD_THRESHOLD) {
+                    when {
+                        inv.deviceItemCode.isBlank() -> issues += ValidationIssue(
+                            AckSeverity.REJECT, "Missing NDC in INV $position", "INV", "1", "411",
+                        )
+                        !isValidNdc(inv.deviceItemCode) -> issues += ValidationIssue(
+                            AckSeverity.REJECT, "Invalid NDC in INV $position", "INV", "1", "411",
+                        )
+                    }
+                    val qty = inv.deviceQuantityOnHand
+                    if (qty.isNotBlank() && (qty.toDoubleOrNull() == null || qty.toDouble() < 0)) {
+                        issues += ValidationIssue(
+                            AckSeverity.REJECT, "Invalid quantity in INV $position", "INV", "7", "412",
+                        )
+                    }
+                } else {
+                    when {
+                        inv.substanceCode.isBlank() -> issues += ValidationIssue(
+                            AckSeverity.REJECT, "Missing NDC in INV $position", "INV", "2", "411",
+                        )
+                        !isValidNdc(inv.substanceCode) -> issues += ValidationIssue(
+                            AckSeverity.REJECT, "Invalid NDC in INV $position", "INV", "2", "411",
+                        )
+                    }
+                    val qty = inv.inventoryOnHandQuantity
+                    when {
+                        qty.isBlank() -> issues += ValidationIssue(
+                            AckSeverity.REJECT, "Missing quantity in INV $position", "INV", "5", "412",
+                        )
+                        qty.toDoubleOrNull() == null || qty.toDouble() < 0 -> issues += ValidationIssue(
+                            AckSeverity.REJECT, "Invalid quantity in INV $position", "INV", "5", "412",
+                        )
+                    }
                 }
-                val qty = inv.inventoryOnHandQuantity
-                when {
-                    qty.isBlank() -> issues += ValidationIssue(
-                        AckSeverity.REJECT, "Missing quantity in INV $position", "INV", "5", "412",
-                    )
-                    qty.toDoubleOrNull() == null || qty.toDouble() < 0 -> issues += ValidationIssue(
-                        AckSeverity.REJECT, "Invalid quantity in INV $position", "INV", "5", "412",
-                    )
-                }
+            }
+        }
+
+        message.segments<OBXSegment>(OBXSegment.NAME).forEachIndexed { index, obx ->
+            val position = index + 1
+            if (obx.observationId.isBlank()) {
+                issues += ValidationIssue(
+                    AckSeverity.REJECT, "Missing observation id in OBX $position", "OBX", "3", "413",
+                )
+            }
+            val value = obx.observationValue
+            if (obx.valueType.equals("NM", ignoreCase = true) &&
+                value.isNotBlank() && (value.toDoubleOrNull() == null || value.toDouble() < 0)
+            ) {
+                issues += ValidationIssue(
+                    AckSeverity.REJECT, "Invalid quantity in OBX $position", "OBX", "5", "414",
+                )
+            }
+        }
+
+        message.segments<ZCCSegment>(ZCCSegment.NAME).forEachIndexed { index, zcc ->
+            val position = index + 1
+            when {
+                zcc.ndcCode.isBlank() -> issues += ValidationIssue(
+                    AckSeverity.REJECT, "Missing NDC in ZCC $position", "ZCC", "1", "415",
+                )
+                !isValidNdc(zcc.ndcCode) -> issues += ValidationIssue(
+                    AckSeverity.REJECT, "Invalid NDC in ZCC $position", "ZCC", "1", "415",
+                )
+            }
+            val qty = zcc.totalQuantity
+            if (qty.isNotBlank() && (qty.toDoubleOrNull() == null || qty.toDouble() < 0)) {
+                issues += ValidationIssue(
+                    AckSeverity.REJECT, "Invalid quantity in ZCC $position", "ZCC", "8", "416",
+                )
             }
         }
 
@@ -385,7 +439,9 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
     }
 
     companion object {
-        private val DISPENSE_TRIGGERS = setOf("O11", "O01")
+        // "001" is a known device quirk (e.g. VIVID) sending a zero instead of
+        // the standard letter-O trigger for RDE^O01.
+        private val DISPENSE_TRIGGERS = setOf("O11", "O01", "001")
         private const val INVENTORY_TRIGGER = "U06"
 
         // 11-digit NDC (project convention, no hyphens) or the standard

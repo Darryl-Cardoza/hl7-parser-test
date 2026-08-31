@@ -18,6 +18,9 @@ abstract class HL7SegmentBuilder(val name: String) {
     // (fieldIndex, componentIndex) -> value, all 1-based.
     private val cells: MutableMap<Int, MutableMap<Int, String>> = mutableMapOf()
 
+    // fieldIndex -> repetition values (component 1 each), for `~`-repeated fields.
+    private val repeatedCells: MutableMap<Int, List<String>> = mutableMapOf()
+
     /** Sets the plain value of field [n] (component 1). */
     protected fun set(n: Int, value: String?) {
         if (value == null) return
@@ -28,6 +31,12 @@ abstract class HL7SegmentBuilder(val name: String) {
     protected fun set(n: Int, c: Int, value: String?) {
         if (value == null) return
         cells.getOrPut(n) { mutableMapOf() }[c] = value
+    }
+
+    /** Sets field [n] as multiple `~`-separated repetitions (e.g. a list of image paths). */
+    protected fun setRepeated(n: Int, values: List<String>?) {
+        if (values.isNullOrEmpty()) return
+        repeatedCells[n] = values
     }
 
     /** Reads back the plain value of field [n] (component 1), or "". */
@@ -46,7 +55,7 @@ abstract class HL7SegmentBuilder(val name: String) {
     /** Builds the generic segment for the given delimiters and version. */
     open fun build(delimiters: HL7Delimiters, version: HL7Version): HL7Segment {
         apply()
-        val maxFieldIndex = cells.keys.maxOrNull() ?: 0
+        val maxFieldIndex = maxOf(cells.keys.maxOrNull() ?: 0, repeatedCells.keys.maxOrNull() ?: 0)
         val cap = SegmentCapabilities.maxFields(name, version)
         val limit = if (cap != null) minOf(maxFieldIndex, cap) else maxFieldIndex
 
@@ -54,8 +63,11 @@ abstract class HL7SegmentBuilder(val name: String) {
         val fields = ArrayList<HL7Field>(limit + 1)
         fields += HL7Field.of(name)
         for (n in 1..limit) {
+            val reps = repeatedCells[n]
             val comps = cells[n]
-            if (comps.isNullOrEmpty()) {
+            if (reps != null) {
+                fields += HL7Field(reps.map { listOf(HL7Component(listOf(it))) })
+            } else if (comps.isNullOrEmpty()) {
                 fields += HL7Field.EMPTY
             } else {
                 val maxComp = comps.keys.maxOrNull() ?: 0
