@@ -99,6 +99,18 @@ class InuU05Scope : MessageScope() {
     fun equ(block: (EQUBuilder) -> Unit) = add(EQUBuilder(), block)
     fun orc(block: (ORCBuilder) -> Unit) = add(ORCBuilder(), block)
     fun inv(block: (INVBuilder) -> Unit) = add(INVBuilder(), block)   // repeating
+    /** Vendor cycle-count payload row (e.g. Parata robot) — repeating, distinct layout from [inv]. */
+    fun invDevice(block: (DeviceINVBuilder) -> Unit) = add(DeviceINVBuilder(), block)   // repeating
+    /**
+     * Standard-first count-result row (see `plan/inu-u05-field-spec.md`) — one
+     * per physical bottle, repeating. Follow with [obx] rows whose `subId` is
+     * set to this row's `setId` to attach sealed/open qty, image refs, and the
+     * system/counted/adjustment breakdown to this specific bottle.
+     */
+    fun invCount(block: (InventoryCountINVBuilder) -> Unit) = add(InventoryCountINVBuilder(), block)   // repeating
+    /** 24-field device inventory row with GS1 — repeating, non-standard extension. */
+    fun zcc(block: (ZCCBuilder) -> Unit) = add(ZCCBuilder(), block)   // repeating
+    fun obx(block: (OBXBuilder) -> Unit) = add(OBXBuilder(), block)   // repeating
     fun zin(block: (ZINBuilder) -> Unit) = add(ZINBuilder(), block)   // repeating
     fun zad(block: (ZADBuilder) -> Unit) = add(ZADBuilder(), block)   // repeating, non-standard extension
     fun nte(block: (NTEBuilder) -> Unit) = add(NTEBuilder(), block)
