@@ -2,6 +2,7 @@ package org.rite.hl7.validation
 
 import org.rite.hl7.model.HL7Message
 import org.rite.hl7.model.HL7MessageKind
+import org.rite.hl7.model.segment.EQUSegment
 import org.rite.hl7.model.segment.INVSegment
 import org.rite.hl7.model.segment.OBXSegment
 import org.rite.hl7.model.segment.ORCSegment
@@ -240,72 +241,57 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         }
     }
 
+    /**
+     * INR^U06 without ZAD: plain inventory count request, per
+     * `plan/inventory/HL7_v2_5_1_INR_U06_Official_Specification.md`. Only the
+     * spec's required fields are checked — EQU-1/2/3, and INV-1 (NDC) / INV-2
+     * (status) on every INV row; INV-5 onward are request-side and left empty.
+     */
     private fun validateInventory(message: HL7Message, issues: MutableList<ValidationIssue>) {
         if (message.messageCode != "INR" || message.triggerEvent != INVENTORY_TRIGGER) return
         // ZAD-carrying messages are adjustments, already field-checked by
-        // validateAdjustments; this OBX/RXE presence rule is for plain count
-        // requests (HL7MessageKind.INVENTORY_REQUEST) which carry no ZAD.
+        // validateAdjustments; this rule is for plain count requests
+        // (HL7MessageKind.INVENTORY_REQUEST) which carry no ZAD.
         if (message.segmentNamed(ZADSegment.NAME) != null) return
 
-        message.segments<ZINSegment>(ZINSegment.NAME).forEachIndexed { index, zin ->
-            val qty = zin.quantity
-            if (qty.isNotBlank() && (qty.toDoubleOrNull() == null || qty.toDouble() < 0)) {
-                issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid quantity in ZIN ${index + 1}", "ZIN", "3", "402",
+        val equ = message.segment<EQUSegment>(EQUSegment.NAME)
+        if (equ == null) {
+            issues += ValidationIssue(AckSeverity.REJECT, "Missing EQU segment", "EQU", "0", "440")
+        } else {
+            if (equ.equipmentId.isBlank()) {
+                issues += ValidationIssue(AckSeverity.REJECT, "Missing equipment ID in EQU", "EQU", "1", "441")
+            }
+            if (equ.eventDateTime.isBlank()) {
+                issues += ValidationIssue(AckSeverity.REJECT, "Missing event date/time in EQU", "EQU", "2", "442")
+            }
+            if (equ.equipmentState.isBlank()) {
+                issues += ValidationIssue(AckSeverity.REJECT, "Missing equipment state in EQU", "EQU", "3", "443")
+            }
+        }
+
+        val invSegments = message.segments<INVSegment>(INVSegment.NAME)
+        if (invSegments.isEmpty()) {
+            issues += ValidationIssue(
+                AckSeverity.REJECT,
+                "Missing INV segment for INR^$INVENTORY_TRIGGER",
+                "INV", "0", "444",
+            )
+            return
+        }
+        invSegments.forEachIndexed { index, inv ->
+            val position = index + 1
+            when {
+                inv.deviceItemCode.isBlank() -> issues += ValidationIssue(
+                    AckSeverity.REJECT, "Missing NDC in INV $position", "INV", "1", "445",
+                )
+                !isValidNdc(inv.deviceItemCode) -> issues += ValidationIssue(
+                    AckSeverity.REJECT, "Invalid NDC in INV $position", "INV", "1", "445",
                 )
             }
-        }
-
-        val obxSegments = message.segments<OBXSegment>(OBXSegment.NAME)
-        if (obxSegments.isNotEmpty()) {
-            obxSegments.forEachIndexed { index, obx ->
-                val position = index + 1
-                when {
-                    obx.observationId.isBlank() -> issues += ValidationIssue(
-                        AckSeverity.REJECT, "Missing NDC in OBX $position", "OBX", "3", "401",
-                    )
-                    !isValidNdc(obx.observationId) -> issues += ValidationIssue(
-                        AckSeverity.REJECT, "Invalid NDC in OBX $position", "OBX", "3", "401",
-                    )
-                }
-                val value = obx.observationValue
-                when {
-                    value.isBlank() -> issues += ValidationIssue(
-                        AckSeverity.REJECT, "Missing value in OBX $position", "OBX", "5", "401",
-                    )
-                    value.toDoubleOrNull() == null || value.toDouble() < 0 -> issues += ValidationIssue(
-                        AckSeverity.REJECT, "Invalid quantity in OBX $position", "OBX", "5", "401",
-                    )
-                }
+            if (inv.deviceStatusCode.isBlank()) {
+                issues += ValidationIssue(AckSeverity.REJECT, "Missing status in INV $position", "INV", "2", "446")
             }
-            return
         }
-
-        val rxeSegments = message.segments<RXESegment>(RXESegment.NAME)
-        if (rxeSegments.isNotEmpty()) {
-            rxeSegments.forEachIndexed { index, rxe ->
-                if (rxe.giveCode.isBlank()) {
-                    issues += ValidationIssue(
-                        AckSeverity.REJECT,
-                        "Missing NDC in RXE ${index + 1}",
-                        "RXE", "2", "401",
-                    )
-                } else if (!isValidNdc(rxe.giveCode)) {
-                    issues += ValidationIssue(
-                        AckSeverity.REJECT,
-                        "Invalid NDC in RXE ${index + 1}",
-                        "RXE", "2", "401",
-                    )
-                }
-            }
-            return
-        }
-
-        issues += ValidationIssue(
-            AckSeverity.REJECT,
-            "Missing OBX/RXE segment for INR^$INVENTORY_TRIGGER",
-            "INR", "0", "400",
-        )
     }
 
     /** INR^U05 (count response) and INU^U05 (inventory update) share the same INV/ZIN row shape. */
