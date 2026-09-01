@@ -124,49 +124,95 @@ class ValidationTest {
         assertEquals(AckSeverity.ACCEPT, result.worst)
     }
 
+    // --- INR^U06 inventory count REQUEST (no ZAD): strict spec format,
+    // MSH+EQU+INV(fields 1-4), see plan/inventory/HL7_v2_5_1_INR_U06_Official_Specification.md
+
     @Test
-    fun inventoryCountRequestWithObxValuesIsAccepted() {
+    fun inventoryRequestValidMessageIsAccepted() {
         val msg = parse(
-            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-                "OBX|1|NM|12345678901^Drug^NDC||10"
+            "MSH|^~\\&|PRIMERX|MAINPHARM|PARATA|ROBOT1|20251113190000||INR^U06|MSG00001|P|2.5.1\r" +
+                "EQU|ROBOT1^Parata Max 2^MFG|20251113190000|A\r" +
+                "INV|00069-3820-20^LISINOPRIL 10MG TAB^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L\r" +
+                "INV|00067-5680-34^METFORMIN 500MG TAB^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_B2^Cell B2^L"
         )
         val result = HL7Validator().validate(msg)
         assertEquals(AckSeverity.ACCEPT, result.worst)
     }
 
     @Test
-    fun inventoryCountRequestWithBlankObxValueIsRejected() {
+    fun inventoryRequestMissingEquIsRejected() {
         val msg = parse(
-            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-                "OBX|1|NM|12345678901^Drug^NDC||"
+            "MSH|^~\\&|PRIMERX|MAINPHARM|PARATA|ROBOT1|20251113190000||INR^U06|MSG00001|P|2.5.1\r" +
+                "INV|00069-3820-20^LISINOPRIL 10MG TAB^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L"
         )
         val result = HL7Validator().validate(msg)
         assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Missing value in OBX 1" })
+        assertTrue(result.issues.any { it.errorText == "Missing EQU segment" })
     }
 
     @Test
-    fun inventoryCountRequestFallsBackToRxeWhenNoObx() {
+    fun inventoryRequestEquMissingStateIsRejected() {
         val msg = parse(
-            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-                "RXE|^0|12345678901^Drug^NDC|||EA^each||||^1|10"
+            "MSH|^~\\&|PRIMERX|MAINPHARM|PARATA|ROBOT1|20251113190000||INR^U06|MSG00001|P|2.5.1\r" +
+                "EQU|ROBOT1^Parata Max 2^MFG|20251113190000|\r" +
+                "INV|00069-3820-20^LISINOPRIL 10MG TAB^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L"
         )
         val result = HL7Validator().validate(msg)
-        assertEquals(AckSeverity.ACCEPT, result.worst)
+        assertEquals(AckSeverity.REJECT, result.worst)
+        assertTrue(result.issues.any { it.errorText == "Missing equipment state in EQU" })
     }
 
     @Test
-    fun inventoryCountRequestWithNoObxOrRxeIsRejected() {
-        val msg = parse("MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5")
+    fun inventoryRequestMissingInvIsRejected() {
+        val msg = parse(
+            "MSH|^~\\&|PRIMERX|MAINPHARM|PARATA|ROBOT1|20251113190000||INR^U06|MSG00001|P|2.5.1\r" +
+                "EQU|ROBOT1^Parata Max 2^MFG|20251113190000|A"
+        )
         val result = HL7Validator().validate(msg)
         assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Missing OBX/RXE segment for INR^U06" })
+        assertTrue(result.issues.any { it.errorText == "Missing INV segment for INR^U06" })
     }
 
     @Test
-    fun inventoryAdjustmentWithZadIsUnaffectedByObxRxeRule() {
+    fun inventoryRequestInvMissingNdcIsRejected() {
+        val msg = parse(
+            "MSH|^~\\&|PRIMERX|MAINPHARM|PARATA|ROBOT1|20251113190000||INR^U06|MSG00001|P|2.5.1\r" +
+                "EQU|ROBOT1^Parata Max 2^MFG|20251113190000|A\r" +
+                "INV||A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.REJECT, result.worst)
+        assertTrue(result.issues.any { it.errorText == "Missing NDC in INV 1" })
+    }
+
+    @Test
+    fun inventoryRequestInvInvalidNdcIsRejected() {
+        val msg = parse(
+            "MSH|^~\\&|PRIMERX|MAINPHARM|PARATA|ROBOT1|20251113190000||INR^U06|MSG00001|P|2.5.1\r" +
+                "EQU|ROBOT1^Parata Max 2^MFG|20251113190000|A\r" +
+                "INV|c^LISINOPRIL 10MG TAB^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.REJECT, result.worst)
+        assertTrue(result.issues.any { it.errorText == "Invalid NDC in INV 1" })
+    }
+
+    @Test
+    fun inventoryRequestInvMissingStatusIsRejected() {
+        val msg = parse(
+            "MSH|^~\\&|PRIMERX|MAINPHARM|PARATA|ROBOT1|20251113190000||INR^U06|MSG00001|P|2.5.1\r" +
+                "EQU|ROBOT1^Parata Max 2^MFG|20251113190000|A\r" +
+                "INV|00069-3820-20^LISINOPRIL 10MG TAB^L||DRUG^Drug^HL70384|CELL_A1^Cell A1^L"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.REJECT, result.worst)
+        assertTrue(result.issues.any { it.errorText == "Missing status in INV 1" })
+    }
+
+    @Test
+    fun inventoryAdjustmentWithZadIsUnaffectedByInventoryRequestRule() {
         // Already covered by knownAdjustmentReasonIsAccepted — ZAD-carrying
-        // INR^U06 must not require OBX/RXE.
+        // INR^U06 must not go through the plain-request EQU/INV checks.
         val msg = parse(
             "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
                 "INV|1|123^x^NDC|||10|EA\r" +
@@ -364,28 +410,6 @@ class ValidationTest {
         val result = HL7Validator().validate(msg)
         assertEquals(AckSeverity.REJECT, result.worst)
         assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE 1" })
-    }
-
-    @Test
-    fun inventoryObxInvalidNdcIsRejected() {
-        val msg = parse(
-            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-                "OBX|1|NM|c^Drug^NDC||10"
-        )
-        val result = HL7Validator().validate(msg)
-        assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Invalid NDC in OBX 1" })
-    }
-
-    @Test
-    fun inventoryObxNegativeValueIsRejected() {
-        val msg = parse(
-            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-                "OBX|1|NM|12345678901^Drug^NDC||-5"
-        )
-        val result = HL7Validator().validate(msg)
-        assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Invalid quantity in OBX 1" })
     }
 
     // --- §3: quantity must be a bounded plain integer ---
@@ -640,19 +664,6 @@ class ValidationTest {
         assertEquals(AckSeverity.ACCEPT, result.worst)
     }
 
-    // --- §9: ZIN expected-on-hand must not be negative ---
-
-    @Test
-    fun zinNegativeQuantityIsRejected() {
-        val msg = parse(
-            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-                "OBX|1|NM|12345678901^Drug^NDC||10\r" +
-                "ZIN|1|EXPECTED_ON_HAND|-5"
-        )
-        val result = HL7Validator().validate(msg)
-        assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Invalid quantity in ZIN 1" })
-    }
 
     // --- ZAD adjustment quantity must be a bounded plain integer ---
 

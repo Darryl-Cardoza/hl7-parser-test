@@ -2,7 +2,9 @@ package org.rite.hl7
 
 import org.rite.hl7.model.HL7Message
 import org.rite.hl7.model.HL7MessageKind
+import org.rite.hl7.model.segment.EQUSegment
 import org.rite.hl7.model.segment.INVSegment
+import org.rite.hl7.model.segment.NTESegment
 import org.rite.hl7.model.segment.ORCSegment
 import org.rite.hl7.model.segment.RXDSegment
 import org.rite.hl7.model.segment.ZADSegment
@@ -179,6 +181,74 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
                     )
                 }
                 Result.success(adjustments)
+            }
+            is HL7ParseResult.Failure -> Result.failure(
+                IllegalArgumentException("Parse failed: ${result.errors.joinToString { it.message }}")
+            )
+        }
+    }
+
+    data class InventoryRequestItem(
+        val ndc: String,
+        val name: String,
+        val statusCode: String,
+        val statusDesc: String,
+        val typeCode: String,
+        val typeDesc: String,
+        val locationCode: String,
+        val locationName: String,
+    )
+
+    data class InventoryRequest(
+        val messageId: String,
+        val timestamp: String,
+        val robotId: String,
+        val equipmentState: String,
+        val items: List<InventoryRequestItem>,
+        val notes: List<String>,
+    )
+
+    /**
+     * Parses a raw INR^U06 inventory count request (no ZAD) — the strict
+     * spec format in `plan/inventory/HL7_v2_5_1_INR_U06_Official_Specification.md`
+     * (MSH+EQU+INV, INV fields 1-4 only) — into everything the app needs.
+     */
+    fun parseInventoryRequest(raw: String): Result<InventoryRequest> {
+        return when (val result = hl7.parse(raw)) {
+            is HL7ParseResult.Success -> {
+                val msg = result.message
+                if (msg.kind != HL7MessageKind.INVENTORY_REQUEST) {
+                    return Result.failure(IllegalArgumentException("Not an inventory request message: ${msg.kind}"))
+                }
+
+                val equ = msg.segment<EQUSegment>(EQUSegment.NAME)
+                    ?: return Result.failure(IllegalStateException("Missing EQU segment"))
+
+                val items = msg.segments<INVSegment>(INVSegment.NAME).map { inv ->
+                    InventoryRequestItem(
+                        ndc = inv.deviceItemCode,
+                        name = inv.deviceItemName,
+                        statusCode = inv.deviceStatusCode,
+                        statusDesc = inv.raw.componentValue(2, 2),
+                        typeCode = inv.deviceTypeCode,
+                        typeDesc = inv.raw.componentValue(3, 2),
+                        locationCode = inv.deviceLocationCode,
+                        locationName = inv.deviceLocationText,
+                    )
+                }
+
+                val notes = msg.segments<NTESegment>(NTESegment.NAME).map { it.comment }
+
+                Result.success(
+                    InventoryRequest(
+                        messageId = msg.messageControlId,
+                        timestamp = msg.header?.dateTimeOfMessage ?: "",
+                        robotId = equ.equipmentId,
+                        equipmentState = equ.equipmentState,
+                        items = items,
+                        notes = notes,
+                    )
+                )
             }
             is HL7ParseResult.Failure -> Result.failure(
                 IllegalArgumentException("Parse failed: ${result.errors.joinToString { it.message }}")
