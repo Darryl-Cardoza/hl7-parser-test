@@ -140,26 +140,25 @@ class ValidationTest {
     }
 
     @Test
-    fun inventoryRequestMissingEquIsRejected() {
+    fun inventoryRequestMissingEquIsAccepted() {
+        // EQU is not required — the app doesn't consume it.
         val msg = parse(
             "MSH|^~\\&|PRIMERX|MAINPHARM|PARATA|ROBOT1|20251113190000||INR^U06|MSG00001|P|2.5.1\r" +
                 "INV|00069-3820-20^LISINOPRIL 10MG TAB^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L"
         )
         val result = HL7Validator().validate(msg)
-        assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Missing EQU segment" })
+        assertEquals(AckSeverity.ACCEPT, result.worst)
     }
 
     @Test
-    fun inventoryRequestEquMissingStateIsRejected() {
+    fun inventoryRequestEquMissingStateIsAccepted() {
         val msg = parse(
             "MSH|^~\\&|PRIMERX|MAINPHARM|PARATA|ROBOT1|20251113190000||INR^U06|MSG00001|P|2.5.1\r" +
                 "EQU|ROBOT1^Parata Max 2^MFG|20251113190000|\r" +
                 "INV|00069-3820-20^LISINOPRIL 10MG TAB^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L"
         )
         val result = HL7Validator().validate(msg)
-        assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Missing equipment state in EQU" })
+        assertEquals(AckSeverity.ACCEPT, result.worst)
     }
 
     @Test
