@@ -221,8 +221,8 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
                     return Result.failure(IllegalArgumentException("Not an inventory request message: ${msg.kind}"))
                 }
 
+                // EQU is not consumed by the app — its absence must not block parsing.
                 val equ = msg.segment<EQUSegment>(EQUSegment.NAME)
-                    ?: return Result.failure(IllegalStateException("Missing EQU segment"))
 
                 val items = msg.segments<INVSegment>(INVSegment.NAME).map { inv ->
                     InventoryRequestItem(
@@ -243,8 +243,8 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
                     InventoryRequest(
                         messageId = msg.messageControlId,
                         timestamp = msg.header?.dateTimeOfMessage ?: "",
-                        robotId = equ.equipmentId,
-                        equipmentState = equ.equipmentState,
+                        robotId = equ?.equipmentId ?: "",
+                        equipmentState = equ?.equipmentState ?: "",
                         items = items,
                         notes = notes,
                     )

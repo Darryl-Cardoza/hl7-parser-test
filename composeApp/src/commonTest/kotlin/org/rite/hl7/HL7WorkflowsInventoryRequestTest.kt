@@ -49,6 +49,21 @@ class HL7WorkflowsInventoryRequestTest {
     }
 
     @Test
+    fun parsesSuccessfullyWhenEquIsMissing() {
+        // EQU is not consumed by the app — its absence must not block parsing.
+        val raw = "MSH|^~\\&|PRIMERX|MAINPHARM|PARATA|ROBOT1|20251113190000||INR^U06|MSG00001|P|2.5.1\r" +
+            "INV|00069-3820-20^LISINOPRIL 10MG TAB^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L"
+
+        val result = workflows.parseInventoryRequest(raw)
+
+        assertTrue(result.isSuccess)
+        val request = result.getOrThrow()
+        assertEquals("", request.robotId)
+        assertEquals("", request.equipmentState)
+        assertEquals(1, request.items.size)
+    }
+
+    @Test
     fun rejectsMessageThatIsNotAnInventoryRequest() {
         val raw = "MSH|^~\\&|A|B|C|D|20260101||INR^U05|1|P|2.5\r" +
             "INV|1|12345678901^x^NDC|||10|EA"

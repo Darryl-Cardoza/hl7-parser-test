@@ -4,13 +4,23 @@ import org.rite.hl7.model.SegmentDefinition
 import org.rite.hl7.model.TypedSegment
 import org.rite.hl7.model.ast.HL7Segment
 
-/** EQU — Equipment Detail. */
+/**
+ * EQU — Equipment Detail. Standard HL7 EQU-1 is the equipment identifier
+ * itself (no leading Set-ID) — but every wire example in
+ * `plan/inventory/HL7_v2_5_1_INR_U06_Official_Specification.md` (and real
+ * devices following it) prefixes a bare sequence number before the ID
+ * composite. Detect which shape this row uses: a leading Set-ID is present
+ * when field 1 has no second component (a bare value, not composite) while
+ * field 2 does — i.e. field 2 looks like the real ID, not field 1.
+ */
 class EQUSegment(raw: HL7Segment) : TypedSegment(raw) {
-    val equipmentId: String get() = component(1, 1)
-    val eventDateTime: String get() = fieldValue(2)
-    val equipmentState: String get() = fieldValue(3)
-    val localRemoteControlState: String get() = fieldValue(4)
-    val alertLevel: String get() = fieldValue(5)
+    private val idField: Int get() = if (component(1, 2).isBlank() && component(2, 2).isNotBlank()) 2 else 1
+
+    val equipmentId: String get() = component(idField, 1)
+    val eventDateTime: String get() = fieldValue(idField + 1)
+    val equipmentState: String get() = fieldValue(idField + 2)
+    val localRemoteControlState: String get() = fieldValue(idField + 3)
+    val alertLevel: String get() = fieldValue(idField + 4)
 
     companion object {
         const val NAME = "EQU"

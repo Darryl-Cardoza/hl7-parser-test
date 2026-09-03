@@ -2,7 +2,6 @@ package org.rite.hl7.validation
 
 import org.rite.hl7.model.HL7Message
 import org.rite.hl7.model.HL7MessageKind
-import org.rite.hl7.model.segment.EQUSegment
 import org.rite.hl7.model.segment.INVSegment
 import org.rite.hl7.model.segment.OBXSegment
 import org.rite.hl7.model.segment.ORCSegment
@@ -243,9 +242,10 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
 
     /**
      * INR^U06 without ZAD: plain inventory count request, per
-     * `plan/inventory/HL7_v2_5_1_INR_U06_Official_Specification.md`. Only the
-     * spec's required fields are checked — EQU-1/2/3, and INV-1 (NDC) / INV-2
-     * (status) on every INV row; INV-5 onward are request-side and left empty.
+     * `plan/inventory/HL7_v2_5_1_INR_U06_Official_Specification.md`. EQU is
+     * not consumed by the app and is not validated. Only INV-1 (NDC) / INV-2
+     * (status) on every INV row are checked; INV-5 onward are request-side
+     * and left empty.
      */
     private fun validateInventory(message: HL7Message, issues: MutableList<ValidationIssue>) {
         if (message.messageCode != "INR" || message.triggerEvent != INVENTORY_TRIGGER) return
@@ -253,21 +253,6 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         // validateAdjustments; this rule is for plain count requests
         // (HL7MessageKind.INVENTORY_REQUEST) which carry no ZAD.
         if (message.segmentNamed(ZADSegment.NAME) != null) return
-
-        val equ = message.segment<EQUSegment>(EQUSegment.NAME)
-        if (equ == null) {
-            issues += ValidationIssue(AckSeverity.REJECT, "Missing EQU segment", "EQU", "0", "440")
-        } else {
-            if (equ.equipmentId.isBlank()) {
-                issues += ValidationIssue(AckSeverity.REJECT, "Missing equipment ID in EQU", "EQU", "1", "441")
-            }
-            if (equ.eventDateTime.isBlank()) {
-                issues += ValidationIssue(AckSeverity.REJECT, "Missing event date/time in EQU", "EQU", "2", "442")
-            }
-            if (equ.equipmentState.isBlank()) {
-                issues += ValidationIssue(AckSeverity.REJECT, "Missing equipment state in EQU", "EQU", "3", "443")
-            }
-        }
 
         val invSegments = message.segments<INVSegment>(INVSegment.NAME)
         if (invSegments.isEmpty()) {
