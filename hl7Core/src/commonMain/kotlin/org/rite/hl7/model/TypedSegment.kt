@@ -19,6 +19,9 @@ abstract class TypedSegment(val raw: HL7Segment) {
     /** Segment name (e.g. "MSH", "RXD"). */
     val segmentName: String get() = raw.name
 
+    /** Highest 1-based field index present — lets callers distinguish same-named dialects by shape. */
+    val fieldCount: Int get() = raw.fieldCount
+
     /** Plain value of field [n] (1-based). */
     protected fun fieldValue(n: Int): String = raw.fieldValue(n)
 
@@ -31,4 +34,7 @@ abstract class TypedSegment(val raw: HL7Segment) {
 
     /** Raw [HL7Component] for advanced access. */
     protected fun componentOf(n: Int, c: Int): HL7Component = raw.field(n).component(c)
+
+    /** Plain value of the first component of every repetition (`~`-separated) of field [n]. */
+    protected fun repetitions(n: Int): List<String> = raw.field(n).repetitions.map { it.firstOrNull()?.value ?: "" }
 }

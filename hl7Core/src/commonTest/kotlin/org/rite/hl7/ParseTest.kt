@@ -96,4 +96,47 @@ class ParseTest {
         assertTrue(result is HL7ParseResult.Failure)
         assertTrue(result.errors.isNotEmpty())
     }
+
+    // --- EQU: real devices send a leading Set-ID (per every wire example in
+    // plan/inventory/HL7_v2_5_1_INR_U06_Official_Specification.md) even though
+    // the real HL7 EQU segment has no such field; parsing must tolerate both.
+
+    @Test
+    fun parsesEquWithLeadingSetId() {
+        val raw = "MSH|^~\\&|PMS|PHARMACY|PILLCOUNTER|TERMINAL_13|20260901134041||INR^U06|REQ1|P|2.5.1\r" +
+            "EQU|1|TERMINAL_13^Terminal 13^RITE|20260901134041|A"
+        val result = parser().parse(raw)
+        assertTrue(result is HL7ParseResult.Success)
+        val equ = result.message.segment<org.rite.hl7.model.segment.EQUSegment>("EQU")
+        assertNotNull(equ)
+        assertEquals("TERMINAL_13", equ.equipmentId)
+        assertEquals("20260901134041", equ.eventDateTime)
+        assertEquals("A", equ.equipmentState)
+    }
+
+    @Test
+    fun parsesEquWithoutLeadingSetId() {
+        val raw = "MSH|^~\\&|PMS|PHARMACY|PILLCOUNTER|TERMINAL_13|20260901134041||INR^U06|REQ1|P|2.5.1\r" +
+            "EQU|ROBOT1^Parata Max 2^MFG|20251113190000|A"
+        val result = parser().parse(raw)
+        assertTrue(result is HL7ParseResult.Success)
+        val equ = result.message.segment<org.rite.hl7.model.segment.EQUSegment>("EQU")
+        assertNotNull(equ)
+        assertEquals("ROBOT1", equ.equipmentId)
+        assertEquals("20251113190000", equ.eventDateTime)
+        assertEquals("A", equ.equipmentState)
+    }
+
+    @Test
+    fun parsesEquWithBareIdAndNoLeadingSetId() {
+        val raw = "MSH|^~\\&|PMS|PHARMACY|PILLCOUNTER|TERMINAL_13|20260901134041||INR^U06|REQ1|P|2.5.1\r" +
+            "EQU|DEVICE-1|20260623091205|A"
+        val result = parser().parse(raw)
+        assertTrue(result is HL7ParseResult.Success)
+        val equ = result.message.segment<org.rite.hl7.model.segment.EQUSegment>("EQU")
+        assertNotNull(equ)
+        assertEquals("DEVICE-1", equ.equipmentId)
+        assertEquals("20260623091205", equ.eventDateTime)
+        assertEquals("A", equ.equipmentState)
+    }
 }
