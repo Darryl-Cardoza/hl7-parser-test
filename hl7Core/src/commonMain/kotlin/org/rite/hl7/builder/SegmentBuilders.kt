@@ -164,11 +164,13 @@ class OBXBuilder : HL7SegmentBuilder("OBX") {
     /** OBX-4 — Observation Sub-ID. Set to a parent INV row's Set-ID (INV-1) to link this OBX to that bottle; leave null for message-level OBX rows (e.g. OPERATOR_ID/OPERATOR_NAME). */
     var subId: String? = null
     var observationValue: String? = null
+    /** OBX-5.2 — second component of observation value (e.g. bottle count alongside a qty in observationValue). Null omits the component. */
+    var observationValue2: String? = null
     var units: String? = null
     var resultStatus: String? = null
     override fun apply() {
         set(1, setId); set(2, valueType); set(3, 1, observationId); set(3, 2, observationText)
-        set(4, subId); set(5, observationValue); set(6, 1, units); set(11, resultStatus)
+        set(4, subId); set(5, 1, observationValue); set(5, 2, observationValue2); set(6, 1, units); set(11, resultStatus)
     }
 }
 
