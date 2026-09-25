@@ -143,6 +143,24 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
             return
         }
 
+        // Each order group keeps at most one RXE (the most recent one seen for
+        // its ORC), and any RXE before the first ORC belongs to no group at
+        // all. Either shape silently drops an RXE from grouped validation, so
+        // guard against it directly: every RXE in the message must be
+        // accounted for by exactly one group.
+        val flatRxeCount = message.segments<org.rite.hl7.model.segment.RXESegment>(
+            org.rite.hl7.model.segment.RXESegment.NAME,
+        ).size
+        val groupedRxeCount = orderGroups.count { it.rxe != null }
+        if (flatRxeCount != groupedRxeCount) {
+            issues += ValidationIssue(
+                AckSeverity.REJECT,
+                "RXE segment count does not match order group count",
+                "RXE", "0", "300",
+            )
+            return
+        }
+
         orderGroups.forEachIndexed { index, group ->
             validateOrderGroup(group, index + 1, orderGroups.size, issues)
         }

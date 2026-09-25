@@ -468,6 +468,37 @@ class ValidationTest {
     // --- Multi-ORC order groups (RDE^O11 repeating { ORC + RXE + RXR + [ZPR] }) ---
 
     @Test
+    fun secondRxeUnderSameOrcIsRejectedNotSilentlyDropped() {
+        // Two RXE under one ORC: the first (bad NDC) would be silently
+        // overwritten by orderGroups' single `rxe` slot, and validating only
+        // the grouped view would miss it entirely. The message must still be
+        // rejected instead of accepted on the strength of the second RXE.
+        val msg = parse(
+            "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
+                "ORC|NW|1001\r" +
+                "RXE|^0|c^Bad^NDC|10||EA^each\r" +
+                "RXE|^0|11111111111^Good^NDC|10||EA^each"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.REJECT, result.worst)
+    }
+
+    @Test
+    fun orphanRxeBeforeFirstOrcIsRejectedNotSilentlyDropped() {
+        // An RXE before any ORC is intentionally excluded from orderGroups
+        // (it can't belong to a group), but it must still be validated —
+        // not silently accepted just because it isn't part of any group.
+        val msg = parse(
+            "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
+                "RXE|^0|c^Orphan^NDC|0||EA^each\r" +
+                "ORC|NW|1001\r" +
+                "RXE|^0|11111111111^Good^NDC|10||EA^each"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.REJECT, result.worst)
+    }
+
+    @Test
     fun twoValidOrderGroupsAreBothAccepted() {
         val msg = parse(
             "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
