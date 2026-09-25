@@ -4,15 +4,12 @@ import org.rite.hl7.model.HL7Message
 import org.rite.hl7.model.HL7MessageKind
 import org.rite.hl7.model.segment.INVSegment
 import org.rite.hl7.model.segment.OBXSegment
-import org.rite.hl7.model.segment.ORCSegment
 import org.rite.hl7.model.segment.QAKSegment
 import org.rite.hl7.model.segment.QPDSegment
-import org.rite.hl7.model.segment.RXESegment
 import org.rite.hl7.model.segment.ZADSegment
 import org.rite.hl7.model.segment.ZINSegment
 import org.rite.hl7.model.segment.ZCCSegment
 import org.rite.hl7.model.segment.ZNISegment
-import org.rite.hl7.model.segment.ZPRSegment
 import org.rite.hl7.model.segment.ZUISegment
 
 /**
@@ -140,57 +137,68 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
             return
         }
 
-        val orc = message.segment<ORCSegment>(ORCSegment.NAME)
-        if (orc == null) {
+        val orderGroups = message.orderGroups
+        if (orderGroups.isEmpty()) {
             issues += ValidationIssue(AckSeverity.REJECT, "Missing ORC segment", "ORC", "0", "300")
             return
         }
+
+        orderGroups.forEachIndexed { index, group ->
+            validateOrderGroup(group, index + 1, orderGroups.size, issues)
+        }
+    }
+
+    private fun validateOrderGroup(
+        group: org.rite.hl7.model.OrderGroup,
+        position: Int,
+        totalGroups: Int,
+        issues: MutableList<ValidationIssue>,
+    ) {
+        val suffix = if (totalGroups > 1) " (order $position)" else ""
+        val orc = group.orc
 
         val control = orc.orderControl
         if (control !in config.knownOrderControlCodes) {
             issues += ValidationIssue(
                 AckSeverity.REJECT,
-                "Unsupported order control code: $control",
+                "Unsupported order control code: $control$suffix",
                 "ORC", "1", "302",
             )
         }
         if (orc.placerOrderNumber.isBlank()) {
-            issues += ValidationIssue(AckSeverity.REJECT, "Missing Rx number in ORC", "ORC", "2", "303")
+            issues += ValidationIssue(AckSeverity.REJECT, "Missing Rx number in ORC$suffix", "ORC", "2", "303")
         }
 
         // A cancel order identifies the order to cancel via ORC alone —
         // it carries no drug/quantity payload, so RXE isn't required.
         if (control == "CA") return
 
-        val rxeSegments = message.segments<RXESegment>(RXESegment.NAME)
-        if (rxeSegments.isEmpty()) {
-            issues += ValidationIssue(AckSeverity.REJECT, "Missing RXE segment", "RXE", "0", "300")
+        val rxe = group.rxe
+        if (rxe == null) {
+            issues += ValidationIssue(AckSeverity.REJECT, "Missing RXE segment$suffix", "RXE", "0", "300")
             return
         }
-        rxeSegments.forEachIndexed { index, rxe ->
-            val position = index + 1
-            when {
-                rxe.giveCode.isBlank() -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Missing NDC in RXE $position", "RXE", "2", "301",
-                )
-                !isValidNdc(rxe.giveCode) -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid NDC in RXE $position", "RXE", "2", "301",
-                )
-            }
-            when {
-                rxe.giveAmountMinimum.isBlank() -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Missing quantity in RXE $position", "RXE", "3", "301",
-                )
-                !isValidQuantity(rxe.giveAmountMinimum) -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid quantity in RXE $position", "RXE", "3", "301",
-                )
-            }
+        when {
+            rxe.giveCode.isBlank() -> issues += ValidationIssue(
+                AckSeverity.REJECT, "Missing NDC in RXE$suffix", "RXE", "2", "301",
+            )
+            !isValidNdc(rxe.giveCode) -> issues += ValidationIssue(
+                AckSeverity.REJECT, "Invalid NDC in RXE$suffix", "RXE", "2", "301",
+            )
+        }
+        when {
+            rxe.giveAmountMinimum.isBlank() -> issues += ValidationIssue(
+                AckSeverity.REJECT, "Missing quantity in RXE$suffix", "RXE", "3", "301",
+            )
+            !isValidQuantity(rxe.giveAmountMinimum) -> issues += ValidationIssue(
+                AckSeverity.REJECT, "Invalid quantity in RXE$suffix", "RXE", "3", "301",
+            )
         }
 
-        message.segments<ZPRSegment>(ZPRSegment.NAME).forEach { zpr ->
+        group.zpr.forEach { zpr ->
             if (zpr.priority.uppercase() !in config.knownPriorities) {
                 issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid priority: ${zpr.priority}", "ZPR", "3", "311",
+                    AckSeverity.REJECT, "Invalid priority: ${zpr.priority}$suffix", "ZPR", "3", "311",
                 )
             }
         }

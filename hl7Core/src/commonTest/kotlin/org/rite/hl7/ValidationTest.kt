@@ -100,8 +100,8 @@ class ValidationTest {
         )
         val result = HL7Validator().validate(msg)
         assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Missing NDC in RXE 1" })
-        assertTrue(result.issues.any { it.errorText == "Missing quantity in RXE 1" })
+        assertTrue(result.issues.any { it.errorText == "Missing NDC in RXE" })
+        assertTrue(result.issues.any { it.errorText == "Missing quantity in RXE" })
     }
 
     @Test
@@ -384,7 +384,7 @@ class ValidationTest {
         )
         val result = HL7Validator().validate(msg)
         assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Invalid NDC in RXE 1" })
+        assertTrue(result.issues.any { it.errorText == "Invalid NDC in RXE" })
     }
 
     @Test
@@ -396,7 +396,7 @@ class ValidationTest {
         )
         val result = HL7Validator().validate(msg)
         assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE 1" })
+        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE" })
     }
 
     @Test
@@ -408,7 +408,7 @@ class ValidationTest {
         )
         val result = HL7Validator().validate(msg)
         assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE 1" })
+        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE" })
     }
 
     // --- §3: quantity must be a bounded plain integer ---
@@ -423,7 +423,7 @@ class ValidationTest {
     fun rxeQuantityAboveMaxIsRejected() {
         val result = HL7Validator().validate(rxeMsgWithQuantity("999999999999"))
         assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE 1" })
+        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE" })
     }
 
     @Test
@@ -436,7 +436,7 @@ class ValidationTest {
     fun rxeDecimalQuantityRoundingDownToZeroIsRejected() {
         val result = HL7Validator().validate(rxeMsgWithQuantity("0.4"))
         assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE 1" })
+        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE" })
     }
 
     @Test
@@ -449,20 +449,110 @@ class ValidationTest {
     fun rxeScientificNotationQuantityIsRejected() {
         val result = HL7Validator().validate(rxeMsgWithQuantity("1e10"))
         assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE 1" })
+        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE" })
     }
 
     @Test
     fun rxePlusPrefixedQuantityIsRejected() {
         val result = HL7Validator().validate(rxeMsgWithQuantity("+10"))
         assertEquals(AckSeverity.REJECT, result.worst)
-        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE 1" })
+        assertTrue(result.issues.any { it.errorText == "Invalid quantity in RXE" })
     }
 
     @Test
     fun rxeValidQuantityIsAccepted() {
         val result = HL7Validator().validate(rxeMsgWithQuantity("30"))
         assertEquals(AckSeverity.ACCEPT, result.worst)
+    }
+
+    // --- Multi-ORC order groups (RDE^O11 repeating { ORC + RXE + RXR + [ZPR] }) ---
+
+    @Test
+    fun twoValidOrderGroupsAreBothAccepted() {
+        val msg = parse(
+            "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
+                "ORC|NW|1001\r" +
+                "RXE|^0|11111111111^Drug1^NDC|10||EA^each\r" +
+                "ORC|NW|1002\r" +
+                "RXE|^0|22222222222^Drug2^NDC|20||EA^each"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.ACCEPT, result.worst)
+    }
+
+    @Test
+    fun secondOrderMissingRxeIsRejectedWithCorrectPosition() {
+        val msg = parse(
+            "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
+                "ORC|NW|1001\r" +
+                "RXE|^0|11111111111^Drug1^NDC|10||EA^each\r" +
+                "ORC|NW|1002"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.REJECT, result.worst)
+        assertTrue(result.issues.any { it.errorText == "Missing RXE segment (order 2)" })
+        // Order 1 must not be flagged.
+        assertTrue(result.issues.none { it.errorText.contains("order 1") })
+    }
+
+    @Test
+    fun secondOrderBadNdcIsRejectedWhileFirstOrderIsClean() {
+        val msg = parse(
+            "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
+                "ORC|NW|1001\r" +
+                "RXE|^0|11111111111^Drug1^NDC|10||EA^each\r" +
+                "ORC|NW|1002\r" +
+                "RXE|^0|c^Drug2^NDC|20||EA^each"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.REJECT, result.worst)
+        assertTrue(result.issues.any { it.errorText == "Invalid NDC in RXE (order 2)" })
+        assertTrue(result.issues.none { it.errorText.contains("order 1") })
+    }
+
+    @Test
+    fun mixedCancelAndNewOrderValidatesEachIndependently() {
+        val msg = parse(
+            "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
+                "ORC|CA|1001\r" +
+                "ORC|NW|1002\r" +
+                "RXE|^0|22222222222^Drug2^NDC|20||EA^each"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.ACCEPT, result.worst)
+    }
+
+    @Test
+    fun threeOrderGroupsAllValidatedNoHardcodedCountAssumption() {
+        val msg = parse(
+            "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
+                "ORC|NW|1001\r" +
+                "RXE|^0|11111111111^Drug1^NDC|10||EA^each\r" +
+                "ORC|NW|1002\r" +
+                "RXE|^0|22222222222^Drug2^NDC|20||EA^each\r" +
+                "ORC|NW|1003\r" +
+                "RXE|^0||30||EA^each"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.REJECT, result.worst)
+        assertTrue(result.issues.any { it.errorText == "Missing NDC in RXE (order 3)" })
+    }
+
+    @Test
+    fun perOrderZprPriorityIsValidatedIndependently() {
+        val msg = parse(
+            "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
+                "ORC|NW|1001\r" +
+                "RXE|^0|11111111111^Drug1^NDC|10||EA^each\r" +
+                "ZPR|1|PRIORITY|High\r" +
+                "ORC|NW|1002\r" +
+                "RXE|^0|22222222222^Drug2^NDC|20||EA^each\r" +
+                "ZPR|1|PRIORITY|SUPERFAST"
+        )
+        val result = HL7Validator().validate(msg)
+        assertEquals(AckSeverity.REJECT, result.worst)
+        assertTrue(result.issues.any { it.errorText == "Invalid priority: SUPERFAST (order 2)" })
+        assertTrue(result.issues.none { it.errorText.contains("order 1") })
     }
 
     // --- §2: VIVID ZUI NDC rejects malformed values ---
