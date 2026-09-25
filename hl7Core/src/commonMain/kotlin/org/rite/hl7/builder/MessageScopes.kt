@@ -58,6 +58,23 @@ class RdeO11Scope : MessageScope() {
     fun rxc(block: (RXCBuilder) -> Unit) = add(RXCBuilder(), block)
     fun nte(block: (NTEBuilder) -> Unit) = add(NTEBuilder(), block)
     fun zui(block: (ZUIOrderBuilder) -> Unit) = add(ZUIOrderBuilder(), block)
+
+    /**
+     * Sugar for one repeating order block: equivalent to calling
+     * [orc]/[rxe]/[rxr] directly in sequence. Purely for readability when
+     * building a multi-order RDE^O11 message — no functional difference,
+     * since segments are always appended in call order regardless.
+     */
+    fun order(block: OrderBlockScope.() -> Unit) {
+        OrderBlockScope(this).block()
+    }
+}
+
+/** Receiver for [RdeO11Scope.order]'s block — delegates straight back to the owning scope. */
+class OrderBlockScope(private val scope: RdeO11Scope) {
+    fun orc(block: (ORCBuilder) -> Unit) = scope.orc(block)
+    fun rxe(block: (RXEBuilder) -> Unit) = scope.rxe(block)
+    fun rxr(block: (RXRBuilder) -> Unit) = scope.rxr(block)
 }
 
 /** Scope for INR^U05 inventory count response (INV + ZIN rows). */

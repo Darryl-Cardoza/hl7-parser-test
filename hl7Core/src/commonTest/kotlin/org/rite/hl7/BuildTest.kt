@@ -77,4 +77,27 @@ class BuildTest {
         assertEquals("LOSS", zad?.adjustmentType)
         assertEquals("DAMAGED_IN_TRANSIT", zad?.adjustmentReason)
     }
+
+    @Test
+    fun rdeO11OrderSugarProducesTwoInterleavedOrderGroups() {
+        val msg = builder().rdeO11 {
+            msh { it.messageControlId = "MSG10002" }
+            order {
+                orc { it.orderControl = "NW"; it.placerOrderNumber = "ORD789" }
+                rxe { it.giveCode = "00071015523"; it.giveName = "LISINOPRIL 10MG TAB"; it.giveAmountMinimum = "10" }
+                rxr { it.routeCode = "PO"; it.routeText = "ORAL" }
+            }
+            order {
+                orc { it.orderControl = "NW"; it.placerOrderNumber = "ORD790" }
+                rxe { it.giveCode = "00093014701"; it.giveName = "AMLODIPINE 5MG TAB"; it.giveAmountMinimum = "5" }
+                rxr { it.routeCode = "PO"; it.routeText = "ORAL" }
+            }
+        }
+
+        assertEquals(2, msg.orderGroups.size)
+        assertEquals("ORD789", msg.orderGroups[0].orc.placerOrderNumber)
+        assertEquals("00071015523", msg.orderGroups[0].rxe?.giveCode)
+        assertEquals("ORD790", msg.orderGroups[1].orc.placerOrderNumber)
+        assertEquals("00093014701", msg.orderGroups[1].rxe?.giveCode)
+    }
 }
