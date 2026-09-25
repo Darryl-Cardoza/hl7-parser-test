@@ -21,7 +21,7 @@ import org.rite.hl7.validation.ValidationResult
  * directly; this is the batteries-included entry point.
  */
 class HL7(
-    version: String = "2.5",
+    version: String = "2.5.1",
     strictMode: Boolean = false,
     validationConfig: ValidationConfig = ValidationConfig.DEFAULT,
     extraSegments: List<SegmentDefinition> = emptyList(),

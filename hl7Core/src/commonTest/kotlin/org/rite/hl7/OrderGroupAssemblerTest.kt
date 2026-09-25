@@ -143,4 +143,84 @@ class OrderGroupAssemblerTest {
         assertEquals("High", groups[0].zpr[0].priority)
         assertEquals("Routine", groups[0].zpr[1].priority)
     }
+
+    @Test
+    fun tq1SegmentIsAttachedToItsOwnOrderGroupAcrossMultipleOrcs() {
+        val raw = """
+            MSH|^~\&|A|B|C|D|20260101||RDE^O11|1|P|2.5
+            ORC|NW|1001
+            TQ1|1|1^BID|||||202609250900||STAT
+            RXE|^0|11111111111^Drug1^NDC|10||EA^each
+            ORC|NW|1002
+            RXE|^0|22222222222^Drug2^NDC|20||EA^each
+            TQ1|1|1^QD|||||202609260900||ROUTINE
+        """.trimIndent()
+
+        val groups = OrderGroupAssembler.assemble(typedSegmentsOf(raw))
+
+        assertEquals(2, groups.size)
+        assertEquals("STAT", groups[0].tq1?.priority)
+        assertEquals("ROUTINE", groups[1].tq1?.priority)
+    }
+
+    @Test
+    fun orderGroupWithNoTq1SegmentHasNullTq1() {
+        val raw = "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
+            "ORC|NW|1001\r" +
+            "RXE|^0|12345678901^Drug^NDC|10||EA^each"
+
+        val groups = OrderGroupAssembler.assemble(typedSegmentsOf(raw))
+
+        assertNull(groups[0].tq1)
+    }
+
+    @Test
+    fun resolvedPriorityPrefersTq1OverOrcAndZpr() {
+        val raw = """
+            MSH|^~\&|A|B|C|D|20260101||RDE^O11|1|P|2.5
+            ORC|NW|1001|||||1^BID^^^^ROUTINE
+            TQ1|1|1^BID|||||||STAT
+            ZPR|1|PRIORITY|Low
+        """.trimIndent()
+
+        val groups = OrderGroupAssembler.assemble(typedSegmentsOf(raw))
+
+        assertEquals("STAT", groups[0].resolvedPriority)
+    }
+
+    @Test
+    fun resolvedPriorityFallsBackToOrc7WhenNoTq1Present() {
+        val raw = """
+            MSH|^~\&|A|B|C|D|20260101||RDE^O11|1|P|2.5
+            ORC|NW|1001|||||1^BID^^^^ROUTINE
+            ZPR|1|PRIORITY|Low
+        """.trimIndent()
+
+        val groups = OrderGroupAssembler.assemble(typedSegmentsOf(raw))
+
+        assertEquals("ROUTINE", groups[0].resolvedPriority)
+    }
+
+    @Test
+    fun resolvedPriorityFallsBackToZprWhenNoTq1OrOrc7PriorityPresent() {
+        val raw = """
+            MSH|^~\&|A|B|C|D|20260101||RDE^O11|1|P|2.5
+            ORC|NW|1001
+            ZPR|1|PRIORITY|Low
+        """.trimIndent()
+
+        val groups = OrderGroupAssembler.assemble(typedSegmentsOf(raw))
+
+        assertEquals("Low", groups[0].resolvedPriority)
+    }
+
+    @Test
+    fun resolvedPriorityIsBlankWhenNoSourceHasAPriority() {
+        val raw = "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\r" +
+            "ORC|NW|1001"
+
+        val groups = OrderGroupAssembler.assemble(typedSegmentsOf(raw))
+
+        assertEquals("", groups[0].resolvedPriority)
+    }
 }

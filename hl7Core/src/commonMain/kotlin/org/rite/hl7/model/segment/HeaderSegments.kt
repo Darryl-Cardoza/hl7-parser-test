@@ -3,6 +3,7 @@ package org.rite.hl7.model.segment
 import org.rite.hl7.model.SegmentDefinition
 import org.rite.hl7.model.TypedSegment
 import org.rite.hl7.model.ast.HL7Segment
+import org.rite.hl7.model.datatype.TQ
 
 /** MSH — Message Header. */
 class MSHSegment(raw: HL7Segment) : TypedSegment(raw) {
@@ -93,10 +94,34 @@ class ORCSegment(raw: HL7Segment) : TypedSegment(raw) {
     val orderingProviderFamilyName: String get() = component(12, 2)
     val orderingProviderGivenName: String get() = component(12, 3)
     val orderingFacility: String get() = fieldValue(21)
+    val quantityTiming: TQ get() = TQ.parse(raw.field(7))
 
     companion object {
         const val NAME = "ORC"
         val Definition = SegmentDefinition(NAME) { ORCSegment(it) }
+    }
+}
+
+/** TQ1 — Timing/Quantity (standalone, HL7 v2.5+). */
+class TQ1Segment(raw: HL7Segment) : TypedSegment(raw) {
+    val setId: String get() = fieldValue(1)
+    val quantity: String get() = fieldValue(2)
+    val repeatPattern: String get() = fieldValue(3)
+    val explicitTime: String get() = fieldValue(4)
+    val relativeTimeAndUnits: String get() = fieldValue(5)
+    val serviceDuration: String get() = fieldValue(6)
+    val startDateTime: String get() = fieldValue(7)
+    val endDateTime: String get() = fieldValue(8)
+    val priority: String get() = fieldValue(9)
+    val condition: String get() = fieldValue(10)
+    val text: String get() = fieldValue(11)
+    val conjunction: String get() = fieldValue(12)
+    val occurrenceDuration: String get() = fieldValue(13)
+    val totalOccurrences: String get() = fieldValue(14)
+
+    companion object {
+        const val NAME = "TQ1"
+        val Definition = SegmentDefinition(NAME) { TQ1Segment(it) }
     }
 }
 

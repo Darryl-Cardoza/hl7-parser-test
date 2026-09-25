@@ -45,6 +45,7 @@ class HL7Parser private constructor(
             try {
                 typed += registry.wrap(seg)
             } catch (e: Exception) {
+                //Never reaching here no exception at .wrap
                 errors += HL7ParseError(
                     message = e.message ?: "Failed to parse segment",
                     segmentName = seg.name,
