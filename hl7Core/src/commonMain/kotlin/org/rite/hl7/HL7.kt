@@ -21,7 +21,7 @@ import org.rite.hl7.validation.ValidationResult
  * directly; this is the batteries-included entry point.
  */
 class HL7(
-    version: String = "2.5.1",
+    version: String = "2.5",
     strictMode: Boolean = false,
     validationConfig: ValidationConfig = ValidationConfig.DEFAULT,
     extraSegments: List<SegmentDefinition> = emptyList(),
@@ -42,7 +42,6 @@ class HL7(
 
     fun parse(raw: String): HL7ParseResult = parser.parse(raw)
     fun parseMllp(bytes: ByteArray): HL7ParseResult = parser.parseMllp(bytes)
-    fun parseMllpBatch(bytes: ByteArray): List<HL7ParseResult> = parser.parseMllpBatch(bytes)
 
     fun build(): HL7Builder = builder
     fun validate(message: HL7Message): ValidationResult = validator.validate(message)

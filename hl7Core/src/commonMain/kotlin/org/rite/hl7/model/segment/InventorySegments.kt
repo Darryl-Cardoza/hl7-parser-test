@@ -3,8 +3,6 @@ package org.rite.hl7.model.segment
 import org.rite.hl7.model.SegmentDefinition
 import org.rite.hl7.model.TypedSegment
 import org.rite.hl7.model.ast.HL7Segment
-import org.rite.hl7.model.codedfield.EquipmentState
-import org.rite.hl7.model.codedfield.SubstanceStatus
 
 /**
  * EQU — Equipment Detail. Standard HL7 EQU-1 is the equipment identifier
@@ -20,8 +18,7 @@ class EQUSegment(raw: HL7Segment) : TypedSegment(raw) {
 
     val equipmentId: String get() = component(idField, 1)
     val eventDateTime: String get() = fieldValue(idField + 1)
-    val equipmentStateRaw: String get() = fieldValue(idField + 2)
-    val equipmentState: EquipmentState get() = EquipmentState.from(equipmentStateRaw)
+    val equipmentState: String get() = fieldValue(idField + 2)
     val localRemoteControlState: String get() = fieldValue(idField + 3)
     val alertLevel: String get() = fieldValue(idField + 4)
 
@@ -67,7 +64,7 @@ class EQUSegment(raw: HL7Segment) : TypedSegment(raw) {
  * Count-Result layout (standard-first INU^U05 count response, see
  * `plan/inu-u05-field-spec.md`; built by [org.rite.hl7.builder.InventoryCountINVBuilder]).
  * Wire example:
- * `INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384|||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123`
+ * `INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384||||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123`
  * - INV-1 Set ID — every child OBX's OBX-4 points back at this value
  * - INV-2 Item Identifier — NDC^name^codingSystem^serial^GTIN
  * - INV-3 Status — code^text^table
@@ -92,10 +89,9 @@ class INVSegment(raw: HL7Segment) : TypedSegment(raw) {
     val units: String get() = fieldValue(6)
 
     // --- Device Inventory Sync accessors (Parata, no leading Set-ID) ---
-    val substanceIdentifier: String get() = component(1, 1)
-    val substanceStatusRaw: String get() = component(2, 1)
-    val substanceStatus: SubstanceStatus get() = SubstanceStatus.from(substanceStatusRaw)
+    val deviceItemCode: String get() = component(1, 1)
     val deviceItemName: String get() = component(1, 2)
+    val deviceStatusCode: String get() = component(2, 1)
     val deviceTypeCode: String get() = component(3, 1)
     val deviceLocationCode: String get() = component(4, 1)
     val deviceLocationText: String get() = component(4, 2)

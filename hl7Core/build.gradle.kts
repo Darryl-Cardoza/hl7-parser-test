@@ -41,6 +41,7 @@ kotlin {
 val hl7CoreVersionEager = project.findProperty("hl7core.version")?.toString() ?: "unspecified"
 version = hl7CoreVersionEager
 
+
 multiplatformSwiftPackage {
     swiftToolsVersion("5.3")
     outputDirectory(File(projectDir, "swiftpackage"))

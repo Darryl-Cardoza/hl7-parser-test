@@ -6,19 +6,20 @@ import org.rite.hl7.util.HL7Date
 
 /**
  * Builds an ACK^R01 response for an inbound message and a [ValidationResult].
- * MSA-1 carries the worst severity (AA/AE/AR). One ERR segment is emitted per
- * non-ACCEPT issue, ordered as they appear in [ValidationResult.issues].
- * Sender/receiver are swapped from the inbound header so the ACK routes back.
+ * MSA-1 carries the worst severity (AA/AE/AR); MSA-3 carries the first
+ * failure's reason only — no ERR segments. Sender/receiver are swapped from
+ * the inbound header so the ACK routes back.
  */
 class AckBuilder(private val builder: HL7Builder = HL7Builder.builder().build()) {
 
     fun build(inbound: HL7Message, result: ValidationResult): HL7Message {
         val h = inbound.header
         val controlId = h?.messageControlId ?: ""
-        val failures = result.issues.filter { it.severity != AckSeverity.ACCEPT }
+        val firstFailure = result.issues.firstOrNull { it.severity != AckSeverity.ACCEPT }
 
         return builder.ack {
             msh {
+                // Swap sender/receiver from the inbound message.
                 it.sendingApplication = h?.receivingApplication ?: ""
                 it.sendingFacility = h?.receivingFacility ?: ""
                 it.receivingApplication = h?.sendingApplication ?: ""
@@ -31,20 +32,7 @@ class AckBuilder(private val builder: HL7Builder = HL7Builder.builder().build())
             msa {
                 it.acknowledgmentCode = result.worst.code
                 it.messageControlId = controlId
-                it.textMessage = failures.firstOrNull()?.errorText
-            }
-            failures.forEach { issue ->
-                err {
-                    it.segmentId = issue.segmentId
-                    it.fieldPosition = issue.fieldPosition
-                    it.errorCode = issue.errorCode
-                    it.errorText = issue.errorText
-                    it.severity = when (issue.severity) {
-                        AckSeverity.REJECT -> "E"
-                        AckSeverity.ERROR  -> "W"
-                        else               -> "I"
-                    }
-                }
+                it.textMessage = firstFailure?.errorText
             }
         }
     }

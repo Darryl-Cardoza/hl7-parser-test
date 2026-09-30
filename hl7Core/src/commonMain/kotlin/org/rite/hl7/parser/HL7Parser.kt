@@ -79,6 +79,7 @@ class HL7Parser private constructor(
     fun parseMllpBatch(bytes: ByteArray): List<HL7ParseResult> =
         Mllp.stripAll(bytes).map { parse(it) }
 
+
     /** Fluent builder for [HL7Parser]. */
     class Builder {
         private val registry = SegmentRegistry()

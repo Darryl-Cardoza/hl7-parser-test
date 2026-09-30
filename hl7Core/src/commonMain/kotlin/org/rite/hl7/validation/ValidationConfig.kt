@@ -28,7 +28,7 @@ data class ValidationConfig(
         )
         val DEFAULT_ADJUSTMENT_TYPES = setOf("LOSS", "GAIN", "ADD", "SUBTRACT", "OVERWRITE", "+", "-", "O")
         const val DEFAULT_QUERY_NAME = "IHE PCC StockOnHandQuery"
-        val DEFAULT_ORDER_CONTROL_CODES = setOf("NW", "XO", "CA", "RF")
+        val DEFAULT_ORDER_CONTROL_CODES = setOf("NW", "XO", "CA")
         val DEFAULT_PRIORITIES = setOf("HIGH", "ROUTINE")
         const val DEFAULT_MAX_QUANTITY = 9999
 

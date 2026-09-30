@@ -226,9 +226,9 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
 
                 val items = msg.segments<INVSegment>(INVSegment.NAME).map { inv ->
                     InventoryRequestItem(
-                        ndc = inv.substanceIdentifier,
+                        ndc = inv.deviceItemCode,
                         name = inv.deviceItemName,
-                        statusCode = inv.substanceStatusRaw,
+                        statusCode = inv.deviceStatusCode,
                         statusDesc = inv.raw.componentValue(2, 2),
                         typeCode = inv.deviceTypeCode,
                         typeDesc = inv.raw.componentValue(3, 2),
@@ -244,7 +244,7 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
                         messageId = msg.messageControlId,
                         timestamp = msg.header?.dateTimeOfMessage ?: "",
                         robotId = equ?.equipmentId ?: "",
-                        equipmentState = equ?.equipmentStateRaw ?: "",
+                        equipmentState = equ?.equipmentState ?: "",
                         items = items,
                         notes = notes,
                     )

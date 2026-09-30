@@ -20,7 +20,6 @@ import org.rite.hl7.model.segment.RXCSegment
 import org.rite.hl7.model.segment.RXDSegment
 import org.rite.hl7.model.segment.RXESegment
 import org.rite.hl7.model.segment.RXRSegment
-import org.rite.hl7.model.segment.TQ1Segment
 import org.rite.hl7.model.segment.ZINSegment
 import org.rite.hl7.model.segment.ZNISegment
 import org.rite.hl7.model.segment.ZPRSegment
@@ -44,7 +43,7 @@ class SegmentRegistry {
             EQUSegment.Definition, INVSegment.Definition, QPDSegment.Definition,
             RCPSegment.Definition, QAKSegment.Definition, ZINSegment.Definition,
             ZPRSegment.Definition, ZNISegment.Definition, ZUISegment.Definition,
-            BTSSegment.Definition, TQ1Segment.Definition,
+            BTSSegment.Definition,
         ).forEach { register(it) }
     }
 

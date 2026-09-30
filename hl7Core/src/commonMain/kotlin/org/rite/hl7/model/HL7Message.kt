@@ -29,12 +29,6 @@ class HL7Message internal constructor(
     /** Business classification (DISPENSE, INVENTORY_ADJUSTMENT, QUERY, …). */
     val kind: HL7MessageKind get() = HL7MessageKind.from(this)
 
-    /**
-     * Repeating RDE^O11 order groups ({ ORC + RXE + RXR + [ZPR] }), derived
-     * from [typedSegments]. Empty if the message has no ORC segment.
-     */
-    val orderGroups: List<OrderGroup> by lazy { OrderGroupAssembler.assemble(typedSegments) }
-
     /** All typed segments with the given name, in order. */
     fun segmentsNamed(name: String): List<TypedSegment> =
         typedSegments.filter { it.segmentName == name }

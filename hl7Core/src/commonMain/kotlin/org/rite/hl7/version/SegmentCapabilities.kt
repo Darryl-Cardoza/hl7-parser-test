@@ -29,7 +29,6 @@ object SegmentCapabilities {
         "QPD" to listOf(HL7Version.V25 to 60),
         "RCP" to listOf(HL7Version.V25 to 7),
         "QAK" to listOf(HL7Version.V25 to 8),
-        "TQ1" to listOf(HL7Version.V25 to 14),
     )
 
     /** Max 1-based field index for [segment] at [version], or null if uncapped (e.g. Z-segments). */
