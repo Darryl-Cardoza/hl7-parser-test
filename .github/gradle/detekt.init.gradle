@@ -1,0 +1,26 @@
+// Injects Detekt into every project. KMP modules have no src/main/kotlin, so the
+// source is overridden to the whole src/ tree (commonMain, androidMain, iosMain, tests).
+// Requires DETEKT_CONFIG to point at the shared detekt.yml.
+initscript {
+    def v = System.getenv('DETEKT_VERSION') ?: '1.23.7'
+    repositories { gradlePluginPortal(); mavenCentral() }
+    dependencies { classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$v" }
+}
+
+allprojects {
+    apply plugin: io.gitlab.arturbosch.detekt.DetektPlugin
+    afterEvaluate {
+        tasks.named('detekt') {
+            setSource(files('src'))
+            include '**/*.kt'
+            exclude '**/build/**', '**/generated/**'
+            buildUponDefaultConfig = true
+            config.setFrom(files(System.getenv('DETEKT_CONFIG')))
+            reports {
+                html.required = true
+                xml.required = true
+                sarif.required = true
+            }
+        }
+    }
+}

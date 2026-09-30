@@ -1,0 +1,22 @@
+// CycloneDX SBOM from the root project. hl7Core is skipped: its KMP variant matrix
+// defeats the plugin's dependency walking. composeApp depends on it as a project
+// dependency, so its transitive libraries still land in the SBOM.
+initscript {
+    def v = System.getenv('CYCLONEDX_VERSION') ?: '1.10.0'
+    repositories { gradlePluginPortal(); mavenCentral() }
+    dependencies { classpath "org.cyclonedx:cyclonedx-gradle-plugin:$v" }
+}
+
+rootProject {
+    apply plugin: org.cyclonedx.gradle.CycloneDxPlugin
+    cyclonedxBom {
+        includeConfigs = ['releaseRuntimeClasspath']
+        skipProjects = ['hl7Core']
+        projectType = 'application'
+        schemaVersion = '1.5'
+        destination = file('build/reports/sbom')
+        outputName = 'bom'
+        outputFormat = 'json'
+        includeBomSerialNumber = false
+    }
+}

@@ -1,0 +1,396 @@
+name: KMP CI
+
+# Self-contained CI for the Kotlin Multiplatform project (:hl7Core, :composeApp).
+# Tools are injected through Gradle init scripts in .github/gradle, so no build
+# file changes are needed. Linux jobs run commonTest via the Android unit-test
+# task; the macOS job compiles and tests the iOS targets.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kmp-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: "17"
+  DETEKT_VERSION: "1.23.7"
+  SPOTLESS_VERSION: "6.25.0"
+  KTLINT_VERSION: "1.3.1"
+  CYCLONEDX_VERSION: "1.10.0"
+  GITLEAKS_VERSION: "8.21.2"
+  TRIVY_VERSION: "0.74.0"
+  SEMGREP_VERSION: "1.165.0"
+  # Start at 0 and ratchet up to just under the first measured values.
+  COVERAGE_THRESHOLD: "0"
+  COVERAGE_BRANCH_THRESHOLD: "0"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  # ------------------------------------------------------------------ 1
+  quality:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "${{ env.JAVA_VERSION }}" }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { cache-read-only: "${{ github.ref != 'refs/heads/main' }}" }
+
+      # Non-blocking until the codebase has had one `spotlessApply` commit.
+      - name: Format check (Spotless + ktlint)
+        continue-on-error: true
+        run: ./gradlew -I .github/gradle/spotless.init.gradle spotlessCheck --no-daemon --stacktrace
+
+      - name: Formatting hint on failure
+        if: failure()
+        run: echo "::notice::Run './gradlew -I .github/gradle/spotless.init.gradle spotlessApply' to fix formatting."
+
+      - name: Static analysis (Detekt)
+        continue-on-error: true
+        env:
+          DETEKT_CONFIG: ${{ github.workspace }}/.github/config/detekt.yml
+        run: ./gradlew -I .github/gradle/detekt.init.gradle detekt --no-daemon --continue --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports-lint-format
+          path: "**/build/reports/detekt/"
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ------------------------------------------------------------------ 2
+  android_lint:
+    name: Android Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "${{ env.JAVA_VERSION }}" }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { cache-read-only: "${{ github.ref != 'refs/heads/main' }}" }
+
+      # Non-blocking until a lint-baseline.xml is generated per module.
+      - name: Run Android Lint
+        continue-on-error: true
+        run: ./gradlew :hl7Core:lintDebug :composeApp:lintDebug --no-daemon --continue --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports-android-lint
+          path: |
+            **/build/reports/lint-results*.*
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ------------------------------------------------------------------ 3
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # gitleaks scans history
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "${{ env.JAVA_VERSION }}" }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { cache-read-only: "${{ github.ref != 'refs/heads/main' }}" }
+
+      - name: Install gitleaks
+        run: |
+          set -euo pipefail
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSLo /tmp/gitleaks.tar.gz "$base/$tarball"
+          curl -sSLo /tmp/gitleaks_checksums.txt "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          EXPECTED=$(grep "$tarball\$" /tmp/gitleaks_checksums.txt | awk '{print $1}')
+          ACTUAL=$(sha256sum /tmp/gitleaks.tar.gz | awk '{print $1}')
+          if [ -z "$EXPECTED" ] || [ "$EXPECTED" != "$ACTUAL" ]; then
+            echo "::error::gitleaks checksum mismatch (expected $EXPECTED, got $ACTUAL)"; exit 1
+          fi
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
+
+      - name: Scan for committed secrets
+        run: |
+          gitleaks detect --source . --report-format sarif --report-path gitleaks.sarif \
+            --redact --exit-code 1 --verbose
+
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      - name: Install Semgrep
+        run: python -m pip install --quiet --disable-pip-version-check "semgrep==${SEMGREP_VERSION}"
+
+      - name: Run Semgrep (SAST)
+        run: |
+          # Never fail here; the gate step decides, so a scanner outage isn't mistaken for a finding.
+          # --json and --sarif are mutually exclusive, hence two runs.
+          ARGS=(--config p/kotlin --config p/java --config p/secrets
+                --exclude build --exclude '**/generated/**' --metrics=off --no-error)
+          semgrep scan "${ARGS[@]}" --json --output semgrep.json || true
+          semgrep scan "${ARGS[@]}" --sarif --sarif-output semgrep.sarif || true
+          test -f semgrep.json || echo '{"results":[],"errors":[]}' > semgrep.json
+
+      - name: Gate on Semgrep ERROR findings
+        run: |
+          ERRORS=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' semgrep.json)
+          WARNS=$(jq '[.results[] | select(.extra.severity == "WARNING")] | length' semgrep.json)
+          echo "Semgrep: ${ERRORS} error(s), ${WARNS} warning(s)"
+          if [ "$ERRORS" -gt 0 ]; then
+            jq -r '.results[] | select(.extra.severity == "ERROR")
+                   | "::error file=\(.path),line=\(.start.line)::[\(.check_id)] \(.extra.message | gsub("\n"; " "))"' semgrep.json
+            exit 1
+          fi
+
+      - name: Generate SBOM (CycloneDX)
+        continue-on-error: true
+        run: ./gradlew -I .github/gradle/cyclonedx.init.gradle cyclonedxBom --no-daemon --stacktrace
+
+      - name: Install Trivy
+        run: |
+          set -euo pipefail
+          base="https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}"
+          tarball="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          curl -sSLo /tmp/trivy.tar.gz "$base/$tarball"
+          curl -sSLo /tmp/trivy_checksums.txt "$base/trivy_${TRIVY_VERSION}_checksums.txt"
+          EXPECTED=$(grep "$tarball\$" /tmp/trivy_checksums.txt | awk '{print $1}')
+          ACTUAL=$(sha256sum /tmp/trivy.tar.gz | awk '{print $1}')
+          if [ -z "$EXPECTED" ] || [ "$EXPECTED" != "$ACTUAL" ]; then
+            echo "::error::trivy checksum mismatch (expected $EXPECTED, got $ACTUAL)"; exit 1
+          fi
+          tar -xzf /tmp/trivy.tar.gz -C /tmp trivy
+          sudo install -m 0755 /tmp/trivy /usr/local/bin/trivy
+
+      # Non-blocking: a first scan of an existing app almost always has findings.
+      - name: Scan dependencies for known CVEs
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          SBOM="build/reports/sbom/bom.json"
+          if [ -f "$SBOM" ]; then
+            trivy sbom "$SBOM" --format json --output trivy.json --severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0
+            trivy sbom "$SBOM" --format table --severity HIGH,CRITICAL --exit-code 0
+          else
+            echo "::warning::SBOM not generated -- falling back to filesystem scan."
+            trivy fs . --scanners vuln --format json --output trivy.json --severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 0
+            trivy fs . --scanners vuln --format table --severity HIGH,CRITICAL --exit-code 0
+          fi
+          COUNT=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH" or .Severity=="CRITICAL")] | length' trivy.json)
+          echo "Trivy: ${COUNT} HIGH/CRITICAL vulnerabilities"
+          [ "$COUNT" -eq 0 ]
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports-security
+          path: |
+            semgrep.json
+            semgrep.sarif
+            gitleaks.sarif
+            trivy.json
+            build/reports/sbom/
+          if-no-files-found: ignore
+          retention-days: 30
+
+  # ------------------------------------------------------------------ 4
+  test:
+    name: Unit Tests & Coverage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write   # only for the PR coverage comment
+    outputs:
+      coverage_percent: ${{ steps.coverage.outputs.coverage_percent }}
+      branch_coverage_percent: ${{ steps.coverage.outputs.branch_coverage_percent }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "${{ env.JAVA_VERSION }}" }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { cache-read-only: "${{ github.ref != 'refs/heads/main' }}" }
+
+      # commonTest runs here through the Android target's unit-test task.
+      - name: Run unit tests + JaCoCo report
+        run: |
+          ./gradlew -I .github/gradle/jacoco.init.gradle \
+            :hl7Core:testDebugUnitTest :composeApp:testDebugUnitTest jacocoRootReport \
+            --no-daemon --stacktrace
+
+      - name: Check coverage thresholds
+        id: coverage
+        run: |
+          set -euo pipefail
+          XML="build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
+          [ -f "$XML" ] || { echo "::error::JaCoCo XML not found at $XML"; exit 1; }
+
+          # Report-level counters are the LAST ones in the document (after every package).
+          read_counter () {
+            grep -oE "<counter type=\"$1\" missed=\"[0-9]+\" covered=\"[0-9]+\"[[:space:]]*/>" "$XML" \
+              | tail -1 | grep -oE "$2=\"[0-9]+\"" | grep -oE "[0-9]+" || echo ""
+          }
+          pct () {
+            awk -v m="$1" -v c="$2" 'BEGIN { t=m+c; if (t==0) print "0.00"; else printf "%.2f", (c/t)*100 }'
+          }
+
+          LM=$(read_counter LINE missed);   LC=$(read_counter LINE covered)
+          [ -n "$LM" ] && [ -n "$LC" ] || { echo "::error::Could not read LINE counters."; exit 1; }
+          LINE_PCT=$(pct "$LM" "$LC")
+
+          BM=$(read_counter BRANCH missed); BC=$(read_counter BRANCH covered)
+          if [ -n "$BM" ] && [ -n "$BC" ]; then BRANCH_PCT=$(pct "$BM" "$BC"); else BRANCH_PCT="0.00"; fi
+
+          echo "coverage_percent=$LINE_PCT"          >> "$GITHUB_OUTPUT"
+          echo "branch_coverage_percent=$BRANCH_PCT" >> "$GITHUB_OUTPUT"
+          echo "Line coverage:   ${LINE_PCT}% (threshold ${COVERAGE_THRESHOLD}%)"
+          echo "Branch coverage: ${BRANCH_PCT}% (threshold ${COVERAGE_BRANCH_THRESHOLD}%)"
+
+          FAILED=0
+          if awk -v p="$LINE_PCT" -v t="$COVERAGE_THRESHOLD" 'BEGIN { exit !(p+0 < t+0) }'; then
+            echo "::error::Line coverage ${LINE_PCT}% is below threshold ${COVERAGE_THRESHOLD}%"; FAILED=1
+          fi
+          if awk -v p="$BRANCH_PCT" -v t="$COVERAGE_BRANCH_THRESHOLD" 'BEGIN { exit !(t+0 > 0 && p+0 < t+0) }'; then
+            echo "::error::Branch coverage ${BRANCH_PCT}% is below threshold ${COVERAGE_BRANCH_THRESHOLD}%"; FAILED=1
+          fi
+          exit "$FAILED"
+
+      - name: Comment coverage on PR
+        if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        continue-on-error: true
+        uses: madrapps/jacoco-report@v1.7.1
+        with:
+          paths: build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
+          token: ${{ github.token }}
+          min-coverage-overall: ${{ env.COVERAGE_THRESHOLD }}
+          min-coverage-changed-files: ${{ env.COVERAGE_THRESHOLD }}
+          title: "JaCoCo Coverage"
+          update-comment: true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-reports
+          path: build/reports/jacoco/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ------------------------------------------------------------------ 5
+  build:
+    name: Build APK & AAB
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "${{ env.JAVA_VERSION }}" }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { cache-read-only: "${{ github.ref != 'refs/heads/main' }}" }
+
+      # Debug only: the release build type has no signingConfig, so it would be unusable.
+      - name: Build debug APK & AAB
+        run: ./gradlew :composeApp:assembleDebug :composeApp:bundleDebug --no-daemon --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-build-outputs-debug
+          path: |
+            composeApp/build/outputs/apk/
+            composeApp/build/outputs/bundle/
+          if-no-files-found: warn
+          retention-days: 14
+
+  # ------------------------------------------------------------------ 6
+  ios:
+    name: iOS (Kotlin/Native)
+    runs-on: macos-latest   # arm64, so the simulator tests run natively
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "${{ env.JAVA_VERSION }}" }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { cache-read-only: "${{ github.ref != 'refs/heads/main' }}" }
+
+      - name: Cache Kotlin/Native toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-
+
+      # Deliberately not running :hl7Core:createSwiftPackage here: it shells out to lipo
+      # via exec{} and belongs in a release workflow, not a per-PR gate.
+      - name: iOS tests + framework link
+        run: |
+          ./gradlew \
+            :hl7Core:iosSimulatorArm64Test \
+            :hl7Core:linkReleaseFrameworkIosSimulatorArm64 \
+            :composeApp:linkReleaseFrameworkIosSimulatorArm64 \
+            --no-daemon --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports-ios
+          path: |
+            hl7Core/build/reports/tests/
+            hl7Core/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ------------------------------------------------------------------ 7
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [quality, android_lint, security, test, build, ios]
+    if: ${{ always() }}
+    steps:
+      - name: Compose job summary
+        env:
+          QUALITY: ${{ needs.quality.result }}
+          ANDROID_LINT: ${{ needs.android_lint.result }}
+          SECURITY: ${{ needs.security.result }}
+          TEST: ${{ needs.test.result }}
+          BUILD: ${{ needs.build.result }}
+          IOS: ${{ needs.ios.result }}
+          LINE_COV: ${{ needs.test.outputs.coverage_percent }}
+          BRANCH_COV: ${{ needs.test.outputs.branch_coverage_percent }}
+        run: |
+          icon () { case "$1" in success) echo "✅";; skipped) echo "⏭️";; *) echo "❌";; esac; }
+          {
+            echo "## KMP CI"
+            echo
+            echo "| Job | Result |"
+            echo "|---|---|"
+            echo "| Lint & Format | $(icon "$QUALITY") $QUALITY |"
+            echo "| Android Lint | $(icon "$ANDROID_LINT") $ANDROID_LINT |"
+            echo "| Security | $(icon "$SECURITY") $SECURITY |"
+            echo "| Unit Tests & Coverage | $(icon "$TEST") $TEST |"
+            echo "| Build APK & AAB | $(icon "$BUILD") $BUILD |"
+            echo "| iOS | $(icon "$IOS") $IOS |"
+            echo
+            echo "**Coverage:** line ${LINE_COV:-n/a}% (min ${COVERAGE_THRESHOLD}%), branch ${BRANCH_COV:-n/a}% (min ${COVERAGE_BRANCH_THRESHOLD}%)"
+          } >> "$GITHUB_STEP_SUMMARY"

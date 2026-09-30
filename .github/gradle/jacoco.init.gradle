@@ -1,0 +1,43 @@
+// Coverage for Android unit tests (which is where KMP commonTest runs on Linux).
+// Adds a root task `jacocoRootReport` aggregating :hl7Core and :composeApp.
+// Sources include commonMain -- without it the report shows 0% for all library code.
+def modules = ['hl7Core', 'composeApp']
+
+allprojects {
+    apply plugin: 'jacoco'
+    ['com.android.library', 'com.android.application'].each { id ->
+        pluginManager.withPlugin(id) {
+            project.android.buildTypes.getByName('debug').enableUnitTestCoverage = true
+        }
+    }
+}
+
+gradle.projectsEvaluated {
+    def root = gradle.rootProject
+    def subs = modules.collect { root.findProject(":$it") }.findAll { it != null }
+
+    root.tasks.register('jacocoRootReport', JacocoReport) {
+        group = 'verification'
+        subs.each { dependsOn "${it.path}:testDebugUnitTest" }
+
+        executionData.from(subs.collect {
+            it.fileTree(dir: it.layout.buildDirectory, include: '**/*.exec')
+        })
+        classDirectories.from(subs.collect {
+            it.fileTree(dir: "${it.buildDir}/tmp/kotlin-classes/debug", excludes: [
+                '**/R.class', '**/R$*.class', '**/BuildConfig.*',
+                '**/*ComposableSingletons*', '**/*$$serializer*', '**/*_Factory*',
+            ])
+        })
+        sourceDirectories.from(subs.collectMany {
+            [it.file('src/commonMain/kotlin'), it.file('src/androidMain/kotlin')]
+        }.findAll { it.exists() })
+
+        reports {
+            xml.required = true
+            html.required = true
+            xml.outputLocation = root.layout.buildDirectory.file('reports/jacoco/jacocoRootReport/jacocoRootReport.xml')
+            html.outputLocation = root.layout.buildDirectory.dir('reports/jacoco/jacocoRootReport/html')
+        }
+    }
+}
