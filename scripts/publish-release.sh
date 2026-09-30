@@ -9,8 +9,6 @@ set -euo pipefail
 #   - gh CLI installed and authenticated (gh auth login)
 #   - Xcode command line tools installed (for swift, lipo)
 #   - GITHUB_TOKEN env var set, OR gh CLI is authenticated
-#   - hl7Core/specSource/ directory must exist with spec JSON files
-#     (required by the generateSpecConstants Gradle task)
 #
 # Usage:
 #   ./scripts/publish-release.sh
@@ -27,15 +25,7 @@ if [[ -z "$VERSION" ]]; then
 fi
 
 TAG="v${VERSION}"
-XCFRAMEWORK_ZIP="hl7Core/swiftpackage/Hl7Core.xcframework.zip"
-
-# Guard: fail fast if specSource is missing (Gradle task will fail without it)
-if [[ ! -d "hl7Core/specSource" ]]; then
-    echo "ERROR: hl7Core/specSource/ directory not found."
-    echo "       The generateSpecConstants Gradle task requires this directory."
-    echo "       Ensure spec JSON files are present before running a release."
-    exit 1
-fi
+XCFRAMEWORK_ZIP="hl7Core/swiftpackage/Hl7Core-${VERSION}.zip"
 
 # Guard: fail if tag already exists remotely
 if gh release view "$TAG" &>/dev/null; then
