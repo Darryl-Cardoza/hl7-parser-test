@@ -57,7 +57,7 @@ echo "==> Checksum: $CHECKSUM"
 # ---------------------------------------------------------------------------
 # Step 3: Update Package.swift with real URL + checksum
 # ---------------------------------------------------------------------------
-RELEASE_URL="https://github.com/bhushanrite/PillCount-Hl7/releases/download/${TAG}/Hl7Core-${VERSION}.zip"
+RELEASE_URL="https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder/releases/download/${TAG}/Hl7Core-${VERSION}.zip"
 
 echo "==> Updating Package.swift..."
 sed -i '' "s|url: \".*\"|url: \"${RELEASE_URL}\"|" Package.swift
@@ -97,11 +97,11 @@ gh release create "$TAG" \
 
 ### iOS (Swift Package Manager)
 Add in Xcode → File → Add Package Dependencies:
-\`https://github.com/bhushanrite/PillCount-Hl7\`
+\`https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder\`
 
 Or in your Package.swift:
 \`\`\`swift
-.package(url: \"https://github.com/bhushanrite/PillCount-Hl7\", from: \"${VERSION}\")
+.package(url: \"https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder\", from: \"${VERSION}\")
 \`\`\`
 
 Also copy \`hl7Core/swiftshim/HL7Interop.swift\` into your app target for idiomatic Swift access.
@@ -127,7 +127,7 @@ echo ""
 echo "==> Release $TAG complete!"
 echo ""
 echo "    iOS:     Xcode → Add Package Dependencies"
-echo "             https://github.com/bhushanrite/PillCount-Hl7"
+echo "             https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder"
 echo ""
 echo "    Android: implementation(\"org.rite.hl7:hl7core:${VERSION}\")"
 echo "             (requires GitHub PAT with read:packages — see docs/consumer/ANDROID_INTEGRATION.md)"

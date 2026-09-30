@@ -137,26 +137,23 @@ Then in Xcode:
 
 # 🤖 Android Integration
 
-> ⚠️ Library is **not published to Maven yet** — use as a local Gradle module.
+Download the AAR from the [latest GitHub Release](https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder/releases/latest):
+- File: `hl7Core-release.aar`
+- Place it in your app's `libs/` folder
 
-## Step 1 — Include Module
-
-In your root `settings.gradle.kts`:
-
-```kotlin
-include(":libraries:hl7-parser")
-project(":libraries:hl7-parser").projectDir = File("path/to/hl7Core")
-```
-
-## Step 2 — Add Dependency
+In `app/build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation(project(":libraries:hl7-parser"))
+    implementation(files("libs/hl7Core-release.aar"))
 }
 ```
 
-## Step 3 — Usage (Kotlin)
+Sync project. No Maven account or token required.
+
+**Upgrading:** download the new AAR from the release page, replace the file in `libs/`, sync.
+
+## Usage (Kotlin)
 
 ```kotlin
 import org.rite.hl7.parser.HL7Parser
@@ -213,43 +210,25 @@ message parses generically; unknown segments are preserved losslessly via
 
 # 🍎 iOS Integration
 
-## Option 1 — Local Swift Package (Recommended)
+## Remote Swift Package (Recommended)
 
-### Step 1 — Generate the xcframework
+1. Open Xcode → **File → Add Package Dependencies**
+2. Paste: `https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder`
+3. Version rule: **Up to Next Major** from `1.0.0`
+4. Add `Hl7Core` to your app target
+
+No token required. Xcode downloads the binary automatically from GitHub Releases.
+
+Also copy `hl7Core/swiftshim/HL7Interop.swift` into your Xcode target for idiomatic Swift API.
+
+## Local Swift Package (for contributors / development)
 
 ```bash
 ./gradlew :hl7Core:linkReleaseFrameworkIosSimulatorArm64
 ./gradlew :hl7Core:createSwiftPackage
 ```
 
-### Step 2 — Add to Xcode
-
-- Open Xcode → **File → Add Package Dependencies**
-- Click **Add Local...**
-- Navigate to `hl7Core/swiftpackage/`
-- Select the folder containing `Package.swift`
-- Add `Hl7Core` library to your target
-
-### Step 3 — Configure Build Settings
-
-In your Xcode target → **Build Settings**:
-
-```
-Other Linker Flags:                     -ObjC
-Excluded Architectures (Simulator):     x86_64
-iOS Deployment Target:                  16.0
-```
-
-In **Frameworks, Libraries, and Embedded Content**:
-- Set `Hl7Core` → **Do Not Embed**
-
-## Option 2 — Remote Swift Package
-
-```
-https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder
-```
-
-> ⚠️ Requires Git LFS to be enabled on the remote if xcframework binaries are committed.
+Then in Xcode → **File → Add Package Dependencies** → **Add Local** → select `hl7Core/swiftpackage/`.
 
 ## Swift Usage
 
@@ -289,6 +268,40 @@ let out = builder.rdsO13 { scope in
 > Without the shim, parse results are matched with `onEnum(of:)` /
 > `as? HL7ParseResultSuccess` and typed access via
 > `message.segmentNamed(name:) as? INVSegment`.
+
+---
+
+# 🚀 Publishing a New Release
+
+Run these commands on macOS (requires `gh` CLI authenticated):
+
+```bash
+# 1. Bump version in gradle.properties
+#    hl7core.version=1.1.0
+
+# 2. Build iOS xcframework
+./gradlew createSwiftPackage
+
+# 3. Build Android AAR
+./gradlew :hl7Core:bundleReleaseAar
+
+# 4. Create GitHub Release and upload both artifacts
+gh release create vX.Y.Z \
+  "hl7Core/swiftpackage/Hl7Core-X.Y.Z.zip" \
+  "hl7Core/build/outputs/aar/hl7Core-release.aar" \
+  --title "vX.Y.Z" \
+  --notes "Release notes here"
+
+# 5. Update Package.swift checksum
+CHECKSUM=$(swift package compute-checksum hl7Core/swiftpackage/Hl7Core-X.Y.Z.zip)
+sed -i '' "s|url: \".*\"|url: \"https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder/releases/download/vX.Y.Z/Hl7Core-X.Y.Z.zip\"|" Package.swift
+sed -i '' "s|checksum: \".*\"|checksum: \"${CHECKSUM}\"|" Package.swift
+
+# 6. Commit and push
+git add Package.swift
+git commit -m "chore: update Package.swift for release vX.Y.Z"
+git push origin main
+```
 
 ---
 

@@ -234,7 +234,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/bhushanrite/PillCount-Hl7")
+            url = uri("https://maven.pkg.github.com/Rite-Technologies-23/mobrite_hl7_parser_builder")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                     ?: providers.gradleProperty("gpr.user").orNull

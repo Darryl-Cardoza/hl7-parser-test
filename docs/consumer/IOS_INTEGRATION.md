@@ -8,7 +8,7 @@ iOS distribution uses GitHub Releases (public asset download). No authentication
 
 1. Open your project in Xcode
 2. **File → Add Package Dependencies**
-3. Paste URL: `https://github.com/bhushanrite/PillCount-Hl7`
+3. Paste URL: `https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder`
 4. Select version rule: **Up to Next Major** from `1.0.0`
 5. Add `Hl7Core` to your app target → **Add Package**
 
@@ -17,7 +17,7 @@ iOS distribution uses GitHub Releases (public asset download). No authentication
 ```swift
 dependencies: [
     .package(
-        url: "https://github.com/bhushanrite/PillCount-Hl7",
+        url: "https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder",
         from: "1.0.0"
     )
 ],
@@ -63,5 +63,5 @@ Or change the version in your `Package.swift` and run `swift package resolve`.
 | Error | Cause | Fix |
 |---|---|---|
 | Checksum mismatch | Cached old version | File → Packages → Reset Package Caches |
-| `binaryTarget` not found | Wrong repo URL | Verify URL is `https://github.com/bhushanrite/PillCount-Hl7` |
+| `binaryTarget` not found | Wrong repo URL | Verify URL is `https://github.com/Rite-Technologies-23/mobrite_hl7_parser_builder` |
 | Build error after update | API change in new version | Check release notes on the GitHub Release page |

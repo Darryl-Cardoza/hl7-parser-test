@@ -32,7 +32,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven {
-            url = uri("https://maven.pkg.github.com/bhushanrite/PillCount-Hl7")
+            url = uri("https://maven.pkg.github.com/Rite-Technologies-23/mobrite_hl7_parser_builder")
             credentials {
                 username = providers.gradleProperty("gpr.user").orNull
                 password = providers.gradleProperty("gpr.token").orNull
