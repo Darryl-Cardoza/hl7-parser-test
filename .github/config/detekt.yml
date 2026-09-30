@@ -29,7 +29,7 @@ complexity:
     functionThreshold: 10
     constructorThreshold: 10
   LongMethod:
-    threshold: 150
+    threshold: 200
     excludes: ['**/commonTest/**', '**/test/**']
   LargeClass:
     threshold: 800

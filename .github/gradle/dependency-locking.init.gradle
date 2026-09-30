@@ -1,0 +1,14 @@
+// Writes gradle.lockfile per project from the resolved dependency GRAPH, so Trivy can
+// scan real dependency versions. Usage:
+//   ./gradlew -I .github/gradle/dependency-locking.init.gradle dependencies --write-locks
+//
+// Deliberately not a CycloneDX Gradle plugin: it selects ARTIFACTS as well, and that
+// fails on this project ("cannot choose between the following variants of :hl7Core")
+// because composeApp consumes an Android KMP library with many variants. The plugin's
+// skipProjects only skips a project's own configurations, not its use as a dependency,
+// so no plugin setting avoids it. Graph resolution never picks artifacts.
+allprojects {
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+}
