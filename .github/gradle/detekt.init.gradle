@@ -1,26 +1,34 @@
-// Injects Detekt into every project. KMP modules have no src/main/kotlin, so the
-// source is overridden to the whole src/ tree (commonMain, androidMain, iosMain, tests).
-// Requires DETEKT_CONFIG to point at the shared detekt.yml.
-initscript {
-    def v = System.getenv('DETEKT_VERSION') ?: '1.23.7'
-    repositories { gradlePluginPortal(); mavenCentral() }
-    dependencies { classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$v" }
-}
+// Runs the standalone detekt-cli over every module's src/ tree.
+//
+// Deliberately NOT the Detekt Gradle plugin: applied from an init script it loads in
+// an isolated classloader that cannot see the Kotlin Gradle plugin, and crashes with
+// NoClassDefFoundError: KotlinMultiplatformExtension on KMP projects. The CLI jar is
+// self-contained (embeds its own Kotlin compiler), so it also works with any project
+// Kotlin version. Requires DETEKT_CONFIG to point at the shared detekt.yml.
+rootProject {
+    def version = System.getenv('DETEKT_VERSION') ?: '1.23.7'
+    def cli = configurations.create('detektCli')
+    dependencies.add('detektCli', "io.gitlab.arturbosch.detekt:detekt-cli:${version}:all")
 
-allprojects {
-    apply plugin: io.gitlab.arturbosch.detekt.DetektPlugin
-    afterEvaluate {
-        tasks.named('detekt') {
-            setSource(files('src'))
-            include '**/*.kt'
-            exclude '**/build/**', '**/generated/**'
-            buildUponDefaultConfig = true
-            config.setFrom(files(System.getenv('DETEKT_CONFIG')))
-            reports {
-                html.required = true
-                xml.required = true
-                sarif.required = true
-            }
+    tasks.register('detekt', JavaExec) {
+        group = 'verification'
+        classpath = cli
+        mainClass = 'io.gitlab.arturbosch.detekt.cli.Main'
+
+        def reportDir = layout.buildDirectory.dir('reports/detekt').get().asFile
+
+        doFirst {
+            reportDir.mkdirs()
+            def inputs = rootProject.allprojects.collect { it.file('src') }.findAll { it.exists() }
+            args = [
+                '--input', inputs.join(','),
+                '--config', System.getenv('DETEKT_CONFIG'),
+                '--build-upon-default-config',
+                '--excludes', '**/build/**,**/generated/**',
+                '--report', "html:${reportDir}/detekt.html",
+                '--report', "xml:${reportDir}/detekt.xml",
+                '--report', "sarif:${reportDir}/detekt.sarif",
+            ]
         }
     }
 }
