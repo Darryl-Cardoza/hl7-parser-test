@@ -97,6 +97,24 @@ class SegmentFieldIndexTest {
         assertEquals("1001", pid.patientAccountNumber)
     }
 
+    @Test fun pid_patientIdList_single() {
+        val msg = parse("""
+            MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
+            PID|1||MRN001^^^HOS^PI
+        """)
+        val pid = msg.segment<PIDSegment>(PIDSegment.NAME)!!
+        assertEquals(listOf("MRN001"), pid.patientIdList())
+    }
+
+    @Test fun pid_patientIdList_multiple_repetitions() {
+        val msg = parse("""
+            MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
+            PID|1||MRN001^^^HOS^PI~SSN999^^^SSA^SS
+        """)
+        val pid = msg.segment<PIDSegment>(PIDSegment.NAME)!!
+        assertEquals(listOf("MRN001", "SSN999"), pid.patientIdList())
+    }
+
     // --- PV1 new fields ---
     @Test fun pv1_new_fields() {
         val msg = parse("""
@@ -211,7 +229,7 @@ class SegmentFieldIndexTest {
             RXE||00069015505^Drug^NDC|30|60|TAB||||G||||DR001||RX001||||||||||||||||||||DEA_CLASS
         """)
         val rxe = msg.segment<RXESegment>(RXESegment.NAME)!!
-        assertEquals("DEA_CLASS", rxe.deaClass)
+        assertEquals("DEA_CLASS", rxe.controlledSubstanceSchedule)
         assertEquals("DR001", rxe.orderingProviderDeaNumber)
     }
 }

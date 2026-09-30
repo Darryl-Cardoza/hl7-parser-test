@@ -39,7 +39,11 @@ class AckBuilder(private val builder: HL7Builder = HL7Builder.builder().build())
                     it.fieldPosition = issue.fieldPosition
                     it.errorCode = issue.errorCode
                     it.errorText = issue.errorText
-                    it.severity = "E"
+                    it.severity = when (issue.severity) {
+                        AckSeverity.REJECT -> "E"
+                        AckSeverity.ERROR  -> "W"
+                        else               -> "I"
+                    }
                 }
             }
         }

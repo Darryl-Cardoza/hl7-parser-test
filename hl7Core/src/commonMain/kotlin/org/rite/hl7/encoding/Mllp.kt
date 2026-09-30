@@ -40,6 +40,10 @@ object Mllp {
      * Splits a byte stream containing one or more concatenated MLLP frames
      * (e.g. multiple messages sent back-to-back over the same MLLP connection)
      * and returns the raw HL7 message text of each frame, in order.
+     *
+     * An unterminated trailing frame (no EB+CR at end — network truncation or
+     * partial write) is included as-is. The downstream parser will return a
+     * [HL7ParseResult.Failure] for it; it does not affect other frames.
      */
     fun stripAll(bytes: ByteArray): List<String> {
         val messages = mutableListOf<String>()

@@ -69,6 +69,8 @@ class AckBuilderErrTest {
         assertEquals(2, errs.size)
         assertEquals("First error", errs[0].errorText)
         assertEquals("Second error", errs[1].errorText)
+        assertEquals("E", errs[0].severity)
+        assertEquals("W", errs[1].severity)
     }
 
     @Test fun msa_acknowledgment_code_reflects_worst_severity() {

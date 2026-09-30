@@ -1,6 +1,8 @@
 package org.rite.hl7.model.codedfield
 
 sealed class EquipmentState(val code: String) {
+    object A   : EquipmentState("A")
+    object I   : EquipmentState("I")
     object IN  : EquipmentState("IN")
     object CO  : EquipmentState("CO")
     object PU  : EquipmentState("PU")
@@ -18,6 +20,7 @@ sealed class EquipmentState(val code: String) {
 
     companion object {
         fun from(raw: String): EquipmentState = when (raw.uppercase()) {
+            "A" -> A; "I" -> I
             "IN" -> IN; "CO" -> CO; "PU" -> PU; "RS" -> RS; "ID" -> ID
             "OP" -> OP; "CL" -> CL; "PA" -> PA; "PD" -> PD; "ES" -> ES
             "DC" -> DC; "DI" -> DI; "UNK" -> UNK

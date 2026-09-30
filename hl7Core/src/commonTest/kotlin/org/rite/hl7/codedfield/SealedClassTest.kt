@@ -64,6 +64,13 @@ class SealedClassTest {
     @Test fun equipmentState_known_round_trip() {
         assertIs<EquipmentState.OP>(EquipmentState.from("OP"))
         assertIs<EquipmentState.UNK>(EquipmentState.from("UNK"))
+        assertIs<EquipmentState.A>(EquipmentState.from("A"))
+        assertIs<EquipmentState.I>(EquipmentState.from("I"))
+    }
+
+    @Test fun equipmentState_active_idle_code_preserved() {
+        assertEquals("A", EquipmentState.from("A").code)
+        assertEquals("I", EquipmentState.from("I").code)
     }
 
     @Test fun substanceStatus_known_round_trip() {

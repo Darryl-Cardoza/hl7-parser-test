@@ -26,7 +26,7 @@ class RXESegment(raw: HL7Segment) : TypedSegment(raw) {
     val prescriptionNumber: String get() = fieldValue(15)
     val substitutionStatusRaw: String get() = fieldValue(9)
     val substitutionStatus: SubstitutionStatus get() = SubstitutionStatus.from(substitutionStatusRaw)
-    val deaClass: String get() = fieldValue(35)
+    val controlledSubstanceSchedule: String get() = fieldValue(35)
     val orderingProviderDeaNumber: String get() = component(13, 1)
 
     companion object {

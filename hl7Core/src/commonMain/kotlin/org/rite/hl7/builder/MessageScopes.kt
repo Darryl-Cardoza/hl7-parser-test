@@ -75,6 +75,9 @@ class OrderBlockScope(private val scope: RdeO11Scope) {
     fun orc(block: (ORCBuilder) -> Unit) = scope.orc(block)
     fun rxe(block: (RXEBuilder) -> Unit) = scope.rxe(block)
     fun rxr(block: (RXRBuilder) -> Unit) = scope.rxr(block)
+    fun rxc(block: (RXCBuilder) -> Unit) = scope.rxc(block)
+    fun nte(block: (NTEBuilder) -> Unit) = scope.nte(block)
+    fun zui(block: (ZUIOrderBuilder) -> Unit) = scope.zui(block)
 }
 
 /** Scope for INR^U05 inventory count response (INV + ZIN rows). */

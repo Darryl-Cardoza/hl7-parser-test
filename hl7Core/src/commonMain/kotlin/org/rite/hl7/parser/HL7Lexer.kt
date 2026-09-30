@@ -42,7 +42,7 @@ object HL7Lexer {
             )
         }
 
-        val extraMsh = lines.drop(1).indexOfFirst { it.startsWith("MSH") }
+        val extraMsh = lines.drop(1).indexOfFirst { it.startsWith("MSH") && (it.length == 3 || it[3] == '|') }
         if (extraMsh >= 0) {
             return LexResult(
                 emptyList(),

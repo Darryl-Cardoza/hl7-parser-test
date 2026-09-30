@@ -1,10 +1,12 @@
 package org.rite.hl7.parser.inventory
 
+import org.rite.hl7.model.codedfield.EquipmentState
 import org.rite.hl7.model.segment.EQUSegment
 import org.rite.hl7.parser.HL7ParseResult
 import org.rite.hl7.parser.HL7Parser
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -48,12 +50,14 @@ class EquSegmentParsingTest {
     fun withLeadingSetIdParsesEquipmentStateActive() {
         val equ = parseEqu("EQU|1|TERMINAL_13^Terminal 13^RITE|20260901134041|A")
         assertEquals("A", equ.equipmentStateRaw)
+        assertIs<EquipmentState.A>(equ.equipmentState)
     }
 
     @Test
     fun withLeadingSetIdParsesEquipmentStateIdle() {
         val equ = parseEqu("EQU|1|TERMINAL_13^Terminal 13^RITE|20260901134041|I")
         assertEquals("I", equ.equipmentStateRaw)
+        assertIs<EquipmentState.I>(equ.equipmentState)
     }
 
     // --- Without leading Set-ID (composite at field 1) ---

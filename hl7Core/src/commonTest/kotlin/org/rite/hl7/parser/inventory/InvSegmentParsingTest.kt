@@ -152,7 +152,7 @@ class InvSegmentParsingTest {
     @Test
     fun countResultLayoutParsesSetId() {
         val inv = parseInv(
-            "INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384||||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123",
+            "INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384|||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123",
             msgType = "INR^U05"
         )
         assertEquals("1", inv.countSetId)
@@ -161,7 +161,7 @@ class InvSegmentParsingTest {
     @Test
     fun countResultLayoutParsesItemCode() {
         val inv = parseInv(
-            "INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384||||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123",
+            "INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384|||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123",
             msgType = "INR^U05"
         )
         assertEquals("00009-5134-03", inv.countItemCode)
@@ -170,7 +170,7 @@ class InvSegmentParsingTest {
     @Test
     fun countResultLayoutParsesSerialNumber() {
         val inv = parseInv(
-            "INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384||||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123",
+            "INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384|||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123",
             msgType = "INR^U05"
         )
         assertEquals("SERIAL001", inv.countSerialNumber)
@@ -179,7 +179,7 @@ class InvSegmentParsingTest {
     @Test
     fun countResultLayoutParsesGtin() {
         val inv = parseInv(
-            "INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384||||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123",
+            "INV|1|00009-5134-03^LISINOPRIL 10MG TAB^L^SERIAL001^00300095134032|A^Active^HL70383|DRUG^Drug^HL70384|||50|50|50|TAB^Tablets^UCUM|20280630||||ABC123",
             msgType = "INR^U05"
         )
         assertEquals("00300095134032", inv.countGtin)
