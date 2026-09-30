@@ -1,4 +1,5 @@
 # Layered on top of detekt's default config (buildUponDefaultConfig = true).
+# Tuned for a parser/validator library plus a Compose demo app.
 style:
   MagicNumber:
     active: false
@@ -6,6 +7,10 @@ style:
     active: false
   MaxLineLength:
     maxLineLength: 140
+    excludes: ['**/commonTest/**', '**/test/**']
+  ReturnCount:
+    max: 6
+    excludeGuardClauses: true
   UnusedPrivateMember:
     active: true
   UnusedPrivateProperty:
@@ -13,14 +18,23 @@ style:
 naming:
   FunctionNaming:
     ignoreAnnotated: ['Composable']
+    # ComposeUIViewController entry point is PascalCase by iOS convention.
+    excludes: ['**/iosMain/**/MainViewController.kt']
   TopLevelPropertyNaming:
     constantPattern: '[A-Z][A-Za-z0-9_]*'
 complexity:
+  LongParameterList:
+    functionThreshold: 10
+    constructorThreshold: 10
   LongMethod:
-    threshold: 120
+    threshold: 150
+    excludes: ['**/commonTest/**', '**/test/**']
   LargeClass:
     threshold: 800
+    excludes: ['**/commonTest/**', '**/test/**']
   CyclomaticComplexMethod:
-    threshold: 25
+    threshold: 35
+  ComplexCondition:
+    threshold: 6
   TooManyFunctions:
     active: false

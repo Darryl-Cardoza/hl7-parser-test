@@ -9,6 +9,12 @@ initscript {
 
 rootProject {
     apply plugin: org.cyclonedx.gradle.CycloneDxPlugin
+
+    // The plugin refuses to run unless the root project has a group and version.
+    // This repo sets neither, so fill them in only when missing.
+    if (!group?.toString()) group = 'org.rite.hl7'
+    if (!version || version.toString() == 'unspecified') version = '1.0'
+
     cyclonedxBom {
         includeConfigs = ['releaseRuntimeClasspath']
         skipProjects = ['hl7Core']
