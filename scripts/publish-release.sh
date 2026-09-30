@@ -57,7 +57,7 @@ echo "==> Checksum: $CHECKSUM"
 # ---------------------------------------------------------------------------
 # Step 3: Update Package.swift with real URL + checksum
 # ---------------------------------------------------------------------------
-RELEASE_URL="https://github.com/bhushanrite/PillCount-Hl7/releases/download/${TAG}/Hl7Core.xcframework.zip"
+RELEASE_URL="https://github.com/bhushanrite/PillCount-Hl7/releases/download/${TAG}/Hl7Core-${VERSION}.zip"
 
 echo "==> Updating Package.swift..."
 sed -i '' "s|url: \".*\"|url: \"${RELEASE_URL}\"|" Package.swift
