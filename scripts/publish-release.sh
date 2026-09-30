@@ -68,6 +68,22 @@ echo "==> Package.swift updated"
 # Step 4: Publish Android to GitHub Packages
 # ---------------------------------------------------------------------------
 echo "==> Publishing Android to GitHub Packages..."
+# Resolve credentials: CI uses GITHUB_ACTOR/GITHUB_TOKEN env vars.
+# Local runs: read from ~/.gradle/gradle.properties (gpr.user / gpr.token).
+if [[ -z "${GITHUB_ACTOR:-}" ]]; then
+    GPR_PROPS="$HOME/.gradle/gradle.properties"
+    if [[ ! -f "$GPR_PROPS" ]]; then
+        echo "ERROR: GITHUB_ACTOR not set and ~/.gradle/gradle.properties not found."
+        echo "       Add gpr.user and gpr.token to ~/.gradle/gradle.properties"
+        exit 1
+    fi
+    export GITHUB_ACTOR=$(grep '^gpr.user=' "$GPR_PROPS" | cut -d'=' -f2 | tr -d '[:space:]')
+    export GITHUB_TOKEN=$(grep '^gpr.token=' "$GPR_PROPS" | cut -d'=' -f2 | tr -d '[:space:]')
+    if [[ -z "$GITHUB_ACTOR" || -z "$GITHUB_TOKEN" ]]; then
+        echo "ERROR: gpr.user or gpr.token missing in ~/.gradle/gradle.properties"
+        exit 1
+    fi
+fi
 ./gradlew :hl7Core:publishAllPublicationsToGitHubPackagesRepository
 
 # ---------------------------------------------------------------------------
