@@ -22,3 +22,8 @@ hl7Core/swiftpackage/ComposeApp-unspecified.zip
 plan/**/*.md
 .worktrees
 CLAUDE.md
+
+# Credential guard — these must never be committed
+gradle.properties.local
+*.properties.local
+gpr.properties
