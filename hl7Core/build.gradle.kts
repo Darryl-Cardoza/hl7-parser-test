@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinxSerialization)
     id("com.chromaticnoise.multiplatform-swiftpackage") version "2.0.3"
+    `maven-publish`
 }
 
 kotlin {
@@ -220,4 +221,35 @@ kotlin {
 
 tasks.matching { it.name.startsWith("compileKotlin") || it.name.startsWith("compile") }.configureEach {
     dependsOn(generateSpecConstants)
+}
+
+// ---------------------------------------------------------------------------
+// Publishing — GitHub Packages (Android) and local Maven (dev/testing)
+// ---------------------------------------------------------------------------
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/bhushanrite/PillCount-Hl7")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                    ?: providers.gradleProperty("gpr.user").orNull
+                password = System.getenv("GITHUB_TOKEN")
+                    ?: providers.gradleProperty("gpr.token").orNull
+            }
+        }
+    }
+}
+
+// KMP plugin auto-creates publications; set groupId/artifactId/version on all
+afterEvaluate {
+    val hl7CoreVersion = project.findProperty("hl7core.version")?.toString() ?: "unspecified"
+    publishing.publications.withType<MavenPublication>().configureEach {
+        groupId = "org.rite.hl7"
+        artifactId = when (name) {
+            "kotlinMultiplatform" -> "hl7core"
+            else -> "hl7core-$name"
+        }
+        version = hl7CoreVersion
+    }
 }
