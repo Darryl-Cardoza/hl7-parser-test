@@ -152,7 +152,8 @@ fun HL7TestScreen() {
                             listOf("Parse FAILED [defaultVersion=$selectedVersion]") +
                                 result.errors.map { "  ${it.segmentName ?: "?"}: ${it.message}" } +
                                 (result.partialMessage?.let {
-                                    listOf("  partial: type=${it.messageCode}^${it.triggerEvent} segments=${it.typedSegments.map { s -> s.segmentName }}")
+                                    val segments = it.typedSegments.map { s -> s.segmentName }
+                                    listOf("  partial: type=${it.messageCode}^${it.triggerEvent} segments=$segments")
                                 } ?: emptyList())
                         )
                     }

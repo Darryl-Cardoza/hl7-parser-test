@@ -7,6 +7,8 @@ style:
     active: false
   MaxLineLength:
     maxLineLength: 140
+    # KDoc carries literal HL7 sample messages that can't be wrapped.
+    excludeCommentStatements: true
     excludes: ['**/commonTest/**', '**/test/**']
   ReturnCount:
     max: 6

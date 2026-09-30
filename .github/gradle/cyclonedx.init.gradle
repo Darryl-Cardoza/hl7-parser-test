@@ -7,22 +7,24 @@ initscript {
     dependencies { classpath "org.cyclonedx:cyclonedx-gradle-plugin:$v" }
 }
 
-rootProject {
-    apply plugin: org.cyclonedx.gradle.CycloneDxPlugin
+rootProject { p ->
+    p.apply plugin: org.cyclonedx.gradle.CycloneDxPlugin
 
     // The plugin refuses to run unless the root project has a group and version.
-    // This repo sets neither, so fill them in only when missing.
-    if (!group?.toString()) group = 'org.rite.hl7'
-    if (!version || version.toString() == 'unspecified') version = '1.0'
+    // This repo sets neither, so fill them in only when missing. Set on `p`
+    // explicitly: a bare `group = ...` in an init-script closure can bind to the
+    // script instead of the project and silently do nothing.
+    if (!p.group?.toString()) p.group = 'org.rite.hl7'
+    if (!p.version || p.version.toString() == 'unspecified') p.version = '1.0'
+    println "cyclonedx: root project ${p.group}:${p.name}:${p.version}"
 
-    cyclonedxBom {
-        includeConfigs = ['releaseRuntimeClasspath']
-        skipProjects = ['hl7Core']
-        projectType = 'application'
-        schemaVersion = '1.5'
-        destination = file('build/reports/sbom')
-        outputName = 'bom'
-        outputFormat = 'json'
-        includeBomSerialNumber = false
-    }
+    def bom = p.tasks.getByName('cyclonedxBom')
+    bom.includeConfigs = ['releaseRuntimeClasspath']
+    bom.skipProjects = ['hl7Core']
+    bom.projectType = 'application'
+    bom.schemaVersion = '1.5'
+    bom.destination = p.file('build/reports/sbom')
+    bom.outputName = 'bom'
+    bom.outputFormat = 'json'
+    bom.includeBomSerialNumber = false
 }

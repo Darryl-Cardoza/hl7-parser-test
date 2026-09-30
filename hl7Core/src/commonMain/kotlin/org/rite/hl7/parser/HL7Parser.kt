@@ -44,7 +44,7 @@ class HL7Parser private constructor(
         lex.segments.forEachIndexed { index, seg ->
             try {
                 typed += registry.wrap(seg)
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) { // any wrap() failure becomes a per-segment parse error
                 errors += HL7ParseError(
                     message = e.message ?: "Failed to parse segment",
                     segmentName = seg.name,

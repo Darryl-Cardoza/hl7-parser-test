@@ -50,6 +50,7 @@ object HL7Escaping {
      * Decodes wire text to a raw string. Resolves the five delimiter escapes,
      * `\Xhh..\` hex sequences, and leaves unknown escapes intact.
      */
+    @Suppress("LoopWithTooManyJumpStatements") // single-pass scanner; splitting the loop would obscure it
     fun unescape(wire: String, d: HL7Delimiters): String {
         val e = d.escape
         if (wire.indexOf(e) < 0) return wire
