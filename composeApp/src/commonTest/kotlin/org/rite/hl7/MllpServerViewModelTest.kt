@@ -73,7 +73,7 @@ class MllpServerViewModelTest {
     }
 
     @Test
-    fun serverErrorEventSetsStatusToStopped() {
+    fun serverErrorEventSetsStatusToStoppedAndPopulatesLastError() {
         val fake = FakeMllpServerDelegate()
         val vm = MllpServerViewModel(fake)
 
@@ -81,6 +81,44 @@ class MllpServerViewModelTest {
         fake.emit(MllpSessionEvent.ServerError("bind failed"))
 
         assertEquals(MllpServerStatus.STOPPED, vm.uiState.value.status)
+        assertEquals("bind failed", vm.uiState.value.lastError)
+    }
+
+    @Test
+    fun connectionErrorStaysListeningAndSetsLastError() {
+        val fake = FakeMllpServerDelegate()
+        val vm = MllpServerViewModel(fake)
+
+        vm.start(2575)
+        fake.emit(MllpSessionEvent.ConnectionError("client timed out"))
+
+        // Non-fatal: server is still LISTENING; only lastError is updated.
+        assertEquals(MllpServerStatus.LISTENING, vm.uiState.value.status)
+        assertEquals("client timed out", vm.uiState.value.lastError)
+    }
+
+    @Test
+    fun lateServerStoppedFromOldSessionIgnoredWhenNewSessionRunning() {
+        val fake = FakeMllpServerDelegate()
+        var capturedCallback: ((MllpSessionEvent) -> Unit)? = null
+        val delegate = object : MllpServerDelegate {
+            override fun start(port: Int, onEvent: (MllpSessionEvent) -> Unit) {
+                capturedCallback = onEvent
+            }
+            override fun stop() {}
+        }
+        val vm = MllpServerViewModel(delegate)
+
+        vm.start(2575)                        // session 1 callback captured
+        val session1Callback = capturedCallback!!
+
+        vm.stop()
+        vm.start(9999)                        // session 2 starts
+
+        // Session 1's late ServerStopped must NOT flip the new session to STOPPED
+        vm.handleEvent(MllpSessionEvent.ServerStopped, session = 1)
+
+        assertEquals(MllpServerStatus.LISTENING, vm.uiState.value.status)
     }
 }
 

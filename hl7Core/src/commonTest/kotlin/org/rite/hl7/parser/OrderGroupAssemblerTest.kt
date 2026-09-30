@@ -1,4 +1,4 @@
-package org.rite.hl7
+package org.rite.hl7.parser
 
 import org.rite.hl7.model.OrderGroupAssembler
 import org.rite.hl7.model.segment.MSHSegment

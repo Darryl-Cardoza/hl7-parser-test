@@ -26,18 +26,28 @@ data class MllpMessageInfo(
  */
 data class MllpServerState(
     val status: MllpServerStatus = MllpServerStatus.STOPPED,
-    val port: Int = 2575,                       // HL7 standard MLLP port
+    val port: Int = 2575,                           // HL7 standard MLLP port
     val boundAddresses: List<String> = emptyList(), // IPv4 addresses of this device
     val totalReceived: Int = 0,
     val lastMessage: MllpMessageInfo? = null,
+    /** Non-null when the last event was a ServerError or ConnectionError. */
+    val lastError: String? = null,
 )
 
 /** Events emitted by the server loop to [MllpServerViewModel]. */
 sealed class MllpSessionEvent {
     /** A complete HL7 message was received, validated, and ACK sent. */
     data class MessageReceived(val info: MllpMessageInfo) : MllpSessionEvent()
-    /** The server socket threw an unexpected error (not a stop signal). */
+    /**
+     * The server socket threw an unexpected fatal error (bind failure, OOM, etc).
+     * The accept loop has exited — status transitions to STOPPED.
+     */
     data class ServerError(val message: String) : MllpSessionEvent()
-    /** The server stopped (either user-requested or due to error). */
+    /**
+     * A single client connection failed (read error, write error, soTimeout).
+     * The accept loop continues — status stays LISTENING.
+     */
+    data class ConnectionError(val message: String) : MllpSessionEvent()
+    /** The server stopped (either user-requested or due to a fatal error). */
     object ServerStopped : MllpSessionEvent()
 }

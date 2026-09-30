@@ -28,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,8 +56,8 @@ import androidx.compose.ui.unit.dp
 fun MllpServerScreen(viewModel: MllpServerViewModel) {
     val state by viewModel.uiState.collectAsState()
 
-    // Port field is local UI state; only committed to the ViewModel on Start.
-    var portText by remember { mutableStateOf("2575") }
+    // rememberSaveable survives screen rotation; remember would reset the port on config change.
+    var portText by rememberSaveable { mutableStateOf("2575") }
     val portValid = portText.toIntOrNull()?.let { it in 1..65535 } == true
     val isRunning = state.status != MllpServerStatus.STOPPED
 
@@ -159,6 +160,35 @@ fun MllpServerScreen(viewModel: MllpServerViewModel) {
                     "Messages received: ${state.totalReceived}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
+            }
+
+            // ── Last error banner (ConnectionError or ServerError) ─────────────
+            // ConnectionError: one client failed, server still LISTENING.
+            // ServerError: fatal bind/accept failure, server is now STOPPED.
+            val lastError = state.lastError
+            if (lastError != null) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                        ),
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                "Connection Error",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                lastError,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
+                        }
+                    }
+                }
             }
 
             // ── Last message detail (null until first message arrives) ─────────

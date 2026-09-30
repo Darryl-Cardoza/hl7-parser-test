@@ -1,4 +1,4 @@
-package org.rite.hl7
+package org.rite.hl7.parser
 
 import org.rite.hl7.model.segment.ZADSegment
 import org.rite.hl7.parser.HL7Parser
@@ -1100,5 +1100,4 @@ class ValidationTest {
         val result = HL7Validator().validate(msg)
         assertEquals(AckSeverity.ACCEPT, result.worst)
     }
-
 }

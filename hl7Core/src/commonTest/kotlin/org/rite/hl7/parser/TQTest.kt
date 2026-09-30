@@ -1,4 +1,4 @@
-package org.rite.hl7
+package org.rite.hl7.parser
 
 import org.rite.hl7.encoding.HL7Delimiters
 import org.rite.hl7.model.datatype.TQ

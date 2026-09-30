@@ -1,4 +1,4 @@
-package org.rite.hl7
+package org.rite.hl7.parser
 
 import org.rite.hl7.model.segment.ZNISegment
 import org.rite.hl7.parser.HL7ParseResult

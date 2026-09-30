@@ -16,8 +16,8 @@ import kotlinx.coroutines.flow.update
  * Android-only [java.net.NetworkInterface]. The Android factory passes
  * `{ MllpServer.localAddresses() }`; test code passes `{ listOf("127.0.0.1") }`.
  *
- * State updates always happen on the Main dispatcher via [viewModelScope] +
- * [MutableStateFlow.update], so the UI never races with the IO socket thread.
+ * State updates always happen via [MutableStateFlow.update], which is thread-safe,
+ * so the IO socket thread may call [handleEvent] directly without a dispatcher hop.
  */
 class MllpServerViewModel(
     private val delegate: MllpServerDelegate,
@@ -27,18 +27,26 @@ class MllpServerViewModel(
     private val _uiState = MutableStateFlow(MllpServerState())
     val uiState: StateFlow<MllpServerState> = _uiState.asStateFlow()
 
+    // Monotonically increasing session counter. Incremented on every start().
+    // A late ServerStopped from a previous session carries the old ID and is
+    // ignored when a new server is already running with a higher ID.
+    private var currentSession = 0
+
     /**
      * Starts the MLLP server on [port].
      * Transitions status to LISTENING immediately, then processes events
      * as they arrive from the server loop.
      */
     fun start(port: Int) {
+        currentSession++
+        val session = currentSession
         val addresses = try { localAddresses() } catch (_: Exception) { emptyList() }
         _uiState.update {
             it.copy(
                 status = MllpServerStatus.LISTENING,
                 port = port,
                 boundAddresses = addresses,
+                lastError = null,
             )
         }
 
@@ -46,7 +54,7 @@ class MllpServerViewModel(
             // MutableStateFlow.update is thread-safe; called directly from the
             // IO socket thread. Compose observes via collectAsState and recomposes
             // on the next frame automatically.
-            handleEvent(event)
+            handleEvent(event, session)
         }
     }
 
@@ -68,7 +76,7 @@ class MllpServerViewModel(
         delegate.stop()
     }
 
-    private fun handleEvent(event: MllpSessionEvent) {
+    internal fun handleEvent(event: MllpSessionEvent, session: Int = currentSession) {
         when (event) {
             is MllpSessionEvent.MessageReceived -> {
                 _uiState.update { state ->
@@ -78,12 +86,31 @@ class MllpServerViewModel(
                         status = MllpServerStatus.LISTENING,
                         totalReceived = state.totalReceived + 1,
                         lastMessage = event.info,
+                        lastError = null,
                     )
                 }
             }
-            is MllpSessionEvent.ServerError,
+            is MllpSessionEvent.ConnectionError -> {
+                // Non-fatal: one client connection failed. Accept loop continues.
+                // Stay LISTENING; surface the error so the user can diagnose.
+                _uiState.update { state ->
+                    state.copy(lastError = event.message)
+                }
+            }
+            is MllpSessionEvent.ServerError -> {
+                // Fatal: the server socket itself failed. Accept loop has exited.
+                _uiState.update { it.copy(
+                    status = MllpServerStatus.STOPPED,
+                    boundAddresses = emptyList(),
+                    lastError = event.message,
+                ) }
+            }
             is MllpSessionEvent.ServerStopped -> {
-                _uiState.update { it.copy(status = MllpServerStatus.STOPPED, boundAddresses = emptyList()) }
+                // Guard against a late ServerStopped from a previous loop firing
+                // after a new server has already started (race: stop → quick restart).
+                if (session == currentSession) {
+                    _uiState.update { it.copy(status = MllpServerStatus.STOPPED, boundAddresses = emptyList()) }
+                }
             }
         }
     }
