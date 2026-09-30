@@ -35,4 +35,32 @@ object Mllp {
         }
         return bytes.copyOfRange(start, end).decodeToString()
     }
+
+    /**
+     * Splits a byte stream containing one or more concatenated MLLP frames
+     * (e.g. multiple messages sent back-to-back over the same MLLP connection)
+     * and returns the raw HL7 message text of each frame, in order.
+     */
+    fun stripAll(bytes: ByteArray): List<String> {
+        val messages = mutableListOf<String>()
+        var pos = 0
+        while (pos < bytes.size) {
+            var start = pos
+            if (bytes[start] == SB) start++
+            var i = start
+            var end = bytes.size
+            var next = bytes.size
+            while (i < bytes.size - 1) {
+                if (bytes[i] == EB && bytes[i + 1] == CR) {
+                    end = i
+                    next = i + 2
+                    break
+                }
+                i++
+            }
+            messages += bytes.copyOfRange(start, end).decodeToString()
+            pos = next
+        }
+        return messages
+    }
 }

@@ -7,7 +7,7 @@ sealed class AckCode(val code: String) {
     object CA : AckCode("CA")
     object CE : AckCode("CE")
     object CR : AckCode("CR")
-    class Unknown(val raw: String) : AckCode(raw)
+    data class Unknown(val raw: String) : AckCode(raw)
 
     companion object {
         fun from(raw: String): AckCode = when (raw.uppercase()) {

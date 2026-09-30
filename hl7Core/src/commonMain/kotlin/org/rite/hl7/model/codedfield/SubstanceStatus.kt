@@ -12,7 +12,7 @@ sealed class SubstanceStatus(val code: String) {
     object OW : SubstanceStatus("OW")
     object OE : SubstanceStatus("OE")
     object OK : SubstanceStatus("OK")
-    class Unknown(val raw: String) : SubstanceStatus(raw)
+    data class Unknown(val raw: String) : SubstanceStatus(raw)
 
     companion object {
         fun from(raw: String): SubstanceStatus = when (raw.uppercase()) {

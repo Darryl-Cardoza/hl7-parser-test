@@ -14,7 +14,7 @@ sealed class EquipmentState(val code: String) {
     object DC  : EquipmentState("DC")
     object DI  : EquipmentState("DI")
     object UNK : EquipmentState("UNK")
-    class Unknown(val raw: String) : EquipmentState(raw)
+    data class Unknown(val raw: String) : EquipmentState(raw)
 
     companion object {
         fun from(raw: String): EquipmentState = when (raw.uppercase()) {

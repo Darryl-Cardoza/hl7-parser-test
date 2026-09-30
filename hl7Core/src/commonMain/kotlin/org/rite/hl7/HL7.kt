@@ -42,6 +42,7 @@ class HL7(
 
     fun parse(raw: String): HL7ParseResult = parser.parse(raw)
     fun parseMllp(bytes: ByteArray): HL7ParseResult = parser.parseMllp(bytes)
+    fun parseMllpBatch(bytes: ByteArray): List<HL7ParseResult> = parser.parseMllpBatch(bytes)
 
     fun build(): HL7Builder = builder
     fun validate(message: HL7Message): ValidationResult = validator.validate(message)

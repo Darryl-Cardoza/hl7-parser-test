@@ -2,6 +2,7 @@ package org.rite.hl7.validation
 
 import org.rite.hl7.model.HL7Message
 import org.rite.hl7.model.HL7MessageKind
+import org.rite.hl7.model.codedfield.OrderControl
 import org.rite.hl7.model.segment.INVSegment
 import org.rite.hl7.model.segment.OBXSegment
 import org.rite.hl7.model.segment.QAKSegment
@@ -176,10 +177,10 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         val orc = group.orc
 
         val control = orc.orderControl
-        if (control !in config.knownOrderControlCodes) {
+        if (control.code !in config.knownOrderControlCodes) {
             issues += ValidationIssue(
                 AckSeverity.REJECT,
-                "Unsupported order control code: $control$suffix",
+                "Unsupported order control code: ${control.code}$suffix",
                 "ORC", "1", "302",
             )
         }
@@ -189,7 +190,7 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
 
         // A cancel order identifies the order to cancel via ORC alone —
         // it carries no drug/quantity payload, so RXE isn't required.
-        if (control == "CA") return
+        if (control is OrderControl.CA) return
 
         val rxe = group.rxe
         if (rxe == null) {
@@ -292,14 +293,14 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         invSegments.forEachIndexed { index, inv ->
             val position = index + 1
             when {
-                inv.deviceItemCode.isBlank() -> issues += ValidationIssue(
+                inv.substanceIdentifier.isBlank() -> issues += ValidationIssue(
                     AckSeverity.REJECT, "Missing NDC in INV $position", "INV", "1", "445",
                 )
-                !isValidNdc(inv.deviceItemCode) -> issues += ValidationIssue(
+                !isValidNdc(inv.substanceIdentifier) -> issues += ValidationIssue(
                     AckSeverity.REJECT, "Invalid NDC in INV $position", "INV", "1", "445",
                 )
             }
-            if (inv.deviceStatusCode.isBlank()) {
+            if (inv.substanceStatus.code.isBlank()) {
                 issues += ValidationIssue(AckSeverity.REJECT, "Missing status in INV $position", "INV", "2", "446")
             }
         }
@@ -318,10 +319,10 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
                 val position = index + 1
                 if (inv.fieldCount > INVSegment.DEVICE_SYNC_FIELD_THRESHOLD) {
                     when {
-                        inv.deviceItemCode.isBlank() -> issues += ValidationIssue(
+                        inv.substanceIdentifier.isBlank() -> issues += ValidationIssue(
                             AckSeverity.REJECT, "Missing NDC in INV $position", "INV", "1", "411",
                         )
-                        !isValidNdc(inv.deviceItemCode) -> issues += ValidationIssue(
+                        !isValidNdc(inv.substanceIdentifier) -> issues += ValidationIssue(
                             AckSeverity.REJECT, "Invalid NDC in INV $position", "INV", "1", "411",
                         )
                     }
@@ -413,6 +414,15 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
 
     private fun validateSupportedType(message: HL7Message, issues: MutableList<ValidationIssue>) {
         if (message.messageCode.isBlank() || message.triggerEvent.isBlank()) return // already flagged by validateHeader
+        // INU^U06 is outbound only (inventory update sent by library to PMS); reject inbound.
+        if (message.messageCode.uppercase() == "INU" && message.triggerEvent.uppercase() == "U06") {
+            issues += ValidationIssue(
+                AckSeverity.REJECT,
+                "Unsupported message type ${message.messageCode}^${message.triggerEvent}",
+                "MSH", "9", "500",
+            )
+            return
+        }
         // ACK is the server's own outbound response type; it must never be accepted inbound.
         if (message.kind != HL7MessageKind.UNKNOWN && message.messageCode.uppercase() != "ACK") return
         issues += ValidationIssue(
@@ -438,7 +448,7 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
     companion object {
         // "001" is a known device quirk (e.g. VIVID) sending a zero instead of
         // the standard letter-O trigger for RDE^O01.
-        private val DISPENSE_TRIGGERS = setOf("O11", "O01", "001")
+        private val DISPENSE_TRIGGERS = setOf("O11", "O01", "001", "O25")
         private const val INVENTORY_TRIGGER = "U06"
 
         // 11-digit NDC (project convention, no hyphens) or the standard

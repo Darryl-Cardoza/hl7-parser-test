@@ -19,7 +19,7 @@ sealed class OrderControl(val code: String) {
     object RO : OrderControl("RO")
     object XO : OrderControl("XO")
     object RE : OrderControl("RE")
-    class Unknown(val raw: String) : OrderControl(raw)
+    data class Unknown(val raw: String) : OrderControl(raw)
 
     companion object {
         fun from(raw: String): OrderControl = when (raw.uppercase()) {

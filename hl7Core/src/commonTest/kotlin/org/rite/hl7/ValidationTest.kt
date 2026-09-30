@@ -245,11 +245,11 @@ class ValidationTest {
     }
 
     @Test
-    fun ackCarriesFirstFailureReasonInMsa3AndNoErrSegments() {
+    fun ackCarriesFirstFailureReasonInMsa3AndEmitsErrSegments() {
         val msg = parse("MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|2.5\rORC|NW")
         val ack = org.rite.hl7.validation.AckBuilder().build(msg, HL7Validator().validate(msg)).encode()
         assertTrue(ack.contains("MSA|AR|1|Missing Rx number in ORC"))
-        assertTrue(!ack.contains("ERR"))
+        assertTrue(ack.contains("ERR"), "ERR segment expected for each validation failure")
     }
 
     @Test
@@ -989,7 +989,7 @@ class ValidationTest {
         val result = HL7Validator().validate(reparsed)
         assertEquals(AckSeverity.ACCEPT, result.worst)
         val inv = reparsed.segment<org.rite.hl7.model.segment.INVSegment>(org.rite.hl7.model.segment.INVSegment.NAME)!!
-        assertEquals("00904201361", inv.deviceItemCode)
+        assertEquals("00904201361", inv.substanceIdentifier)
         assertEquals("55", inv.deviceQuantityOnHand)
         assertEquals("LOTLIS001", inv.deviceLotNumber)
     }

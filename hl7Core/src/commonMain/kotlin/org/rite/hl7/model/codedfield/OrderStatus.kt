@@ -10,7 +10,7 @@ sealed class OrderStatus(val code: String) {
     object IP : OrderStatus("IP")
     object RP : OrderStatus("RP")
     object SC : OrderStatus("SC")
-    class Unknown(val raw: String) : OrderStatus(raw)
+    data class Unknown(val raw: String) : OrderStatus(raw)
 
     companion object {
         fun from(raw: String): OrderStatus = when (raw.uppercase()) {

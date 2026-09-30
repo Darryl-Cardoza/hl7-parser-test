@@ -1,5 +1,6 @@
 package org.rite.hl7.model
 
+import org.rite.hl7.model.codedfield.OrderControl
 import org.rite.hl7.model.segment.ORCSegment
 import org.rite.hl7.model.segment.ZADSegment
 
@@ -24,12 +25,12 @@ enum class HL7MessageKind {
         fun from(message: HL7Message): HL7MessageKind {
             val type = message.messageCode.uppercase()
             val trigger = message.triggerEvent.uppercase()
-            val control = message.segment<ORCSegment>(ORCSegment.NAME)?.orderControl?.uppercase()
+            val control = message.segment<ORCSegment>(ORCSegment.NAME)?.orderControl
 
             return when {
-                control == "CA" -> CANCEL_ORDER
+                control is OrderControl.CA -> CANCEL_ORDER
                 type == "RDS" && (trigger == "O13" || trigger == "O01") -> DISPENSE
-                type == "RDE" && (trigger == "O11" || trigger == "O01" || trigger == "001") -> DISPENSE_ORDER
+                type == "RDE" && (trigger == "O11" || trigger == "O01" || trigger == "001" || trigger == "O25") -> DISPENSE_ORDER
                 type == "INR" && trigger == "U05" -> INVENTORY_RESPONSE
                 type == "INR" && trigger == "U06" ->
                     if (message.segmentNamed(ZADSegment.NAME) != null) INVENTORY_ADJUSTMENT

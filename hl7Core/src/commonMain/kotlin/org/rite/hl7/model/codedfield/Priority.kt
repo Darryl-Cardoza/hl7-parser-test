@@ -9,7 +9,7 @@ sealed class Priority(val code: String) {
     object PRN : Priority("PRN")
     object T   : Priority("T")
     object UD  : Priority("UD")
-    class Unknown(val raw: String) : Priority(raw)
+    data class Unknown(val raw: String) : Priority(raw)
 
     companion object {
         fun from(raw: String): Priority = when (raw.uppercase()) {

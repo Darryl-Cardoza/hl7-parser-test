@@ -159,8 +159,8 @@ class OrderGroupAssemblerTest {
         val groups = OrderGroupAssembler.assemble(typedSegmentsOf(raw))
 
         assertEquals(2, groups.size)
-        assertEquals("STAT", groups[0].tq1?.priority)
-        assertEquals("ROUTINE", groups[1].tq1?.priority)
+        assertEquals("STAT", groups[0].tq1?.priorityRaw)
+        assertEquals("ROUTINE", groups[1].tq1?.priorityRaw)
     }
 
     @Test

@@ -42,6 +42,15 @@ object HL7Lexer {
             )
         }
 
+        val extraMsh = lines.drop(1).indexOfFirst { it.startsWith("MSH") }
+        if (extraMsh >= 0) {
+            return LexResult(
+                emptyList(),
+                HL7Delimiters.DEFAULT,
+                listOf("Unexpected second MSH segment at line ${extraMsh + 2}; use parseMllpBatch for multiple messages"),
+            )
+        }
+
         val delimiters = HL7Delimiters.fromMshLine(mshLine)
         val segments = lines.map { line -> HL7Segment.parse(normalizeName(line), delimiters) }
         return LexResult(segments, delimiters)

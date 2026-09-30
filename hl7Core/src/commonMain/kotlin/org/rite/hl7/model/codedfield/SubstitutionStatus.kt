@@ -12,7 +12,7 @@ sealed class SubstitutionStatus(val code: String) {
     object G                   : SubstitutionStatus("G")
     object N                   : SubstitutionStatus("N")
     object T                   : SubstitutionStatus("T")
-    class Unknown(val raw: String) : SubstitutionStatus(raw)
+    data class Unknown(val raw: String) : SubstitutionStatus(raw)
 
     companion object {
         fun from(raw: String): SubstitutionStatus = when (raw.uppercase()) {

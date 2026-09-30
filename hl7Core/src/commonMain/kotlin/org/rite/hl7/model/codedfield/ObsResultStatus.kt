@@ -13,7 +13,7 @@ sealed class ObsResultStatus(val code: String) {
     object U : ObsResultStatus("U")
     object W : ObsResultStatus("W")
     object X : ObsResultStatus("X")
-    class Unknown(val raw: String) : ObsResultStatus(raw)
+    data class Unknown(val raw: String) : ObsResultStatus(raw)
 
     companion object {
         fun from(raw: String): ObsResultStatus = when (raw.uppercase()) {
