@@ -84,7 +84,7 @@ if [[ -z "${GITHUB_ACTOR:-}" ]]; then
         exit 1
     fi
 fi
-./gradlew :hl7Core:publishAllPublicationsToGitHubPackagesRepository
+./gradlew :hl7Core:publishAndroidReleasePublicationToGitHubPackagesRepository
 
 # ---------------------------------------------------------------------------
 # Step 5: Create GitHub Release + upload xcframework zip

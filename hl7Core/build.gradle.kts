@@ -245,15 +245,19 @@ publishing {
     }
 }
 
-// KMP plugin auto-creates publications; set groupId/artifactId/version on all
+// Publish only the Android release AAR to GitHub Packages.
+// iOS klibcs (iosArm64, iosX64, iosSimulatorArm64) are distributed via the
+// xcframework zip on GitHub Releases — not via Maven.
 afterEvaluate {
     val hl7CoreVersion = project.findProperty("hl7core.version")?.toString() ?: "unspecified"
     publishing.publications.withType<MavenPublication>().configureEach {
+        val pubName = name
         groupId = "org.rite.hl7"
-        artifactId = when (name) {
-            "kotlinMultiplatform" -> "hl7core"
-            else -> "hl7core-$name"
-        }
+        artifactId = "hl7core"
         version = hl7CoreVersion
+        // Remove iOS-only publications from the GitHub Packages repo
+        if (pubName != "androidRelease") {
+            repositories.remove(repositories.findByName("GitHubPackages"))
+        }
     }
 }

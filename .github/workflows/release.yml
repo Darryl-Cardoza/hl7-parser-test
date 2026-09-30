@@ -51,7 +51,7 @@ jobs:
           sed -i '' "s|checksum: \".*\"|checksum: \"${CHECKSUM}\"|" Package.swift
 
       - name: Publish Android to GitHub Packages
-        run: ./gradlew :hl7Core:publishAllPublicationsToGitHubPackagesRepository
+        run: ./gradlew :hl7Core:publishAndroidReleasePublicationToGitHubPackagesRepository
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
