@@ -26,7 +26,6 @@ class HL7Parser private constructor(
     private val defaultVersion: HL7Version,
     private val strictMode: Boolean,
 ) {
-
     /** Parses raw HL7 text. Returns [HL7ParseResult.Success] or [HL7ParseResult.Failure]. */
     fun parse(raw: String): HL7ParseResult {
         if (raw.isBlank()) {
@@ -44,12 +43,16 @@ class HL7Parser private constructor(
         lex.segments.forEachIndexed { index, seg ->
             try {
                 typed += registry.wrap(seg)
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) { // any wrap() failure becomes a per-segment parse error
-                errors += HL7ParseError(
-                    message = e.message ?: "Failed to parse segment",
-                    segmentName = seg.name,
-                    lineIndex = index,
-                )
+            } catch (
+                @Suppress("TooGenericExceptionCaught") e: Exception,
+            ) {
+                // any wrap() failure becomes a per-segment parse error
+                errors +=
+                    HL7ParseError(
+                        message = e.message ?: "Failed to parse segment",
+                        segmentName = seg.name,
+                        lineIndex = index,
+                    )
             }
         }
 
@@ -76,18 +79,21 @@ class HL7Parser private constructor(
         private var defaultVersion: HL7Version = HL7Version.DEFAULT
         private var strict: Boolean = false
 
-        fun defaultVersion(version: String): Builder = apply {
-            defaultVersion = HL7Version.from(version)
-        }
+        fun defaultVersion(version: String): Builder =
+            apply {
+                defaultVersion = HL7Version.from(version)
+            }
 
-        fun defaultVersion(version: HL7Version): Builder = apply {
-            defaultVersion = version
-        }
+        fun defaultVersion(version: HL7Version): Builder =
+            apply {
+                defaultVersion = version
+            }
 
         /** Registers a custom (Z-)segment definition (e.g. `ZSNSegment.Definition`). */
-        fun registerCustomSegment(definition: SegmentDefinition): Builder = apply {
-            registry.register(definition)
-        }
+        fun registerCustomSegment(definition: SegmentDefinition): Builder =
+            apply {
+                registry.register(definition)
+            }
 
         /** When false (default), parse errors still return successfully-parsed segments. */
         fun strictMode(strict: Boolean): Builder = apply { this.strict = strict }

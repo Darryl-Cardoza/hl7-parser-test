@@ -5,7 +5,9 @@ import org.rite.hl7.model.TypedSegment
 import org.rite.hl7.model.ast.HL7Segment
 
 /** MSH — Message Header. */
-class MSHSegment(raw: HL7Segment) : TypedSegment(raw) {
+class MSHSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val fieldSeparator: String get() = fieldValue(1)
     val encodingCharacters: String get() = fieldValue(2)
     val sendingApplication: String get() = fieldValue(3)
@@ -14,17 +16,21 @@ class MSHSegment(raw: HL7Segment) : TypedSegment(raw) {
     val receivingFacility: String get() = fieldValue(6)
     val dateTimeOfMessage: String get() = fieldValue(7)
     val security: String get() = fieldValue(8)
-    val messageType: String get() = fieldValue(9)            // full MSH-9, e.g. "RDS^O13"
+    val messageType: String get() = fieldValue(9) // full MSH-9, e.g. "RDS^O13"
 
     // Some PMS integrations send MSH-9 as a plain space-separated pair
     // ("RDS O13") instead of the standard "^"-componentized form. Fall back
     // to splitting on whitespace only when there's no real MSH-9.2.
     private val spaceSeparatedMessageType: List<String>?
-        get() = component(9, 1).takeIf { component(9, 2).isBlank() && it.contains(' ') }
-            ?.trim()?.split(Regex("\\s+"))?.takeIf { it.size == 2 }
+        get() =
+            component(9, 1)
+                .takeIf { component(9, 2).isBlank() && it.contains(' ') }
+                ?.trim()
+                ?.split(Regex("\\s+"))
+                ?.takeIf { it.size == 2 }
 
-    val messageCode: String get() = spaceSeparatedMessageType?.get(0) ?: component(9, 1)          // MSH-9.1, e.g. "RDS"
-    val triggerEvent: String get() = spaceSeparatedMessageType?.get(1) ?: component(9, 2)         // MSH-9.2, e.g. "O13"
+    val messageCode: String get() = spaceSeparatedMessageType?.get(0) ?: component(9, 1) // MSH-9.1, e.g. "RDS"
+    val triggerEvent: String get() = spaceSeparatedMessageType?.get(1) ?: component(9, 2) // MSH-9.2, e.g. "O13"
     val messageControlId: String get() = fieldValue(10)
     val processingId: String get() = fieldValue(11)
     val versionId: String get() = fieldValue(12)
@@ -38,7 +44,9 @@ class MSHSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** PID — Patient Identification. */
-class PIDSegment(raw: HL7Segment) : TypedSegment(raw) {
+class PIDSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
     val patientId: String get() = component(3, 1)
     val patientIdAssigningAuthority: String get() = component(3, 4)
@@ -61,7 +69,9 @@ class PIDSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** PV1 — Patient Visit. */
-class PV1Segment(raw: HL7Segment) : TypedSegment(raw) {
+class PV1Segment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
     val patientClass: String get() = fieldValue(2)
     val pointOfCare: String get() = component(3, 1)
@@ -81,7 +91,9 @@ class PV1Segment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** ORC — Common Order. */
-class ORCSegment(raw: HL7Segment) : TypedSegment(raw) {
+class ORCSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val orderControl: String get() = fieldValue(1)
     val placerOrderNumber: String get() = component(2, 1)
     val placerOrderNamespace: String get() = component(2, 2)
@@ -101,8 +113,10 @@ class ORCSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** MSA — Message Acknowledgement. */
-class MSASegment(raw: HL7Segment) : TypedSegment(raw) {
-    val acknowledgmentCode: String get() = fieldValue(1)   // AA / AE / AR
+class MSASegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
+    val acknowledgmentCode: String get() = fieldValue(1) // AA / AE / AR
     val messageControlId: String get() = fieldValue(2)
     val textMessage: String get() = fieldValue(3)
 
@@ -113,7 +127,9 @@ class MSASegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** ERR — Error. */
-class ERRSegment(raw: HL7Segment) : TypedSegment(raw) {
+class ERRSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val segmentId: String get() = component(2, 1)
     val sequence: String get() = component(2, 2)
     val fieldPosition: String get() = component(2, 3)
@@ -132,7 +148,9 @@ class ERRSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** NTE — Notes and Comments. */
-class NTESegment(raw: HL7Segment) : TypedSegment(raw) {
+class NTESegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
     val sourceOfComment: String get() = fieldValue(2)
     val comment: String get() = fieldValue(3)

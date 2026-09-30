@@ -13,13 +13,14 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ParseTest {
-
-    private fun parser() = HL7Parser.Builder()
-        .defaultVersion("2.5")
-        .registerCustomSegment(ZSNSegment.Definition)
-        .registerCustomSegment(ZADSegment.Definition)
-        .strictMode(false)
-        .build()
+    private fun parser() =
+        HL7Parser
+            .Builder()
+            .defaultVersion("2.5")
+            .registerCustomSegment(ZSNSegment.Definition)
+            .registerCustomSegment(ZADSegment.Definition)
+            .strictMode(false)
+            .build()
 
     @Test
     fun parsesMshAndTypedFields() {
@@ -37,11 +38,12 @@ class ParseTest {
 
     @Test
     fun parsesInvAndZadFromUserExample() {
-        val raw = """
+        val raw =
+            """
             MSH|^~\&|WMS|WAREHOUSE|EHR|HOSPITAL|20240615||INR^U06|MSG-002|P|2.5
             INV|1|00069015505^Drug Name^NDC|LOT-A|20251201|150|EA
             ZAD|1|LOSS|5|DAMAGED_IN_TRANSIT|20240615141500|JOHN.DOE
-        """.trimIndent()
+            """.trimIndent()
 
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
@@ -62,12 +64,13 @@ class ParseTest {
 
     @Test
     fun parsesRepeatingZsnRows() {
-        val raw = """
+        val raw =
+            """
             MSH|^~\&|PillCounter|ROBOT|PMS|PHARMACY|20260623091205||RDS^O13|1|P|2.5
             RXD|1|00093-0058-01^AMOXICILLIN 500MG^NDC|20260623091205|90|TAB^Tablets|^|RX100842
             ZSN|1|21N4F9XK0042|00093-0058-01|LOT78321|20271031|D
             ZSN|2|21N4F9XK0099|00093-0058-01|LOT78321|20271031|D
-        """.trimIndent()
+            """.trimIndent()
 
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
@@ -103,8 +106,9 @@ class ParseTest {
 
     @Test
     fun parsesEquWithLeadingSetId() {
-        val raw = "MSH|^~\\&|PMS|PHARMACY|PILLCOUNTER|TERMINAL_13|20260901134041||INR^U06|REQ1|P|2.5.1\r" +
-            "EQU|1|TERMINAL_13^Terminal 13^RITE|20260901134041|A"
+        val raw =
+            "MSH|^~\\&|PMS|PHARMACY|PILLCOUNTER|TERMINAL_13|20260901134041||INR^U06|REQ1|P|2.5.1\r" +
+                "EQU|1|TERMINAL_13^Terminal 13^RITE|20260901134041|A"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val equ = result.message.segment<org.rite.hl7.model.segment.EQUSegment>("EQU")
@@ -116,8 +120,9 @@ class ParseTest {
 
     @Test
     fun parsesEquWithoutLeadingSetId() {
-        val raw = "MSH|^~\\&|PMS|PHARMACY|PILLCOUNTER|TERMINAL_13|20260901134041||INR^U06|REQ1|P|2.5.1\r" +
-            "EQU|ROBOT1^Parata Max 2^MFG|20251113190000|A"
+        val raw =
+            "MSH|^~\\&|PMS|PHARMACY|PILLCOUNTER|TERMINAL_13|20260901134041||INR^U06|REQ1|P|2.5.1\r" +
+                "EQU|ROBOT1^Parata Max 2^MFG|20251113190000|A"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val equ = result.message.segment<org.rite.hl7.model.segment.EQUSegment>("EQU")
@@ -129,8 +134,9 @@ class ParseTest {
 
     @Test
     fun parsesEquWithBareIdAndNoLeadingSetId() {
-        val raw = "MSH|^~\\&|PMS|PHARMACY|PILLCOUNTER|TERMINAL_13|20260901134041||INR^U06|REQ1|P|2.5.1\r" +
-            "EQU|DEVICE-1|20260623091205|A"
+        val raw =
+            "MSH|^~\\&|PMS|PHARMACY|PILLCOUNTER|TERMINAL_13|20260901134041||INR^U06|REQ1|P|2.5.1\r" +
+                "EQU|DEVICE-1|20260623091205|A"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val equ = result.message.segment<org.rite.hl7.model.segment.EQUSegment>("EQU")

@@ -26,29 +26,34 @@ class HL7(
     validationConfig: ValidationConfig = ValidationConfig.DEFAULT,
     extraSegments: List<SegmentDefinition> = emptyList(),
 ) {
-    private val parser: HL7Parser = HL7Parser.Builder()
-        .defaultVersion(version)
-        .strictMode(strictMode)
-        .also { b -> extensionDefinitions(extraSegments).forEach { b.registerCustomSegment(it) } }
-        .build()
+    private val parser: HL7Parser =
+        HL7Parser
+            .Builder()
+            .defaultVersion(version)
+            .strictMode(strictMode)
+            .also { b -> extensionDefinitions(extraSegments).forEach { b.registerCustomSegment(it) } }
+            .build()
 
-    private val builder: HL7Builder = HL7Builder.builder()
-        .defaultVersion(version)
-        .also { b -> extensionDefinitions(extraSegments).forEach { b.registerCustomSegment(it) } }
-        .build()
+    private val builder: HL7Builder =
+        HL7Builder
+            .builder()
+            .defaultVersion(version)
+            .also { b -> extensionDefinitions(extraSegments).forEach { b.registerCustomSegment(it) } }
+            .build()
 
     private val validator = HL7Validator(validationConfig)
     private val ackBuilder = AckBuilder(builder)
 
     fun parse(raw: String): HL7ParseResult = parser.parse(raw)
+
     fun parseMllp(bytes: ByteArray): HL7ParseResult = parser.parseMllp(bytes)
 
     fun build(): HL7Builder = builder
+
     fun validate(message: HL7Message): ValidationResult = validator.validate(message)
 
     /** Validates [message] and returns the encoded ACK^R01. */
-    fun ack(message: HL7Message): String =
-        ackBuilder.build(message, validator.validate(message)).encode()
+    fun ack(message: HL7Message): String = ackBuilder.build(message, validator.validate(message)).encode()
 
     private fun extensionDefinitions(extra: List<SegmentDefinition>): List<SegmentDefinition> =
         listOf(ZSNSegment.Definition, ZSVSegment.Definition, ZADSegment.Definition) + extra

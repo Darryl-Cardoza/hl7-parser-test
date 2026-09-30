@@ -12,6 +12,5 @@ object HL7Date {
     fun now(): String = toHl7(currentLocalDateTime())
 
     /** Converts ISO `yyyy-MM-dd'T'HH:mm:ss` to HL7 `yyyyMMddHHmmss`. */
-    fun toHl7(iso: String): String =
-        iso.filter { it.isDigit() }.take(14)
+    fun toHl7(iso: String): String = iso.filter { it.isDigit() }.take(14)
 }

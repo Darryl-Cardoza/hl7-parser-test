@@ -20,20 +20,23 @@ import kotlin.test.assertTrue
  * inventory adjustment across versions.
  */
 class RdsDispenseAndInventoryTest {
+    private fun builder(version: String) =
+        HL7Builder
+            .builder()
+            .defaultVersion(version)
+            .fillTimestamps(false)
+            .registerCustomSegment(ZSNSegment.Definition)
+            .registerCustomSegment(ZSVSegment.Definition)
+            .registerCustomSegment(ZADSegment.Definition)
+            .build()
 
-    private fun builder(version: String) = HL7Builder.builder()
-        .defaultVersion(version)
-        .fillTimestamps(false)
-        .registerCustomSegment(ZSNSegment.Definition)
-        .registerCustomSegment(ZSVSegment.Definition)
-        .registerCustomSegment(ZADSegment.Definition)
-        .build()
-
-    private fun parser() = HL7Parser.Builder()
-        .registerCustomSegment(ZSNSegment.Definition)
-        .registerCustomSegment(ZSVSegment.Definition)
-        .registerCustomSegment(ZADSegment.Definition)
-        .build()
+    private fun parser() =
+        HL7Parser
+            .Builder()
+            .registerCustomSegment(ZSNSegment.Definition)
+            .registerCustomSegment(ZSVSegment.Definition)
+            .registerCustomSegment(ZADSegment.Definition)
+            .build()
 
     private fun parseSuccess(raw: String): HL7ParseResult.Success {
         val result = parser().parse(raw)
@@ -47,22 +50,46 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun rdsUsesO01TriggerFor231() {
-        val message = builder("2.3.1").rdsO13 {
-            msh { it.sendingApplication = "PHARMACY-SYS"; it.messageControlId = "MSG-1"; it.processingId = "P" }
-            orc { it.orderControl = "RE"; it.fillerOrderNumber = "RX-1" }
-            rxd { it.dispenseSubIdCounter = "1"; it.dispenseGiveCode = "00093-0058-01"; it.actualDispenseAmount = "90" }
-        }
+        val message =
+            builder("2.3.1").rdsO13 {
+                msh {
+                    it.sendingApplication = "PHARMACY-SYS"
+                    it.messageControlId = "MSG-1"
+                    it.processingId = "P"
+                }
+                orc {
+                    it.orderControl = "RE"
+                    it.fillerOrderNumber = "RX-1"
+                }
+                rxd {
+                    it.dispenseSubIdCounter = "1"
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "90"
+                }
+            }
         val encoded = message.encode()
         assertTrue(encoded.contains("|RDS^O01|MSG-1|P|2.3.1"), encoded)
     }
 
     @Test
     fun rdsUsesO13TriggerFor251() {
-        val message = builder("2.5.1").rdsO13 {
-            msh { it.sendingApplication = "PHARMACY-SYS"; it.messageControlId = "MSG-2"; it.processingId = "P" }
-            orc { it.orderControl = "RE"; it.fillerOrderNumber = "RX-2" }
-            rxd { it.dispenseSubIdCounter = "1"; it.dispenseGiveCode = "00093-0058-01"; it.actualDispenseAmount = "60" }
-        }
+        val message =
+            builder("2.5.1").rdsO13 {
+                msh {
+                    it.sendingApplication = "PHARMACY-SYS"
+                    it.messageControlId = "MSG-2"
+                    it.processingId = "P"
+                }
+                orc {
+                    it.orderControl = "RE"
+                    it.fillerOrderNumber = "RX-2"
+                }
+                rxd {
+                    it.dispenseSubIdCounter = "1"
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "60"
+                }
+            }
         val encoded = message.encode()
         assertTrue(encoded.contains("|RDS^O13|MSG-2|P|2.5.1"), encoded)
     }
@@ -70,20 +97,35 @@ class RdsDispenseAndInventoryTest {
     @Test
     fun rdsUsesO13TriggerFor25Boundary() {
         // Exactly 2.5 must fall on the "from25" side (ordinal >= V25.ordinal).
-        val message = builder("2.5").rdsO13 {
-            msh { it.messageControlId = "MSG-3"; it.processingId = "P" }
-            rxd { it.dispenseGiveCode = "00093-0058-01"; it.actualDispenseAmount = "30" }
-        }
+        val message =
+            builder("2.5").rdsO13 {
+                msh {
+                    it.messageControlId = "MSG-3"
+                    it.processingId = "P"
+                }
+                rxd {
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "30"
+                }
+            }
         assertTrue(message.encode().contains("|RDS^O13|MSG-3|P|2.5"))
     }
 
     @Test
     fun rdsMessageTypeOverridesPerCallVersionNotJustDefault() {
         // defaultVersion is 2.5.1, but the caller sets MSH-12 to 2.3.1 explicitly.
-        val message = builder("2.5.1").rdsO13 {
-            msh { it.versionId = "2.3.1"; it.messageControlId = "MSG-4"; it.processingId = "P" }
-            rxd { it.dispenseGiveCode = "00093-0058-01"; it.actualDispenseAmount = "15" }
-        }
+        val message =
+            builder("2.5.1").rdsO13 {
+                msh {
+                    it.versionId = "2.3.1"
+                    it.messageControlId = "MSG-4"
+                    it.processingId = "P"
+                }
+                rxd {
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "15"
+                }
+            }
         assertTrue(message.encode().contains("|RDS^O01|MSG-4|P|2.3.1"))
     }
 
@@ -93,18 +135,28 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun normalRdsResponseBuildsFor231() {
-        val message = builder("2.3.1").rdsO13 {
-            msh {
-                it.sendingApplication = "PHARMACY-SYS"; it.sendingFacility = "MAIN-PHARM"
-                it.receivingApplication = "EHR"; it.receivingFacility = "HOSPITAL"
-                it.messageControlId = "MSG-N231"; it.processingId = "P"
+        val message =
+            builder("2.3.1").rdsO13 {
+                msh {
+                    it.sendingApplication = "PHARMACY-SYS"
+                    it.sendingFacility = "MAIN-PHARM"
+                    it.receivingApplication = "EHR"
+                    it.receivingFacility = "HOSPITAL"
+                    it.messageControlId = "MSG-N231"
+                    it.processingId = "P"
+                }
+                orc {
+                    it.orderControl = "RE"
+                    it.placerOrderNumber = "ORD-1"
+                    it.fillerOrderNumber = "RX-1"
+                    it.orderStatus = "CM"
+                }
+                rxd {
+                    it.dispenseSubIdCounter = "1"
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "90"
+                }
             }
-            orc { it.orderControl = "RE"; it.placerOrderNumber = "ORD-1"; it.fillerOrderNumber = "RX-1"; it.orderStatus = "CM" }
-            rxd {
-                it.dispenseSubIdCounter = "1"; it.dispenseGiveCode = "00093-0058-01"
-                it.actualDispenseAmount = "90"
-            }
-        }
         val encoded = message.encode()
         assertTrue(encoded.contains("|RDS^O01|MSG-N231|P|2.3.1"))
         assertTrue(encoded.contains("\rORC|RE|ORD-1|RX-1||CM"))
@@ -115,11 +167,23 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun normalRdsResponseBuildsFor251() {
-        val message = builder("2.5.1").rdsO13 {
-            msh { it.messageControlId = "MSG-N251"; it.processingId = "P" }
-            orc { it.orderControl = "RE"; it.fillerOrderNumber = "RX-2"; it.orderStatus = "CM" }
-            rxd { it.dispenseSubIdCounter = "1"; it.dispenseGiveCode = "00093-0058-02"; it.actualDispenseAmount = "45" }
-        }
+        val message =
+            builder("2.5.1").rdsO13 {
+                msh {
+                    it.messageControlId = "MSG-N251"
+                    it.processingId = "P"
+                }
+                orc {
+                    it.orderControl = "RE"
+                    it.fillerOrderNumber = "RX-2"
+                    it.orderStatus = "CM"
+                }
+                rxd {
+                    it.dispenseSubIdCounter = "1"
+                    it.dispenseGiveCode = "00093-0058-02"
+                    it.actualDispenseAmount = "45"
+                }
+            }
         val encoded = message.encode()
         assertTrue(encoded.contains("|RDS^O13|MSG-N251|P|2.5.1"))
         assertTrue(encoded.contains("\rRXD|1|00093-0058-02||45"))
@@ -133,11 +197,23 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun rdsWithZsnOnlyFor231() {
-        val message = builder("2.3.1").rdsO13 {
-            msh { it.messageControlId = "MSG-ZSN231"; it.processingId = "P" }
-            rxd { it.dispenseSubIdCounter = "1"; it.dispenseGiveCode = "00093-0058-01"; it.actualDispenseAmount = "90" }
-            zsn { it.setId = "1"; it.packageSerialNumber = "21N4F9XK0042"; it.transactionType = "D" }
-        }
+        val message =
+            builder("2.3.1").rdsO13 {
+                msh {
+                    it.messageControlId = "MSG-ZSN231"
+                    it.processingId = "P"
+                }
+                rxd {
+                    it.dispenseSubIdCounter = "1"
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "90"
+                }
+                zsn {
+                    it.setId = "1"
+                    it.packageSerialNumber = "21N4F9XK0042"
+                    it.transactionType = "D"
+                }
+            }
         val encoded = message.encode()
         assertTrue(encoded.contains("|RDS^O01|MSG-ZSN231|P|2.3.1"))
         assertTrue(encoded.contains("\rZSN|1|21N4F9XK0042"))
@@ -151,12 +227,27 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun rdsWithZsnOnlyFor251() {
-        val message = builder("2.5.1").rdsO13 {
-            msh { it.messageControlId = "MSG-ZSN251"; it.processingId = "P" }
-            rxd { it.dispenseGiveCode = "00093-0058-01"; it.actualDispenseAmount = "90" }
-            zsn { it.setId = "1"; it.packageSerialNumber = "21N4F9XK0099"; it.transactionType = "D" }
-            zsn { it.setId = "2"; it.packageSerialNumber = "21N4F9XK0100"; it.transactionType = "D" }
-        }
+        val message =
+            builder("2.5.1").rdsO13 {
+                msh {
+                    it.messageControlId = "MSG-ZSN251"
+                    it.processingId = "P"
+                }
+                rxd {
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "90"
+                }
+                zsn {
+                    it.setId = "1"
+                    it.packageSerialNumber = "21N4F9XK0099"
+                    it.transactionType = "D"
+                }
+                zsn {
+                    it.setId = "2"
+                    it.packageSerialNumber = "21N4F9XK0100"
+                    it.transactionType = "D"
+                }
+            }
         val encoded = message.encode()
         assertTrue(encoded.contains("|RDS^O13|MSG-ZSN251|P|2.5.1"))
         assertTrue(encoded.contains("\rZSN|1|21N4F9XK0099"))
@@ -169,14 +260,25 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun rdsWithZsvOnlyFor231() {
-        val message = builder("2.3.1").rdsO13 {
-            msh { it.messageControlId = "MSG-ZSV231"; it.processingId = "P" }
-            rxd { it.dispenseGiveCode = "00093-0058-01"; it.actualDispenseAmount = "90" }
-            zsv {
-                it.setId = "1"; it.dispensedNdc = "00093-0058-01"; it.scannedNdc = "00093-0058-01"
-                it.validationResult = ZsvValidationResult.MATCH; it.scanSource = "GS1"; it.matchStrength = "EXACT"
+        val message =
+            builder("2.3.1").rdsO13 {
+                msh {
+                    it.messageControlId = "MSG-ZSV231"
+                    it.processingId = "P"
+                }
+                rxd {
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "90"
+                }
+                zsv {
+                    it.setId = "1"
+                    it.dispensedNdc = "00093-0058-01"
+                    it.scannedNdc = "00093-0058-01"
+                    it.validationResult = ZsvValidationResult.MATCH
+                    it.scanSource = "GS1"
+                    it.matchStrength = "EXACT"
+                }
             }
-        }
         val encoded = message.encode()
         assertTrue(encoded.contains("|RDS^O01|MSG-ZSV231|P|2.3.1"))
         assertTrue(encoded.contains("\rZSV|1|00093-0058-01|00093-0058-01|MATCH|GS1"))
@@ -191,14 +293,24 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun rdsWithZsvOnlyFor251() {
-        val message = builder("2.5.1").rdsO13 {
-            msh { it.messageControlId = "MSG-ZSV251"; it.processingId = "P" }
-            rxd { it.dispenseGiveCode = "00093-0058-01"; it.actualDispenseAmount = "90" }
-            zsv {
-                it.setId = "1"; it.dispensedNdc = "00093-0058-01"; it.scannedNdc = "00093-0058-99"
-                it.validationResult = ZsvValidationResult.MISMATCH; it.scanSource = "NDC_LINEAR"
+        val message =
+            builder("2.5.1").rdsO13 {
+                msh {
+                    it.messageControlId = "MSG-ZSV251"
+                    it.processingId = "P"
+                }
+                rxd {
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "90"
+                }
+                zsv {
+                    it.setId = "1"
+                    it.dispensedNdc = "00093-0058-01"
+                    it.scannedNdc = "00093-0058-99"
+                    it.validationResult = ZsvValidationResult.MISMATCH
+                    it.scanSource = "NDC_LINEAR"
+                }
             }
-        }
         val encoded = message.encode()
         assertTrue(encoded.contains("|RDS^O13|MSG-ZSV251|P|2.5.1"))
         assertTrue(encoded.contains("\rZSV|1|00093-0058-01|00093-0058-99|MISMATCH|NDC_LINEAR"), encoded)
@@ -215,13 +327,36 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun rdsWithZsnAndZsvTogetherFor231() {
-        val message = builder("2.3.1").rdsO13 {
-            msh { it.messageControlId = "MSG-BOTH231"; it.processingId = "P" }
-            orc { it.orderControl = "RE"; it.fillerOrderNumber = "RX-98765"; it.orderStatus = "CM" }
-            rxd { it.dispenseSubIdCounter = "1"; it.dispenseGiveCode = "00093-0058-01"; it.actualDispenseAmount = "90" }
-            zsn { it.setId = "1"; it.packageSerialNumber = "21N4F9XK0042"; it.transactionType = "D" }
-            zsv { it.setId = "1"; it.dispensedNdc = "00093-0058-01"; it.scannedNdc = "00093-0058-01"; it.validationResult = ZsvValidationResult.MATCH; it.matchStrength = "EXACT" }
-        }
+        val message =
+            builder("2.3.1").rdsO13 {
+                msh {
+                    it.messageControlId = "MSG-BOTH231"
+                    it.processingId = "P"
+                }
+                orc {
+                    it.orderControl = "RE"
+                    it.fillerOrderNumber = "RX-98765"
+                    it.orderStatus = "CM"
+                }
+                rxd {
+                    it.dispenseSubIdCounter = "1"
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "90"
+                }
+                zsn {
+                    it.setId = "1"
+                    it.packageSerialNumber = "21N4F9XK0042"
+                    it.transactionType = "D"
+                }
+                zsv {
+                    it.setId = "1"
+                    it.dispensedNdc = "00093-0058-01"
+                    it.scannedNdc = "00093-0058-01"
+                    it.validationResult =
+                        ZsvValidationResult.MATCH
+                    it.matchStrength = "EXACT"
+                }
+            }
         val encoded = message.encode()
         assertTrue(encoded.contains("|RDS^O01|MSG-BOTH231|P|2.3.1"))
         assertTrue(encoded.contains("\rZSN|1|21N4F9XK0042"))
@@ -234,13 +369,35 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun rdsWithZsnAndZsvTogetherFor251() {
-        val message = builder("2.5.1").rdsO13 {
-            msh { it.messageControlId = "MSG-BOTH251"; it.processingId = "P" }
-            orc { it.orderControl = "RE"; it.fillerOrderNumber = "RX-98766"; it.orderStatus = "CM" }
-            rxd { it.dispenseGiveCode = "00093-0058-01"; it.actualDispenseAmount = "90" }
-            zsn { it.setId = "1"; it.packageSerialNumber = "21N4F9XK0043"; it.transactionType = "D" }
-            zsv { it.setId = "1"; it.dispensedNdc = "00093-0058-01"; it.scannedNdc = "00093-0058-01"; it.validationResult = ZsvValidationResult.MATCH; it.matchStrength = "EXACT" }
-        }
+        val message =
+            builder("2.5.1").rdsO13 {
+                msh {
+                    it.messageControlId = "MSG-BOTH251"
+                    it.processingId = "P"
+                }
+                orc {
+                    it.orderControl = "RE"
+                    it.fillerOrderNumber = "RX-98766"
+                    it.orderStatus = "CM"
+                }
+                rxd {
+                    it.dispenseGiveCode = "00093-0058-01"
+                    it.actualDispenseAmount = "90"
+                }
+                zsn {
+                    it.setId = "1"
+                    it.packageSerialNumber = "21N4F9XK0043"
+                    it.transactionType = "D"
+                }
+                zsv {
+                    it.setId = "1"
+                    it.dispensedNdc = "00093-0058-01"
+                    it.scannedNdc = "00093-0058-01"
+                    it.validationResult =
+                        ZsvValidationResult.MATCH
+                    it.matchStrength = "EXACT"
+                }
+            }
         val encoded = message.encode()
         assertTrue(encoded.contains("|RDS^O13|MSG-BOTH251|P|2.5.1"))
         assertTrue(encoded.contains("\rZSN|1|21N4F9XK0043"))
@@ -254,10 +411,11 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun eyeconRdsResponseParsesWithZniFor231() {
-        val raw = "MSH|^~\\&|Eyecon||PHARMACY-SYS||20060123090341||RDS^O01|EYE-1|P|2.3.1\r" +
-            "ORC|RE|ORD-1|RX-4853||CM\r" +
-            "RXD|1|00093-0058-01||1024\r" +
-            "ZNI|B|12345678901|123456789012|ACETAMINOPHEN|N|JSMITH|E|N|A0.1|JANE^DOE|RX4853|Y|1024|4853|10|"
+        val raw =
+            "MSH|^~\\&|Eyecon||PHARMACY-SYS||20060123090341||RDS^O01|EYE-1|P|2.3.1\r" +
+                "ORC|RE|ORD-1|RX-4853||CM\r" +
+                "RXD|1|00093-0058-01||1024\r" +
+                "ZNI|B|12345678901|123456789012|ACETAMINOPHEN|N|JSMITH|E|N|A0.1|JANE^DOE|RX4853|Y|1024|4853|10|"
 
         val result = HL7Parser.Builder().build().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
@@ -272,10 +430,11 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun eyeconRdsResponseParsesWithZniFor251() {
-        val raw = "MSH|^~\\&|Eyecon||PHARMACY-SYS||20060123090341||RDS^O13|EYE-2|P|2.5.1\r" +
-            "ORC|RE|ORD-2|RX-5000||CM\r" +
-            "RXD|1|00093-0058-02||60\r" +
-            "ZNI|I|22233344455|223334445566|IBUPROFEN 200MG|A|MJONES|C|N|A0.1|SMITH^JOHN|RX5000|N|60|5000|1|"
+        val raw =
+            "MSH|^~\\&|Eyecon||PHARMACY-SYS||20060123090341||RDS^O13|EYE-2|P|2.5.1\r" +
+                "ORC|RE|ORD-2|RX-5000||CM\r" +
+                "RXD|1|00093-0058-02||60\r" +
+                "ZNI|I|22233344455|223334445566|IBUPROFEN 200MG|A|MJONES|C|N|A0.1|SMITH^JOHN|RX5000|N|60|5000|1|"
 
         val result = HL7Parser.Builder().build().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
@@ -293,9 +452,10 @@ class RdsDispenseAndInventoryTest {
     fun eyeconRdsResponseIsIndependentOfZsnZsv() {
         // Eyecon (ZNI) messages must parse and encode correctly on their own,
         // without any ZSN/ZSV segments present, and vice versa.
-        val raw = "MSH|^~\\&|Eyecon||PHARMACY-SYS||20060123090341||RDS^O01|EYE-3|P|2.3.1\r" +
-            "RXD|1|00093-0058-01||30\r" +
-            "ZNI|B|12345678901|123456789012|ACETAMINOPHEN|N|JSMITH|E|N|A0.1|JANE^DOE|RX4853|Y|30|4853|10|"
+        val raw =
+            "MSH|^~\\&|Eyecon||PHARMACY-SYS||20060123090341||RDS^O01|EYE-3|P|2.3.1\r" +
+                "RXD|1|00093-0058-01||30\r" +
+                "ZNI|B|12345678901|123456789012|ACETAMINOPHEN|N|JSMITH|E|N|A0.1|JANE^DOE|RX4853|Y|30|4853|10|"
         val result = HL7Parser.Builder().build().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals(null, result.message.segment<ZSNSegment>(ZSNSegment.NAME))
@@ -309,17 +469,29 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun inventoryAdjustmentBuildsWithZadFor231() {
-        val message = builder("2.3.1").inrU06 {
-            msh { it.sendingApplication = "WMS"; it.messageControlId = "MSG-INV231"; it.processingId = "P" }
-            inv {
-                it.setId = "1"; it.substanceCode = "00069015505"; it.substanceName = "Drug Name"
-                it.substanceCodeSystem = "NDC"; it.inventoryOnHandQuantity = "150"; it.units = "EA"
+        val message =
+            builder("2.3.1").inrU06 {
+                msh {
+                    it.sendingApplication = "WMS"
+                    it.messageControlId = "MSG-INV231"
+                    it.processingId = "P"
+                }
+                inv {
+                    it.setId = "1"
+                    it.substanceCode = "00069015505"
+                    it.substanceName = "Drug Name"
+                    it.substanceCodeSystem = "NDC"
+                    it.inventoryOnHandQuantity = "150"
+                    it.units = "EA"
+                }
+                zad {
+                    it.setId = "1"
+                    it.adjustmentType = "+"
+                    it.adjustmentQuantity = "5"
+                    it.adjustmentReason = ZadReasonCode.PO_RECEIPT
+                    it.approvedBy = "JOHN.DOE"
+                }
             }
-            zad {
-                it.setId = "1"; it.adjustmentType = "+"; it.adjustmentQuantity = "5"
-                it.adjustmentReason = ZadReasonCode.PO_RECEIPT; it.approvedBy = "JOHN.DOE"
-            }
-        }
         val encoded = message.encode()
         assertTrue(encoded.contains("|INR^U06|MSG-INV231|P|2.3.1"))
         assertTrue(encoded.contains("\rZAD|1|+|5|PO_RECEIPT"))
@@ -332,17 +504,29 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun inventoryAdjustmentBuildsWithZadFor251() {
-        val message = builder("2.5.1").inrU06 {
-            msh { it.sendingApplication = "WMS"; it.messageControlId = "MSG-INV251"; it.processingId = "P" }
-            inv {
-                it.setId = "1"; it.substanceCode = "00069015505"; it.substanceName = "Drug Name"
-                it.substanceCodeSystem = "NDC"; it.inventoryOnHandQuantity = "200"; it.units = "EA"
+        val message =
+            builder("2.5.1").inrU06 {
+                msh {
+                    it.sendingApplication = "WMS"
+                    it.messageControlId = "MSG-INV251"
+                    it.processingId = "P"
+                }
+                inv {
+                    it.setId = "1"
+                    it.substanceCode = "00069015505"
+                    it.substanceName = "Drug Name"
+                    it.substanceCodeSystem = "NDC"
+                    it.inventoryOnHandQuantity = "200"
+                    it.units = "EA"
+                }
+                zad {
+                    it.setId = "1"
+                    it.adjustmentType = "-"
+                    it.adjustmentQuantity = "3"
+                    it.adjustmentReason = ZadReasonCode.BROKEN
+                    it.approvedBy = "JANE.DOE"
+                }
             }
-            zad {
-                it.setId = "1"; it.adjustmentType = "-"; it.adjustmentQuantity = "3"
-                it.adjustmentReason = ZadReasonCode.BROKEN; it.approvedBy = "JANE.DOE"
-            }
-        }
         val encoded = message.encode()
         assertTrue(encoded.contains("|INR^U06|MSG-INV251|P|2.5.1"))
         assertTrue(encoded.contains("\rZAD|1|-|3|BROKEN"))
@@ -350,15 +534,35 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun inventoryAdjustmentWithMultipleZadRowsRoundTrips() {
-        val message = builder("2.5").inrU06 {
-            msh { it.sendingApplication = "WMS"; it.messageControlId = "MSG-INV-MULTI"; it.processingId = "P" }
-            inv {
-                it.setId = "1"; it.substanceCode = "00069015505"; it.substanceName = "Drug Name"
-                it.substanceCodeSystem = "NDC"; it.inventoryOnHandQuantity = "150"; it.units = "EA"
+        val message =
+            builder("2.5").inrU06 {
+                msh {
+                    it.sendingApplication = "WMS"
+                    it.messageControlId = "MSG-INV-MULTI"
+                    it.processingId = "P"
+                }
+                inv {
+                    it.setId = "1"
+                    it.substanceCode = "00069015505"
+                    it.substanceName = "Drug Name"
+                    it.substanceCodeSystem = "NDC"
+                    it.inventoryOnHandQuantity = "150"
+                    it.units = "EA"
+                }
+                zad {
+                    it.setId = "1"
+                    it.adjustmentType = "+"
+                    it.adjustmentQuantity = "10"
+                    it.adjustmentReason = ZadReasonCode.TRANSFER_IN
+                }
+                zad {
+                    it.setId = "2"
+                    it.adjustmentType = "O"
+                    it.adjustmentQuantity = "150"
+                    it.adjustmentReason =
+                        ZadReasonCode.PHYSICAL_INVENTORY
+                }
             }
-            zad { it.setId = "1"; it.adjustmentType = "+"; it.adjustmentQuantity = "10"; it.adjustmentReason = ZadReasonCode.TRANSFER_IN }
-            zad { it.setId = "2"; it.adjustmentType = "O"; it.adjustmentQuantity = "150"; it.adjustmentReason = ZadReasonCode.PHYSICAL_INVENTORY }
-        }
         val encoded = message.encode()
         val parsed = parseSuccess(encoded)
         assertEquals(encoded, parsed.message.encode())
@@ -368,24 +572,42 @@ class RdsDispenseAndInventoryTest {
 
     @Test
     fun inventoryWithoutZadBuildsNormallyPerVersion() {
-        val message231 = builder("2.3.1").inrU06 {
-            msh { it.sendingApplication = "WMS"; it.messageControlId = "MSG-NOZAD231"; it.processingId = "P" }
-            inv {
-                it.setId = "1"; it.substanceCode = "00069015505"; it.substanceName = "Drug Name"
-                it.substanceCodeSystem = "NDC"; it.inventoryOnHandQuantity = "150"; it.units = "EA"
+        val message231 =
+            builder("2.3.1").inrU06 {
+                msh {
+                    it.sendingApplication = "WMS"
+                    it.messageControlId = "MSG-NOZAD231"
+                    it.processingId = "P"
+                }
+                inv {
+                    it.setId = "1"
+                    it.substanceCode = "00069015505"
+                    it.substanceName = "Drug Name"
+                    it.substanceCodeSystem = "NDC"
+                    it.inventoryOnHandQuantity = "150"
+                    it.units = "EA"
+                }
             }
-        }
         val encoded231 = message231.encode()
         assertTrue(encoded231.contains("|INR^U06|MSG-NOZAD231|P|2.3.1"))
         assertTrue(!encoded231.contains("\rZAD"))
 
-        val message251 = builder("2.5.1").inrU06 {
-            msh { it.sendingApplication = "WMS"; it.messageControlId = "MSG-NOZAD251"; it.processingId = "P" }
-            inv {
-                it.setId = "1"; it.substanceCode = "00069015505"; it.substanceName = "Drug Name"
-                it.substanceCodeSystem = "NDC"; it.inventoryOnHandQuantity = "150"; it.units = "EA"
+        val message251 =
+            builder("2.5.1").inrU06 {
+                msh {
+                    it.sendingApplication = "WMS"
+                    it.messageControlId = "MSG-NOZAD251"
+                    it.processingId = "P"
+                }
+                inv {
+                    it.setId = "1"
+                    it.substanceCode = "00069015505"
+                    it.substanceName = "Drug Name"
+                    it.substanceCodeSystem = "NDC"
+                    it.inventoryOnHandQuantity = "150"
+                    it.units = "EA"
+                }
             }
-        }
         val encoded251 = message251.encode()
         assertTrue(encoded251.contains("|INR^U06|MSG-NOZAD251|P|2.5.1"))
         assertTrue(!encoded251.contains("\rZAD"))

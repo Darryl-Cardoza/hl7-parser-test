@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
@@ -15,12 +14,12 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     val xcf = XCFramework("ComposeApp")
 
     listOf(
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
@@ -31,15 +30,16 @@ kotlin {
 
             // Forward hardening + ARC flags to the native linker so the resulting
             // Mach-O binary carries the expected markers for security scanners.
-            linkerOpts += listOf(
-                "-fstack-protector-all",
-                "-fobjc-arc"
-            )
+            linkerOpts +=
+                listOf(
+                    "-fstack-protector-all",
+                    "-fobjc-arc",
+                )
 
             xcf.add(this)
         }
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
@@ -64,12 +64,21 @@ kotlin {
 
 android {
     namespace = "org.rite.hl7"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
         applicationId = "org.rite.hl7"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.android.targetSdk
+                .get()
+                .toInt()
         versionCode = 1
         versionName = "1.0"
     }
@@ -92,4 +101,3 @@ android {
 dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
-

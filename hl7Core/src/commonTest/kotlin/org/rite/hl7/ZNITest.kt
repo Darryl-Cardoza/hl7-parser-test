@@ -9,12 +9,12 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ZNITest {
-
     @Test
     fun parsesEyeconMinimumValidOrderPacket() {
         val parser = HL7Parser.Builder().build()
-        val raw = "MSH|^~\\&|eniClient||Eyecon||20060123090341||RDE^O01|012309034104|P|2.3.1||||||ASCII|EN^English\r" +
-            "ZNI|B|12345678901|123456789012|ACETAMINOPHEN|N|JSMITH|E|N|A0.1|JANE^DOE|RX4853|Y|1024|4853|10|"
+        val raw =
+            "MSH|^~\\&|eniClient||Eyecon||20060123090341||RDE^O01|012309034104|P|2.3.1||||||ASCII|EN^English\r" +
+                "ZNI|B|12345678901|123456789012|ACETAMINOPHEN|N|JSMITH|E|N|A0.1|JANE^DOE|RX4853|Y|1024|4853|10|"
 
         val result = parser.parse(raw)
         assertTrue(result is HL7ParseResult.Success)

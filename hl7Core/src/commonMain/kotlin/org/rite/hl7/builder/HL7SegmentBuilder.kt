@@ -13,8 +13,9 @@ import org.rite.hl7.version.SegmentCapabilities
  * [build] assembles a generic [HL7Segment], trimming trailing empty fields per
  * the segment's version cap.
  */
-abstract class HL7SegmentBuilder(val name: String) {
-
+abstract class HL7SegmentBuilder(
+    val name: String,
+) {
     // (fieldIndex, componentIndex) -> value, all 1-based.
     private val cells: MutableMap<Int, MutableMap<Int, String>> = mutableMapOf()
 
@@ -22,19 +23,29 @@ abstract class HL7SegmentBuilder(val name: String) {
     private val repeatedCells: MutableMap<Int, List<String>> = mutableMapOf()
 
     /** Sets the plain value of field [n] (component 1). */
-    protected fun set(n: Int, value: String?) {
+    protected fun set(
+        n: Int,
+        value: String?,
+    ) {
         if (value == null) return
         cells.getOrPut(n) { mutableMapOf() }[1] = value
     }
 
     /** Sets component [c] of field [n]. */
-    protected fun set(n: Int, c: Int, value: String?) {
+    protected fun set(
+        n: Int,
+        c: Int,
+        value: String?,
+    ) {
         if (value == null) return
         cells.getOrPut(n) { mutableMapOf() }[c] = value
     }
 
     /** Sets field [n] as multiple `~`-separated repetitions (e.g. a list of image paths). */
-    protected fun setRepeated(n: Int, values: List<String>?) {
+    protected fun setRepeated(
+        n: Int,
+        values: List<String>?,
+    ) {
         if (values.isNullOrEmpty()) return
         repeatedCells[n] = values
     }
@@ -43,7 +54,10 @@ abstract class HL7SegmentBuilder(val name: String) {
     protected fun get(n: Int): String = cells[n]?.get(1) ?: ""
 
     /** Reads back component [c] of field [n], or "". */
-    protected fun get(n: Int, c: Int): String = cells[n]?.get(c) ?: ""
+    protected fun get(
+        n: Int,
+        c: Int,
+    ): String = cells[n]?.get(c) ?: ""
 
     /**
      * Flushes the subclass's named properties into the (field, component) cells.
@@ -53,7 +67,10 @@ abstract class HL7SegmentBuilder(val name: String) {
     protected open fun apply() {}
 
     /** Builds the generic segment for the given delimiters and version. */
-    open fun build(delimiters: HL7Delimiters, version: HL7Version): HL7Segment {
+    open fun build(
+        delimiters: HL7Delimiters,
+        version: HL7Version,
+    ): HL7Segment {
         apply()
         val maxFieldIndex = maxOf(cells.keys.maxOrNull() ?: 0, repeatedCells.keys.maxOrNull() ?: 0)
         val cap = SegmentCapabilities.maxFields(name, version)

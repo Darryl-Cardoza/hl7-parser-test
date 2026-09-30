@@ -4,7 +4,9 @@ package org.rite.hl7.version
  * HL7 v2.x versions this library understands. [DEFAULT] is used when MSH-12 is
  * absent or unrecognized.
  */
-enum class HL7Version(val wire: String) {
+enum class HL7Version(
+    val wire: String,
+) {
     V21("2.1"),
     V22("2.2"),
     V23("2.3"),
@@ -15,7 +17,8 @@ enum class HL7Version(val wire: String) {
     V26("2.6"),
     V27("2.7"),
     V271("2.7.1"),
-    V28("2.8");
+    V28("2.8"),
+    ;
 
     companion object {
         val DEFAULT = V25

@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.util.Locale
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -18,7 +17,7 @@ kotlin {
     listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "Hl7Core"
@@ -83,10 +82,12 @@ afterEvaluate {
             // Merge both binaries into fat binary
             exec {
                 commandLine(
-                    "lipo", "-create",
+                    "lipo",
+                    "-create",
                     arm64SimBin.absolutePath,
                     x86SimBin.absolutePath,
-                    "-output", File(fatSliceDir, "Hl7Core").absolutePath
+                    "-output",
+                    File(fatSliceDir, "Hl7Core").absolutePath,
                 )
             }
 
@@ -95,7 +96,8 @@ afterEvaluate {
 
             // Rewrite Info.plist with the correct merged slice
             val infoPlist = File(xcframeworkDir, "Info.plist")
-            infoPlist.writeText("""
+            infoPlist.writeText(
+                """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
                 <plist version="1.0">
@@ -140,7 +142,8 @@ afterEvaluate {
                     <string>1.0</string>
                 </dict>
                 </plist>
-            """.trimIndent())
+                """.trimIndent(),
+            )
 
             println("✅ Fat simulator slice created: ios-arm64_x86_64-simulator")
             println("✅ Info.plist updated")
@@ -150,10 +153,16 @@ afterEvaluate {
 
 android {
     namespace = "org.rite.hl7"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

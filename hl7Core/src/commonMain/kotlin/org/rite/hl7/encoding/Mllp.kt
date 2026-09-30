@@ -5,9 +5,9 @@ package org.rite.hl7.encoding
  * Each frame is: <VT 0x0B> message <FS 0x1C><CR 0x0D>.
  */
 object Mllp {
-    private const val SB: Byte = 0x0B  // start block (vertical tab)
-    private const val EB: Byte = 0x1C  // end block (file separator)
-    private const val CR: Byte = 0x0D  // carriage return
+    private const val SB: Byte = 0x0B // start block (vertical tab)
+    private const val EB: Byte = 0x1C // end block (file separator)
+    private const val CR: Byte = 0x0D // carriage return
 
     /** Wraps a raw HL7 string in MLLP framing bytes. */
     fun wrap(hl7: String): ByteArray {

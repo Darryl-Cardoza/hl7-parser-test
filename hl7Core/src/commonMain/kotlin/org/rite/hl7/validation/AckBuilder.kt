@@ -10,9 +10,13 @@ import org.rite.hl7.util.HL7Date
  * failure's reason only — no ERR segments. Sender/receiver are swapped from
  * the inbound header so the ACK routes back.
  */
-class AckBuilder(private val builder: HL7Builder = HL7Builder.builder().build()) {
-
-    fun build(inbound: HL7Message, result: ValidationResult): HL7Message {
+class AckBuilder(
+    private val builder: HL7Builder = HL7Builder.builder().build(),
+) {
+    fun build(
+        inbound: HL7Message,
+        result: ValidationResult,
+    ): HL7Message {
         val h = inbound.header
         val controlId = h?.messageControlId ?: ""
         val firstFailure = result.issues.firstOrNull { it.severity != AckSeverity.ACCEPT }

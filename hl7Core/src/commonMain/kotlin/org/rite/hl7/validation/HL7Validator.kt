@@ -9,8 +9,8 @@ import org.rite.hl7.model.segment.QAKSegment
 import org.rite.hl7.model.segment.QPDSegment
 import org.rite.hl7.model.segment.RXESegment
 import org.rite.hl7.model.segment.ZADSegment
-import org.rite.hl7.model.segment.ZINSegment
 import org.rite.hl7.model.segment.ZCCSegment
+import org.rite.hl7.model.segment.ZINSegment
 import org.rite.hl7.model.segment.ZNISegment
 import org.rite.hl7.model.segment.ZPRSegment
 import org.rite.hl7.model.segment.ZUISegment
@@ -41,8 +41,9 @@ import org.rite.hl7.model.segment.ZUISegment
  *
  * Construct with a [ValidationConfig] to override the site defaults.
  */
-class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAULT) {
-
+class HL7Validator(
+    private val config: ValidationConfig = ValidationConfig.DEFAULT,
+) {
     fun validate(message: HL7Message): ValidationResult {
         val issues = mutableListOf<ValidationIssue>()
 
@@ -58,7 +59,10 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         return ValidationResult(issues)
     }
 
-    private fun validateHeader(message: HL7Message, issues: MutableList<ValidationIssue>) {
+    private fun validateHeader(
+        message: HL7Message,
+        issues: MutableList<ValidationIssue>,
+    ) {
         val header = message.header
         if (header == null) {
             issues += ValidationIssue(AckSeverity.REJECT, "Missing MSH segment", "MSH", "0", "100")
@@ -74,59 +78,93 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         }
     }
 
-    private fun validateQuery(message: HL7Message, issues: MutableList<ValidationIssue>) {
+    private fun validateQuery(
+        message: HL7Message,
+        issues: MutableList<ValidationIssue>,
+    ) {
         if (message.messageCode != "QBP") return
-        val qpd = message.segment<QPDSegment>(QPDSegment.NAME) ?: run {
-            issues += ValidationIssue(AckSeverity.REJECT, "Missing QPD segment", "QPD", "0", "200")
-            return
-        }
+        val qpd =
+            message.segment<QPDSegment>(QPDSegment.NAME) ?: run {
+                issues += ValidationIssue(AckSeverity.REJECT, "Missing QPD segment", "QPD", "0", "200")
+                return
+            }
         if (qpd.queryNameCode != config.expectedQueryName) {
-            issues += ValidationIssue(
-                AckSeverity.REJECT,
-                "Unsupported query",
-                "QPD", "1", "200",
-            )
+            issues +=
+                ValidationIssue(
+                    AckSeverity.REJECT,
+                    "Unsupported query",
+                    "QPD",
+                    "1",
+                    "200",
+                )
         }
     }
 
-    private fun validateAdjustments(message: HL7Message, issues: MutableList<ValidationIssue>) {
+    private fun validateAdjustments(
+        message: HL7Message,
+        issues: MutableList<ValidationIssue>,
+    ) {
         for (zad in message.segments<ZADSegment>(ZADSegment.NAME)) {
             if (zad.adjustmentType.isNotBlank() &&
                 zad.adjustmentType !in config.knownAdjustmentTypes
             ) {
-                issues += ValidationIssue(
-                    AckSeverity.REJECT,
-                    "Invalid adjustment type: ${zad.adjustmentType}",
-                    "ZAD", "2", "200",
-                )
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Invalid adjustment type: ${zad.adjustmentType}",
+                        "ZAD",
+                        "2",
+                        "200",
+                    )
             }
             when {
-                zad.adjustmentQuantity.isBlank() -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Missing quantity in ZAD", "ZAD", "3", "207",
-                )
-                !isValidQuantity(zad.adjustmentQuantity) -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid quantity in ZAD", "ZAD", "3", "207",
-                )
+                zad.adjustmentQuantity.isBlank() ->
+                    issues +=
+                        ValidationIssue(
+                            AckSeverity.REJECT,
+                            "Missing quantity in ZAD",
+                            "ZAD",
+                            "3",
+                            "207",
+                        )
+                !isValidQuantity(zad.adjustmentQuantity) ->
+                    issues +=
+                        ValidationIssue(
+                            AckSeverity.REJECT,
+                            "Invalid quantity in ZAD",
+                            "ZAD",
+                            "3",
+                            "207",
+                        )
             }
             val reason = zad.adjustmentReason
             if (reason.isNotBlank() && reason !in config.knownAdjustmentReasons) {
-                issues += ValidationIssue(
-                    AckSeverity.REJECT,
-                    "Unknown adjustment reason code: $reason",
-                    "ZAD", "4", "200",
-                )
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Unknown adjustment reason code: $reason",
+                        "ZAD",
+                        "4",
+                        "200",
+                    )
             }
             if (reason in config.commentRequiredReasons && zad.approvedBy.isBlank()) {
-                issues += ValidationIssue(
-                    AckSeverity.ERROR,
-                    "Adjustment comment required for reason $reason",
-                    "ZAD", "6", "206",
-                )
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.ERROR,
+                        "Adjustment comment required for reason $reason",
+                        "ZAD",
+                        "6",
+                        "206",
+                    )
             }
         }
     }
 
-    private fun validateDispense(message: HL7Message, issues: MutableList<ValidationIssue>) {
+    private fun validateDispense(
+        message: HL7Message,
+        issues: MutableList<ValidationIssue>,
+    ) {
         if (message.messageCode != "RDE" || message.triggerEvent !in DISPENSE_TRIGGERS) return
 
         val zui = message.segment<ZUISegment>(ZUISegment.NAME)
@@ -148,11 +186,14 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
 
         val control = orc.orderControl
         if (control !in config.knownOrderControlCodes) {
-            issues += ValidationIssue(
-                AckSeverity.REJECT,
-                "Unsupported order control code: $control",
-                "ORC", "1", "302",
-            )
+            issues +=
+                ValidationIssue(
+                    AckSeverity.REJECT,
+                    "Unsupported order control code: $control",
+                    "ORC",
+                    "1",
+                    "302",
+                )
         }
         if (orc.placerOrderNumber.isBlank()) {
             issues += ValidationIssue(AckSeverity.REJECT, "Missing Rx number in ORC", "ORC", "2", "303")
@@ -170,33 +211,65 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         rxeSegments.forEachIndexed { index, rxe ->
             val position = index + 1
             when {
-                rxe.giveCode.isBlank() -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Missing NDC in RXE $position", "RXE", "2", "301",
-                )
-                !isValidNdc(rxe.giveCode) -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid NDC in RXE $position", "RXE", "2", "301",
-                )
+                rxe.giveCode.isBlank() ->
+                    issues +=
+                        ValidationIssue(
+                            AckSeverity.REJECT,
+                            "Missing NDC in RXE $position",
+                            "RXE",
+                            "2",
+                            "301",
+                        )
+                !isValidNdc(rxe.giveCode) ->
+                    issues +=
+                        ValidationIssue(
+                            AckSeverity.REJECT,
+                            "Invalid NDC in RXE $position",
+                            "RXE",
+                            "2",
+                            "301",
+                        )
             }
             when {
-                rxe.giveAmountMinimum.isBlank() -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Missing quantity in RXE $position", "RXE", "3", "301",
-                )
-                !isValidQuantity(rxe.giveAmountMinimum) -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid quantity in RXE $position", "RXE", "3", "301",
-                )
+                rxe.giveAmountMinimum.isBlank() ->
+                    issues +=
+                        ValidationIssue(
+                            AckSeverity.REJECT,
+                            "Missing quantity in RXE $position",
+                            "RXE",
+                            "3",
+                            "301",
+                        )
+                !isValidQuantity(rxe.giveAmountMinimum) ->
+                    issues +=
+                        ValidationIssue(
+                            AckSeverity.REJECT,
+                            "Invalid quantity in RXE $position",
+                            "RXE",
+                            "3",
+                            "301",
+                        )
             }
         }
 
         message.segments<ZPRSegment>(ZPRSegment.NAME).forEach { zpr ->
             if (zpr.priority.uppercase() !in config.knownPriorities) {
-                issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid priority: ${zpr.priority}", "ZPR", "3", "311",
-                )
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Invalid priority: ${zpr.priority}",
+                        "ZPR",
+                        "3",
+                        "311",
+                    )
             }
         }
     }
 
-    private fun validateZui(zui: ZUISegment, issues: MutableList<ValidationIssue>) {
+    private fun validateZui(
+        zui: ZUISegment,
+        issues: MutableList<ValidationIssue>,
+    ) {
         if (zui.ndc.isBlank() && zui.orderDispenseQuantity.isBlank() && zui.orderRxNumber.isBlank()) {
             issues += ValidationIssue(AckSeverity.REJECT, "Malformed ZUI segment", "ZUI", "0", "310")
             return
@@ -206,19 +279,34 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
             !isValidNdc(zui.ndc) -> issues += ValidationIssue(AckSeverity.REJECT, "Invalid NDC in ZUI", "ZUI", "1", "311")
         }
         when {
-            zui.orderDispenseQuantity.isBlank() -> issues += ValidationIssue(
-                AckSeverity.REJECT, "Missing quantity in ZUI", "ZUI", "5", "312",
-            )
-            !isValidQuantity(zui.orderDispenseQuantity) -> issues += ValidationIssue(
-                AckSeverity.REJECT, "Invalid quantity in ZUI", "ZUI", "5", "312",
-            )
+            zui.orderDispenseQuantity.isBlank() ->
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Missing quantity in ZUI",
+                        "ZUI",
+                        "5",
+                        "312",
+                    )
+            !isValidQuantity(zui.orderDispenseQuantity) ->
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Invalid quantity in ZUI",
+                        "ZUI",
+                        "5",
+                        "312",
+                    )
         }
         if (zui.orderRxNumber.isBlank()) {
             issues += ValidationIssue(AckSeverity.REJECT, "Missing Rx number in ZUI", "ZUI", "6", "313")
         }
     }
 
-    private fun validateZni(zni: ZNISegment, issues: MutableList<ValidationIssue>) {
+    private fun validateZni(
+        zni: ZNISegment,
+        issues: MutableList<ValidationIssue>,
+    ) {
         if (zni.ndc.isBlank() && zni.dispenseAmount.isBlank() && zni.fillerOrderNumber.isBlank()) {
             issues += ValidationIssue(AckSeverity.REJECT, "Malformed ZNI segment", "ZNI", "0", "310")
             return
@@ -228,12 +316,24 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
             !isValidNdc(zni.ndc) -> issues += ValidationIssue(AckSeverity.REJECT, "Invalid NDC in ZNI", "ZNI", "2", "311")
         }
         when {
-            zni.dispenseAmount.isBlank() -> issues += ValidationIssue(
-                AckSeverity.REJECT, "Missing quantity in ZNI", "ZNI", "13", "312",
-            )
-            !isValidQuantity(zni.dispenseAmount) -> issues += ValidationIssue(
-                AckSeverity.REJECT, "Invalid quantity in ZNI", "ZNI", "13", "312",
-            )
+            zni.dispenseAmount.isBlank() ->
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Missing quantity in ZNI",
+                        "ZNI",
+                        "13",
+                        "312",
+                    )
+            !isValidQuantity(zni.dispenseAmount) ->
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Invalid quantity in ZNI",
+                        "ZNI",
+                        "13",
+                        "312",
+                    )
         }
         if (zni.fillerOrderNumber.isBlank()) {
             issues += ValidationIssue(AckSeverity.REJECT, "Missing Rx number in ZNI", "ZNI", "11", "313")
@@ -247,7 +347,10 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
      * (status) on every INV row are checked; INV-5 onward are request-side
      * and left empty.
      */
-    private fun validateInventory(message: HL7Message, issues: MutableList<ValidationIssue>) {
+    private fun validateInventory(
+        message: HL7Message,
+        issues: MutableList<ValidationIssue>,
+    ) {
         if (message.messageCode != "INR" || message.triggerEvent != INVENTORY_TRIGGER) return
         // ZAD-carrying messages are adjustments, already field-checked by
         // validateAdjustments; this rule is for plain count requests
@@ -256,22 +359,37 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
 
         val invSegments = message.segments<INVSegment>(INVSegment.NAME)
         if (invSegments.isEmpty()) {
-            issues += ValidationIssue(
-                AckSeverity.REJECT,
-                "Missing INV segment for INR^$INVENTORY_TRIGGER",
-                "INV", "0", "444",
-            )
+            issues +=
+                ValidationIssue(
+                    AckSeverity.REJECT,
+                    "Missing INV segment for INR^$INVENTORY_TRIGGER",
+                    "INV",
+                    "0",
+                    "444",
+                )
             return
         }
         invSegments.forEachIndexed { index, inv ->
             val position = index + 1
             when {
-                inv.deviceItemCode.isBlank() -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Missing NDC in INV $position", "INV", "1", "445",
-                )
-                !isValidNdc(inv.deviceItemCode) -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid NDC in INV $position", "INV", "1", "445",
-                )
+                inv.deviceItemCode.isBlank() ->
+                    issues +=
+                        ValidationIssue(
+                            AckSeverity.REJECT,
+                            "Missing NDC in INV $position",
+                            "INV",
+                            "1",
+                            "445",
+                        )
+                !isValidNdc(inv.deviceItemCode) ->
+                    issues +=
+                        ValidationIssue(
+                            AckSeverity.REJECT,
+                            "Invalid NDC in INV $position",
+                            "INV",
+                            "1",
+                            "445",
+                        )
             }
             if (inv.deviceStatusCode.isBlank()) {
                 issues += ValidationIssue(AckSeverity.REJECT, "Missing status in INV $position", "INV", "2", "446")
@@ -280,7 +398,10 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
     }
 
     /** INR^U05 (count response) and INU^U05 (inventory update) share the same INV/ZIN row shape. */
-    private fun validateInventorySync(message: HL7Message, issues: MutableList<ValidationIssue>) {
+    private fun validateInventorySync(
+        message: HL7Message,
+        issues: MutableList<ValidationIssue>,
+    ) {
         if (message.kind != HL7MessageKind.INVENTORY_RESPONSE && message.kind != HL7MessageKind.INVENTORY_UPDATE) return
 
         val invSegments = message.segments<INVSegment>(INVSegment.NAME)
@@ -292,36 +413,77 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
                 val position = index + 1
                 if (inv.fieldCount > INVSegment.DEVICE_SYNC_FIELD_THRESHOLD) {
                     when {
-                        inv.deviceItemCode.isBlank() -> issues += ValidationIssue(
-                            AckSeverity.REJECT, "Missing NDC in INV $position", "INV", "1", "411",
-                        )
-                        !isValidNdc(inv.deviceItemCode) -> issues += ValidationIssue(
-                            AckSeverity.REJECT, "Invalid NDC in INV $position", "INV", "1", "411",
-                        )
+                        inv.deviceItemCode.isBlank() ->
+                            issues +=
+                                ValidationIssue(
+                                    AckSeverity.REJECT,
+                                    "Missing NDC in INV $position",
+                                    "INV",
+                                    "1",
+                                    "411",
+                                )
+                        !isValidNdc(inv.deviceItemCode) ->
+                            issues +=
+                                ValidationIssue(
+                                    AckSeverity.REJECT,
+                                    "Invalid NDC in INV $position",
+                                    "INV",
+                                    "1",
+                                    "411",
+                                )
                     }
                     val qty = inv.deviceQuantityOnHand
                     if (qty.isNotBlank() && (qty.toDoubleOrNull() == null || qty.toDouble() < 0)) {
-                        issues += ValidationIssue(
-                            AckSeverity.REJECT, "Invalid quantity in INV $position", "INV", "7", "412",
-                        )
+                        issues +=
+                            ValidationIssue(
+                                AckSeverity.REJECT,
+                                "Invalid quantity in INV $position",
+                                "INV",
+                                "7",
+                                "412",
+                            )
                     }
                 } else {
                     when {
-                        inv.substanceCode.isBlank() -> issues += ValidationIssue(
-                            AckSeverity.REJECT, "Missing NDC in INV $position", "INV", "2", "411",
-                        )
-                        !isValidNdc(inv.substanceCode) -> issues += ValidationIssue(
-                            AckSeverity.REJECT, "Invalid NDC in INV $position", "INV", "2", "411",
-                        )
+                        inv.substanceCode.isBlank() ->
+                            issues +=
+                                ValidationIssue(
+                                    AckSeverity.REJECT,
+                                    "Missing NDC in INV $position",
+                                    "INV",
+                                    "2",
+                                    "411",
+                                )
+                        !isValidNdc(inv.substanceCode) ->
+                            issues +=
+                                ValidationIssue(
+                                    AckSeverity.REJECT,
+                                    "Invalid NDC in INV $position",
+                                    "INV",
+                                    "2",
+                                    "411",
+                                )
                     }
                     val qty = inv.inventoryOnHandQuantity
                     when {
-                        qty.isBlank() -> issues += ValidationIssue(
-                            AckSeverity.REJECT, "Missing quantity in INV $position", "INV", "5", "412",
-                        )
-                        qty.toDoubleOrNull() == null || qty.toDouble() < 0 -> issues += ValidationIssue(
-                            AckSeverity.REJECT, "Invalid quantity in INV $position", "INV", "5", "412",
-                        )
+                        qty.isBlank() ->
+                            issues +=
+                                ValidationIssue(
+                                    AckSeverity.REJECT,
+                                    "Missing quantity in INV $position",
+                                    "INV",
+                                    "5",
+                                    "412",
+                                )
+                        qty.toDoubleOrNull() == null || qty.toDouble() < 0 ->
+                            issues +=
+                                ValidationIssue(
+                                    AckSeverity.REJECT,
+                                    "Invalid quantity in INV $position",
+                                    "INV",
+                                    "5",
+                                    "412",
+                                )
                     }
                 }
             }
@@ -330,70 +492,116 @@ class HL7Validator(private val config: ValidationConfig = ValidationConfig.DEFAU
         message.segments<OBXSegment>(OBXSegment.NAME).forEachIndexed { index, obx ->
             val position = index + 1
             if (obx.observationId.isBlank()) {
-                issues += ValidationIssue(
-                    AckSeverity.REJECT, "Missing observation id in OBX $position", "OBX", "3", "413",
-                )
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Missing observation id in OBX $position",
+                        "OBX",
+                        "3",
+                        "413",
+                    )
             }
             val value = obx.observationValue
             if (obx.valueType.equals("NM", ignoreCase = true) &&
-                value.isNotBlank() && (value.toDoubleOrNull() == null || value.toDouble() < 0)
+                value.isNotBlank() &&
+                (value.toDoubleOrNull() == null || value.toDouble() < 0)
             ) {
-                issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid quantity in OBX $position", "OBX", "5", "414",
-                )
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Invalid quantity in OBX $position",
+                        "OBX",
+                        "5",
+                        "414",
+                    )
             }
         }
 
         message.segments<ZCCSegment>(ZCCSegment.NAME).forEachIndexed { index, zcc ->
             val position = index + 1
             when {
-                zcc.ndcCode.isBlank() -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Missing NDC in ZCC $position", "ZCC", "1", "415",
-                )
-                !isValidNdc(zcc.ndcCode) -> issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid NDC in ZCC $position", "ZCC", "1", "415",
-                )
+                zcc.ndcCode.isBlank() ->
+                    issues +=
+                        ValidationIssue(
+                            AckSeverity.REJECT,
+                            "Missing NDC in ZCC $position",
+                            "ZCC",
+                            "1",
+                            "415",
+                        )
+                !isValidNdc(zcc.ndcCode) ->
+                    issues +=
+                        ValidationIssue(
+                            AckSeverity.REJECT,
+                            "Invalid NDC in ZCC $position",
+                            "ZCC",
+                            "1",
+                            "415",
+                        )
             }
             val qty = zcc.totalQuantity
             if (qty.isNotBlank() && (qty.toDoubleOrNull() == null || qty.toDouble() < 0)) {
-                issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid quantity in ZCC $position", "ZCC", "8", "416",
-                )
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Invalid quantity in ZCC $position",
+                        "ZCC",
+                        "8",
+                        "416",
+                    )
             }
         }
 
         message.segments<ZINSegment>(ZINSegment.NAME).forEachIndexed { index, zin ->
             val qty = zin.quantity
             if (qty.isNotBlank() && (qty.toDoubleOrNull() == null || qty.toDouble() < 0)) {
-                issues += ValidationIssue(
-                    AckSeverity.REJECT, "Invalid quantity in ZIN ${index + 1}", "ZIN", "3", "402",
-                )
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Invalid quantity in ZIN ${index + 1}",
+                        "ZIN",
+                        "3",
+                        "402",
+                    )
             }
         }
     }
 
-    private fun validateQueryResponse(message: HL7Message, issues: MutableList<ValidationIssue>) {
+    private fun validateQueryResponse(
+        message: HL7Message,
+        issues: MutableList<ValidationIssue>,
+    ) {
         if (message.messageCode != "RSP" || message.triggerEvent != "K11") return
         val qak = message.segment<QAKSegment>(QAKSegment.NAME)
         when {
             qak == null -> issues += ValidationIssue(AckSeverity.REJECT, "Missing QAK segment", "QAK", "0", "420")
-            qak.queryResponseStatus !in QUERY_RESPONSE_STATUSES -> issues += ValidationIssue(
-                AckSeverity.REJECT,
-                "Invalid query response status: ${qak.queryResponseStatus}",
-                "QAK", "2", "421",
-            )
+            qak.queryResponseStatus !in QUERY_RESPONSE_STATUSES ->
+                issues +=
+                    ValidationIssue(
+                        AckSeverity.REJECT,
+                        "Invalid query response status: ${qak.queryResponseStatus}",
+                        "QAK",
+                        "2",
+                        "421",
+                    )
         }
     }
 
-    private fun validateSupportedType(message: HL7Message, issues: MutableList<ValidationIssue>) {
+    private fun validateSupportedType(
+        message: HL7Message,
+        issues: MutableList<ValidationIssue>,
+    ) {
         if (message.messageCode.isBlank() || message.triggerEvent.isBlank()) return // already flagged by validateHeader
         // ACK is the server's own outbound response type; it must never be accepted inbound.
         if (message.kind != HL7MessageKind.UNKNOWN && message.messageCode.uppercase() != "ACK") return
-        issues += ValidationIssue(
-            AckSeverity.REJECT,
-            "Unsupported message type ${message.messageCode}^${message.triggerEvent}",
-            "MSH", "9", "500",
-        )
+        issues +=
+            ValidationIssue(
+                AckSeverity.REJECT,
+                "Unsupported message type ${message.messageCode}^${message.triggerEvent}",
+                "MSH",
+                "9",
+                "500",
+            )
     }
 
     /**

@@ -33,7 +33,7 @@ class HL7Segment(
         if (isMsh) {
             return when (n) {
                 1 -> HL7Field.of(delimiters.field.toString())
-                else -> fields.getOrNull(n - 2) ?: HL7Field.EMPTY  // MSH-2 == fields[0]
+                else -> fields.getOrNull(n - 2) ?: HL7Field.EMPTY // MSH-2 == fields[0]
             }
         }
         // Non-MSH: fields[0] is the segment name, so field(1) == fields[1].
@@ -44,10 +44,16 @@ class HL7Segment(
     fun fieldValue(n: Int): String = field(n).value
 
     /** Component [c] (1-based) of field [n] (1-based). */
-    fun component(n: Int, c: Int): HL7Component = field(n).component(c)
+    fun component(
+        n: Int,
+        c: Int,
+    ): HL7Component = field(n).component(c)
 
     /** Plain value of component [c] of field [n]. */
-    fun componentValue(n: Int, c: Int): String = field(n).component(c).value
+    fun componentValue(
+        n: Int,
+        c: Int,
+    ): String = field(n).component(c).value
 
     /** The highest 1-based field index present in this segment. */
     val fieldCount: Int get() = if (isMsh) fields.size + 1 else fields.size - 1
@@ -56,7 +62,7 @@ class HL7Segment(
     fun encode(d: HL7Delimiters = delimiters): String {
         if (isMsh) {
             // MSH|<enc>|<MSH-3>|...  — name, separator, encoding chars are literal.
-            val rest = fields.drop(1)  // fields[0] is MSH-2 (encoding chars); re-emit literally
+            val rest = fields.drop(1) // fields[0] is MSH-2 (encoding chars); re-emit literally
             val sb = StringBuilder()
             sb.append(name).append(d.field).append(d.encodingCharacters)
             for (f in rest) sb.append(d.field).append(f.encode(d))
@@ -67,7 +73,10 @@ class HL7Segment(
         return trimTrailing(sb.toString(), d)
     }
 
-    private fun trimTrailing(s: String, d: HL7Delimiters): String = s.trimEnd(d.field)
+    private fun trimTrailing(
+        s: String,
+        d: HL7Delimiters,
+    ): String = s.trimEnd(d.field)
 
     companion object {
         /**
@@ -75,26 +84,31 @@ class HL7Segment(
          * into a generic [HL7Segment]. For MSH, the field separator and encoding
          * characters are consumed so that fields[0] holds MSH-2.
          */
-        fun parse(line: String, d: HL7Delimiters): HL7Segment {
+        fun parse(
+            line: String,
+            d: HL7Delimiters,
+        ): HL7Segment {
             val name = line.take(3)
             if (name == "MSH") {
                 // line = MSH|^~\&|f3|f4...  → split off "MSH" + separator, keep encoding + rest.
                 // After "MSH" + field-sep, the remainder split on field-sep gives:
                 //   [encodingChars, f3, f4, ...]  → store as fields[0..]
-                val afterName = line.drop(4)  // drop "MSH" + field separator
+                val afterName = line.drop(4) // drop "MSH" + field separator
                 val parts = afterName.split(d.field)
                 // parts[0] = encoding characters (stored literally, not re-parsed for delimiters)
-                val fields = parts.mapIndexed { idx, raw ->
-                    if (idx == 0) HL7Field.of(raw) else HL7Field.parse(raw, d)
-                }
+                val fields =
+                    parts.mapIndexed { idx, raw ->
+                        if (idx == 0) HL7Field.of(raw) else HL7Field.parse(raw, d)
+                    }
                 return HL7Segment(name, fields, d)
             }
             val parts = line.split(d.field)
             // parts[0] = segment name; parts[1..] = fields. Keep name at index 0 so
             // field(n) maps to fields[n] uniformly.
-            val fields = parts.mapIndexed { idx, raw ->
-                if (idx == 0) HL7Field.of(raw) else HL7Field.parse(raw, d)
-            }
+            val fields =
+                parts.mapIndexed { idx, raw ->
+                    if (idx == 0) HL7Field.of(raw) else HL7Field.parse(raw, d)
+                }
             return HL7Segment(name, fields, d)
         }
     }

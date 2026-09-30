@@ -12,7 +12,9 @@ import org.rite.hl7.model.ast.HL7Segment
  * transactionType: D = dispense, R = return.
  * captureSource: GS1 / NDC_LINEAR / MANUAL / UNKNOWN.
  */
-class ZSNSegment(raw: HL7Segment) : TypedSegment(raw) {
+class ZSNSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
     val packageSerialNumber: String get() = fieldValue(2)
     val nationalDrugCode: String get() = fieldValue(3)
@@ -25,6 +27,7 @@ class ZSNSegment(raw: HL7Segment) : TypedSegment(raw) {
 
     companion object {
         const val NAME = "ZSN"
+
         /** Register on parser/builder via `registerCustomSegment(ZSNSegment.Definition)`. */
         val Definition = SegmentDefinition(NAME) { ZSNSegment(it) }
     }
@@ -43,7 +46,9 @@ class ZSNSegment(raw: HL7Segment) : TypedSegment(raw) {
  * imagePaths: `~`-repeated (standard HL7 repetition separator) — see [imagePaths].
  * countStatus: COMPLETE / IN_PROGRESS / EMPTY.
  */
-class ZCCSegment(raw: HL7Segment) : TypedSegment(raw) {
+class ZCCSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val ndcCode: String get() = fieldValue(1)
     val drugName: String get() = fieldValue(2)
     val drugType: String get() = fieldValue(3)
@@ -73,6 +78,7 @@ class ZCCSegment(raw: HL7Segment) : TypedSegment(raw) {
 
     companion object {
         const val NAME = "ZCC"
+
         /** Register on parser/builder via `registerCustomSegment(ZCCSegment.Definition)`. */
         val Definition = SegmentDefinition(NAME) { ZCCSegment(it) }
     }
@@ -92,7 +98,9 @@ class ZCCSegment(raw: HL7Segment) : TypedSegment(raw) {
  * matchStrength: EXACT (11-digit NDC) / GENERIC (GPI-equivalent) / NDC10 (10-digit fallback).
  *   Required when validationResult is MATCH or SUBSTITUTION.
  */
-class ZSVSegment(raw: HL7Segment) : TypedSegment(raw) {
+class ZSVSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
     val dispensedNdc: String get() = fieldValue(2)
     val scannedNdc: String get() = fieldValue(3)
@@ -116,7 +124,9 @@ class ZSVSegment(raw: HL7Segment) : TypedSegment(raw) {
  * adjustmentType (sign): + add, - subtract, O overwrite QOH.
  * adjustmentReason: see [org.rite.hl7.builder.ZadReasonCode] for default site reason codes.
  */
-class ZADSegment(raw: HL7Segment) : TypedSegment(raw) {
+class ZADSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
     val adjustmentType: String get() = fieldValue(2)
     val adjustmentQuantity: String get() = fieldValue(3)
@@ -146,7 +156,9 @@ class ZADSegment(raw: HL7Segment) : TypedSegment(raw) {
  * (fields 1-15 mirrored, result data starting at field 16) — direction must be
  * determined from MSH-9 before assuming this order-packet shape applies.
  */
-class ZNISegment(raw: HL7Segment) : TypedSegment(raw) {
+class ZNISegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val mode: String get() = fieldValue(1)
     val ndc: String get() = fieldValue(2)
     val stockBottleBarcode: String get() = fieldValue(3)
@@ -154,6 +166,7 @@ class ZNISegment(raw: HL7Segment) : TypedSegment(raw) {
     val stockBottleVerification: String get() = fieldValue(5)
     val userName: String get() = fieldValue(6)
     val countType: String get() = fieldValue(7)
+
     // field 8 reserved for future use
     val packetVersion: String get() = fieldValue(9)
     val patientFamilyName: String get() = component(10, 1)
@@ -191,7 +204,9 @@ class ZNISegment(raw: HL7Segment) : TypedSegment(raw) {
  * drugImage: optional, base64 encoded string.
  * drugLotNumber / drugSerialNumber / drugExpirationDate: optional GS1 fields; expirationDate is yyMMdd.
  */
-class ZUISegment(raw: HL7Segment) : TypedSegment(raw) {
+class ZUISegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     /** Shared by both layouts (field 1 in both). */
     val ndc: String get() = fieldValue(1)
 

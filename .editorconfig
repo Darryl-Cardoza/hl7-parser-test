@@ -12,6 +12,10 @@ max_line_length = 140
 ktlint_code_style = ktlint_official
 # Compose functions are PascalCase by convention.
 ktlint_function_naming_ignore_when_annotated_with = Composable
+# Compose code uses wildcard imports; Detekt's WildcardImport is off for the same reason.
+ktlint_standard_no-wildcard-imports = disabled
+# Line length is enforced by Detekt (MaxLineLength), which excludes KDoc samples and tests.
+ktlint_standard_max-line-length = disabled
 
 # ComposeUIViewController entry point is PascalCase by iOS convention.
 [**/iosMain/**/MainViewController.kt]

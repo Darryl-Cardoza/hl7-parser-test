@@ -12,7 +12,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /** A user-defined typed segment registered without any core changes. */
-class ZQQSegment(raw: HL7Segment) : TypedSegment(raw) {
+class ZQQSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val widgetId: String get() = fieldValue(1)
     val widgetName: String get() = fieldValue(2)
 
@@ -22,12 +24,13 @@ class ZQQSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 class PartialAndCustomTest {
-
     @Test
     fun customSegmentRegistersWithoutCoreChanges() {
-        val parser = HL7Parser.Builder()
-            .registerCustomSegment(ZQQSegment.Definition)
-            .build()
+        val parser =
+            HL7Parser
+                .Builder()
+                .registerCustomSegment(ZQQSegment.Definition)
+                .build()
         val raw = "MSH|^~\\&|A|B|C|D|20260101||ADT^A01|1|P|2.5\rZQQ|W-1|Widget"
         val result = parser.parse(raw)
         assertTrue(result is HL7ParseResult.Success)

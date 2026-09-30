@@ -16,8 +16,10 @@ import org.rite.hl7.parser.HL7ParseResult
  * (INR^U06) workflows. One [HL7] facade instance is enough for a whole app —
  * it pre-registers the ZSN/ZSV/ZAD extension segments.
  */
-class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version = version)) {
-
+class HL7Workflows(
+    version: String = "2.5",
+    private val hl7: HL7 = HL7(version = version),
+) {
     // ---------------------------------------------------------------
     // Dispense
     // ---------------------------------------------------------------
@@ -42,34 +44,35 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
         expirationDate: String,
         packageSerialNumbers: List<String>,
     ): String {
-        val message = hl7.build().rdsO13 {
-            msh {
-                it.sendingApplication = "PillCounter"
-                it.sendingFacility = "PHARMACY"
-                it.messageControlId = controlId
-            }
-            orc {
-                it.orderControl = "RE"
-                it.placerOrderNumber = placerOrderNumber
-            }
-            rxd {
-                it.dispenseGiveCode = ndc
-                it.dispenseGiveName = drugName
-                it.actualDispenseAmount = amount
-                it.lotNumber = lotNumber
-                it.expirationDate = expirationDate
-            }
-            packageSerialNumbers.forEachIndexed { index, serial ->
-                zsn {
-                    it.setId = (index + 1).toString()
-                    it.packageSerialNumber = serial
-                    it.nationalDrugCode = ndc
+        val message =
+            hl7.build().rdsO13 {
+                msh {
+                    it.sendingApplication = "PillCounter"
+                    it.sendingFacility = "PHARMACY"
+                    it.messageControlId = controlId
+                }
+                orc {
+                    it.orderControl = "RE"
+                    it.placerOrderNumber = placerOrderNumber
+                }
+                rxd {
+                    it.dispenseGiveCode = ndc
+                    it.dispenseGiveName = drugName
+                    it.actualDispenseAmount = amount
                     it.lotNumber = lotNumber
                     it.expirationDate = expirationDate
-                    it.transactionType = "D" // dispense
+                }
+                packageSerialNumbers.forEachIndexed { index, serial ->
+                    zsn {
+                        it.setId = (index + 1).toString()
+                        it.packageSerialNumber = serial
+                        it.nationalDrugCode = ndc
+                        it.lotNumber = lotNumber
+                        it.expirationDate = expirationDate
+                        it.transactionType = "D" // dispense
+                    }
                 }
             }
-        }
         return message.encode()
     }
 
@@ -81,8 +84,9 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
                 if (msg.kind != HL7MessageKind.DISPENSE) {
                     return Result.failure(IllegalArgumentException("Not a dispense message: ${msg.kind}"))
                 }
-                val rxd = msg.segment<RXDSegment>("RXD")
-                    ?: return Result.failure(IllegalStateException("Missing RXD segment"))
+                val rxd =
+                    msg.segment<RXDSegment>("RXD")
+                        ?: return Result.failure(IllegalStateException("Missing RXD segment"))
                 val serials = msg.segments<ZSNSegment>("ZSN").map { it.packageSerialNumber }
 
                 Result.success(
@@ -93,12 +97,13 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
                         lotNumber = rxd.lotNumber,
                         expirationDate = rxd.expirationDate,
                         serialNumbers = serials,
-                    )
+                    ),
                 )
             }
-            is HL7ParseResult.Failure -> Result.failure(
-                IllegalArgumentException("Parse failed: ${result.errors.joinToString { it.message }}")
-            )
+            is HL7ParseResult.Failure ->
+                Result.failure(
+                    IllegalArgumentException("Parse failed: ${result.errors.joinToString { it.message }}"),
+                )
         }
     }
 
@@ -128,28 +133,29 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
         adjustmentReason: String,
         approvedBy: String,
     ): String {
-        val message = hl7.build().inrU06 {
-            msh {
-                it.sendingApplication = "PillCounter"
-                it.sendingFacility = "PHARMACY"
-                it.messageControlId = controlId
-            }
-            inv {
+        val message =
+            hl7.build().inrU06 {
+                msh {
+                    it.sendingApplication = "PillCounter"
+                    it.sendingFacility = "PHARMACY"
+                    it.messageControlId = controlId
+                }
+                inv {
 //                it.setId = "1"
-                it.substanceCode = ndc
-                it.substanceName = substanceName
-                it.substanceCodeSystem = "NDC"
-                it.inventoryOnHandQuantity = onHandQuantity
-                it.units = units
+                    it.substanceCode = ndc
+                    it.substanceName = substanceName
+                    it.substanceCodeSystem = "NDC"
+                    it.inventoryOnHandQuantity = onHandQuantity
+                    it.units = units
+                }
+                zad {
+                    it.setId = "1"
+                    it.adjustmentType = adjustmentType
+                    it.adjustmentQuantity = adjustmentQuantity
+                    it.adjustmentReason = adjustmentReason
+                    it.approvedBy = approvedBy
+                }
             }
-            zad {
-                it.setId = "1"
-                it.adjustmentType = adjustmentType
-                it.adjustmentQuantity = adjustmentQuantity
-                it.adjustmentReason = adjustmentReason
-                it.approvedBy = approvedBy
-            }
-        }
         return message.encode()
     }
 
@@ -168,23 +174,25 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
                 val zadRows = msg.segments<ZADSegment>("ZAD")
 
                 // INV and ZAD share position/setId ordering in this project's convention.
-                val adjustments = invRows.mapIndexed { index, inv ->
-                    val zad = zadRows.getOrNull(index)
-                    InventoryAdjustment(
-                        ndc = inv.substanceCode,
-                        substanceName = inv.substanceName,
-                        onHandQuantity = inv.inventoryOnHandQuantity,
-                        units = inv.units,
-                        adjustmentType = zad?.adjustmentType ?: "",
-                        adjustmentQuantity = zad?.adjustmentQuantity ?: "",
-                        adjustmentReason = zad?.adjustmentReason ?: "",
-                    )
-                }
+                val adjustments =
+                    invRows.mapIndexed { index, inv ->
+                        val zad = zadRows.getOrNull(index)
+                        InventoryAdjustment(
+                            ndc = inv.substanceCode,
+                            substanceName = inv.substanceName,
+                            onHandQuantity = inv.inventoryOnHandQuantity,
+                            units = inv.units,
+                            adjustmentType = zad?.adjustmentType ?: "",
+                            adjustmentQuantity = zad?.adjustmentQuantity ?: "",
+                            adjustmentReason = zad?.adjustmentReason ?: "",
+                        )
+                    }
                 Result.success(adjustments)
             }
-            is HL7ParseResult.Failure -> Result.failure(
-                IllegalArgumentException("Parse failed: ${result.errors.joinToString { it.message }}")
-            )
+            is HL7ParseResult.Failure ->
+                Result.failure(
+                    IllegalArgumentException("Parse failed: ${result.errors.joinToString { it.message }}"),
+                )
         }
     }
 
@@ -224,18 +232,19 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
                 // EQU is not consumed by the app — its absence must not block parsing.
                 val equ = msg.segment<EQUSegment>(EQUSegment.NAME)
 
-                val items = msg.segments<INVSegment>(INVSegment.NAME).map { inv ->
-                    InventoryRequestItem(
-                        ndc = inv.deviceItemCode,
-                        name = inv.deviceItemName,
-                        statusCode = inv.deviceStatusCode,
-                        statusDesc = inv.raw.componentValue(2, 2),
-                        typeCode = inv.deviceTypeCode,
-                        typeDesc = inv.raw.componentValue(3, 2),
-                        locationCode = inv.deviceLocationCode,
-                        locationName = inv.deviceLocationText,
-                    )
-                }
+                val items =
+                    msg.segments<INVSegment>(INVSegment.NAME).map { inv ->
+                        InventoryRequestItem(
+                            ndc = inv.deviceItemCode,
+                            name = inv.deviceItemName,
+                            statusCode = inv.deviceStatusCode,
+                            statusDesc = inv.raw.componentValue(2, 2),
+                            typeCode = inv.deviceTypeCode,
+                            typeDesc = inv.raw.componentValue(3, 2),
+                            locationCode = inv.deviceLocationCode,
+                            locationName = inv.deviceLocationText,
+                        )
+                    }
 
                 val notes = msg.segments<NTESegment>(NTESegment.NAME).map { it.comment }
 
@@ -247,12 +256,13 @@ class HL7Workflows(version: String = "2.5", private val hl7: HL7 = HL7(version =
                         equipmentState = equ?.equipmentState ?: "",
                         items = items,
                         notes = notes,
-                    )
+                    ),
                 )
             }
-            is HL7ParseResult.Failure -> Result.failure(
-                IllegalArgumentException("Parse failed: ${result.errors.joinToString { it.message }}")
-            )
+            is HL7ParseResult.Failure ->
+                Result.failure(
+                    IllegalArgumentException("Parse failed: ${result.errors.joinToString { it.message }}"),
+                )
         }
     }
 

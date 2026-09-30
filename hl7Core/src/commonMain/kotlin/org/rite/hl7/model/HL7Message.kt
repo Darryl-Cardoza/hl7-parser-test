@@ -30,27 +30,22 @@ class HL7Message internal constructor(
     val kind: HL7MessageKind get() = HL7MessageKind.from(this)
 
     /** All typed segments with the given name, in order. */
-    fun segmentsNamed(name: String): List<TypedSegment> =
-        typedSegments.filter { it.segmentName == name }
+    fun segmentsNamed(name: String): List<TypedSegment> = typedSegments.filter { it.segmentName == name }
 
     /** First typed segment with the given name, or null. */
-    fun segmentNamed(name: String): TypedSegment? =
-        typedSegments.firstOrNull { it.segmentName == name }
+    fun segmentNamed(name: String): TypedSegment? = typedSegments.firstOrNull { it.segmentName == name }
 
     /**
      * First segment of type [T] with the given [name], or null.
      * Kotlin: `message.segment<RXDSegment>("RXD")`.
      */
-    inline fun <reified T : TypedSegment> segment(name: String): T? =
-        segmentNamed(name) as? T
+    inline fun <reified T : TypedSegment> segment(name: String): T? = segmentNamed(name) as? T
 
     /** All segments of type [T] with the given [name]. */
-    inline fun <reified T : TypedSegment> segments(name: String): List<T> =
-        segmentsNamed(name).filterIsInstance<T>()
+    inline fun <reified T : TypedSegment> segments(name: String): List<T> = segmentsNamed(name).filterIsInstance<T>()
 
     /** Re-serializes the message to wire text (segments joined by CR). */
-    fun encode(): String =
-        typedSegments.joinToString("\r") { it.raw.encode(delimiters) }
+    fun encode(): String = typedSegments.joinToString("\r") { it.raw.encode(delimiters) }
 
     /** Re-serializes and wraps in MLLP framing for TCP transport. */
     fun encodeMllp(): ByteArray = Mllp.wrap(encode())

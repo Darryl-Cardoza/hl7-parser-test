@@ -31,18 +31,31 @@ import org.rite.hl7.model.segment.ZUISegment
  * fall back to [GenericSegment] (lossless).
  */
 class SegmentRegistry {
-
     private val definitions: MutableMap<String, SegmentDefinition> = mutableMapOf()
 
     init {
         listOf(
-            MSHSegment.Definition, PIDSegment.Definition, PV1Segment.Definition,
-            ORCSegment.Definition, MSASegment.Definition, ERRSegment.Definition,
-            NTESegment.Definition, RXESegment.Definition, RXDSegment.Definition,
-            RXCSegment.Definition, RXRSegment.Definition, OBXSegment.Definition,
-            EQUSegment.Definition, INVSegment.Definition, QPDSegment.Definition,
-            RCPSegment.Definition, QAKSegment.Definition, ZINSegment.Definition,
-            ZPRSegment.Definition, ZNISegment.Definition, ZUISegment.Definition,
+            MSHSegment.Definition,
+            PIDSegment.Definition,
+            PV1Segment.Definition,
+            ORCSegment.Definition,
+            MSASegment.Definition,
+            ERRSegment.Definition,
+            NTESegment.Definition,
+            RXESegment.Definition,
+            RXDSegment.Definition,
+            RXCSegment.Definition,
+            RXRSegment.Definition,
+            OBXSegment.Definition,
+            EQUSegment.Definition,
+            INVSegment.Definition,
+            QPDSegment.Definition,
+            RCPSegment.Definition,
+            QAKSegment.Definition,
+            ZINSegment.Definition,
+            ZPRSegment.Definition,
+            ZNISegment.Definition,
+            ZUISegment.Definition,
             BTSSegment.Definition,
         ).forEach { register(it) }
     }
@@ -53,8 +66,7 @@ class SegmentRegistry {
     }
 
     /** Wraps a generic segment into its typed view, or [GenericSegment] if unregistered. */
-    fun wrap(raw: HL7Segment): TypedSegment =
-        definitions[raw.name]?.factory?.invoke(raw) ?: GenericSegment(raw)
+    fun wrap(raw: HL7Segment): TypedSegment = definitions[raw.name]?.factory?.invoke(raw) ?: GenericSegment(raw)
 
     fun isRegistered(name: String): Boolean = definitions.containsKey(name)
 }

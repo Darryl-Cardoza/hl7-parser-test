@@ -13,7 +13,9 @@ import org.rite.hl7.model.ast.HL7Segment
  * when field 1 has no second component (a bare value, not composite) while
  * field 2 does — i.e. field 2 looks like the real ID, not field 1.
  */
-class EQUSegment(raw: HL7Segment) : TypedSegment(raw) {
+class EQUSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     private val idField: Int get() = if (component(1, 2).isBlank() && component(2, 2).isNotBlank()) 2 else 1
 
     val equipmentId: String get() = component(idField, 1)
@@ -78,7 +80,9 @@ class EQUSegment(raw: HL7Segment) : TypedSegment(raw) {
  * (serial), all four together — two rows sharing an NDC but differing in
  * lot/expiry/serial are distinct bottles, never merged.
  */
-class INVSegment(raw: HL7Segment) : TypedSegment(raw) {
+class INVSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
     val substanceCode: String get() = component(2, 1)
     val substanceName: String get() = component(2, 2)
@@ -109,6 +113,7 @@ class INVSegment(raw: HL7Segment) : TypedSegment(raw) {
     val countItemCode: String get() = component(2, 1)
     val countItemName: String get() = component(2, 2)
     val countCodingSystem: String get() = component(2, 3)
+
     /** Serial number — distinguishes two otherwise-identical bottles (same NDC/lot/expiry). */
     val countSerialNumber: String get() = component(2, 4)
     val countGtin: String get() = component(2, 5)
@@ -132,13 +137,15 @@ class INVSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** QPD — Query Parameter Definition (used by QBP^Q11 / RSP^K11). */
-class QPDSegment(raw: HL7Segment) : TypedSegment(raw) {
-    val messageQueryName: String get() = fieldValue(1)        // QPD-1 (full)
-    val queryNameCode: String get() = component(1, 1)         // QPD-1.1
-    val queryTag: String get() = fieldValue(2)               // QPD-2
-    val ndc: String get() = component(3, 1)                  // QPD-3.1
+class QPDSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
+    val messageQueryName: String get() = fieldValue(1) // QPD-1 (full)
+    val queryNameCode: String get() = component(1, 1) // QPD-1.1
+    val queryTag: String get() = fieldValue(2) // QPD-2
+    val ndc: String get() = component(3, 1) // QPD-3.1
     val drugName: String get() = component(3, 2)
-    val equipmentId: String get() = fieldValue(4)            // QPD-4
+    val equipmentId: String get() = fieldValue(4) // QPD-4
 
     companion object {
         const val NAME = "QPD"
@@ -147,8 +154,10 @@ class QPDSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** RCP — Response Control Parameter (query). */
-class RCPSegment(raw: HL7Segment) : TypedSegment(raw) {
-    val queryPriority: String get() = fieldValue(1)          // I = immediate
+class RCPSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
+    val queryPriority: String get() = fieldValue(1) // I = immediate
     val quantityLimitedRequest: String get() = fieldValue(2)
 
     companion object {
@@ -158,9 +167,11 @@ class RCPSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** QAK — Query Acknowledgement (RSP^K11). */
-class QAKSegment(raw: HL7Segment) : TypedSegment(raw) {
+class QAKSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val queryTag: String get() = fieldValue(1)
-    val queryResponseStatus: String get() = fieldValue(2)    // OK / NF / AE
+    val queryResponseStatus: String get() = fieldValue(2) // OK / NF / AE
     val messageQueryName: String get() = fieldValue(3)
 
     companion object {
@@ -174,7 +185,9 @@ class QAKSegment(raw: HL7Segment) : TypedSegment(raw) {
  * Format: `ZIN|setId|dispenseType|quantity|lotNumber|expiry`
  * dispenseType ∈ { OPENED, SEALED, NA, EXPECTED_ON_HAND, ... }
  */
-class ZINSegment(raw: HL7Segment) : TypedSegment(raw) {
+class ZINSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
     val dispenseType: String get() = fieldValue(2)
     val quantity: String get() = fieldValue(3)
@@ -191,10 +204,12 @@ class ZINSegment(raw: HL7Segment) : TypedSegment(raw) {
  * ZPR — Transaction priority (existing Z-segment).
  * Format: `ZPR|setId|PRIORITY|<STAT|URGENT|ROUTINE|TIMED>`
  */
-class ZPRSegment(raw: HL7Segment) : TypedSegment(raw) {
+class ZPRSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
-    val qualifier: String get() = fieldValue(2)              // "PRIORITY"
-    val priority: String get() = fieldValue(3)              // STAT/URGENT/ROUTINE/TIMED
+    val qualifier: String get() = fieldValue(2) // "PRIORITY"
+    val priority: String get() = fieldValue(3) // STAT/URGENT/ROUTINE/TIMED
 
     companion object {
         const val NAME = "ZPR"
@@ -217,7 +232,9 @@ class ZPRSegment(raw: HL7Segment) : TypedSegment(raw) {
  *   this sync (a number, e.g. "10"), not free text.
  * - BTS-3 Batch Totals — this chunk's item total (repeatable per spec).
  */
-class BTSSegment(raw: HL7Segment) : TypedSegment(raw) {
+class BTSSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val batchMessageCount: String get() = fieldValue(1)
     val batchComment: String get() = fieldValue(2)
     val batchTotals: String get() = fieldValue(3)

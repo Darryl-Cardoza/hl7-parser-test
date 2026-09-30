@@ -5,7 +5,9 @@ import org.rite.hl7.model.TypedSegment
 import org.rite.hl7.model.ast.HL7Segment
 
 /** RXE — Pharmacy/Treatment Encoded Order. */
-class RXESegment(raw: HL7Segment) : TypedSegment(raw) {
+class RXESegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val giveCode: String get() = component(2, 1)
     val giveName: String get() = component(2, 2)
     val giveCodeSystem: String get() = component(2, 3)
@@ -30,7 +32,9 @@ class RXESegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** RXD — Pharmacy/Treatment Dispense. */
-class RXDSegment(raw: HL7Segment) : TypedSegment(raw) {
+class RXDSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val dispenseSubIdCounter: String get() = fieldValue(1)
     val dispenseGiveCode: String get() = component(2, 1)
     val dispenseGiveName: String get() = component(2, 2)
@@ -42,7 +46,6 @@ class RXDSegment(raw: HL7Segment) : TypedSegment(raw) {
     val actualDosageFormCode: String get() = component(6, 1)
     val prescriptionNumber: String get() = fieldValue(7)
     val dispensingProviderId: String get() = component(10, 1)
-
 
     val substitutionStatus: String get() = fieldValue(11)
     val lotNumber: String get() = fieldValue(15)
@@ -56,7 +59,9 @@ class RXDSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** RXC — Pharmacy/Treatment Component Order. */
-class RXCSegment(raw: HL7Segment) : TypedSegment(raw) {
+class RXCSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val componentType: String get() = fieldValue(1)
     val componentCode: String get() = component(2, 1)
     val componentName: String get() = component(2, 2)
@@ -74,7 +79,9 @@ class RXCSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** RXR — Pharmacy/Treatment Route. */
-class RXRSegment(raw: HL7Segment) : TypedSegment(raw) {
+class RXRSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val routeCode: String get() = component(1, 1)
     val routeText: String get() = component(1, 2)
     val routeCodeSystem: String get() = component(1, 3)
@@ -90,7 +97,9 @@ class RXRSegment(raw: HL7Segment) : TypedSegment(raw) {
 }
 
 /** OBX — Observation/Result. */
-class OBXSegment(raw: HL7Segment) : TypedSegment(raw) {
+class OBXSegment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
     val valueType: String get() = fieldValue(2)
     val observationId: String get() = component(3, 1)

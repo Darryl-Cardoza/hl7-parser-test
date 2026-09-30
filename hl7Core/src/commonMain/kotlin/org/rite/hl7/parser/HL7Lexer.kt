@@ -14,7 +14,6 @@ import org.rite.hl7.model.ast.HL7Segment
  * It does NO domain interpretation — that is the parser/typed layer's job.
  */
 object HL7Lexer {
-
     data class LexResult(
         val segments: List<HL7Segment>,
         val delimiters: HL7Delimiters,
@@ -23,11 +22,12 @@ object HL7Lexer {
     )
 
     fun lex(raw: String): LexResult {
-        val lines = raw
-            .replace("\r\n", "\r")
-            .replace("\n", "\r")
-            .split("\r")
-            .filter { it.isNotBlank() }
+        val lines =
+            raw
+                .replace("\r\n", "\r")
+                .replace("\n", "\r")
+                .split("\r")
+                .filter { it.isNotBlank() }
 
         if (lines.isEmpty()) {
             return LexResult(emptyList(), HL7Delimiters.DEFAULT, listOf("Empty HL7 message"))

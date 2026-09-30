@@ -9,8 +9,9 @@ import org.rite.hl7.encoding.HL7Delimiters
  * Most callers only ever touch the first repetition; convenience accessors
  * ([component], [value]) operate on it. All indices are 1-based.
  */
-class HL7Field(val repetitions: List<List<HL7Component>>) {
-
+class HL7Field(
+    val repetitions: List<List<HL7Component>>,
+) {
     /** Repetition [r] (1-based) as a list of components, or empty list if absent. */
     fun repetition(r: Int): List<HL7Component> = repetitions.getOrNull(r - 1) ?: emptyList()
 
@@ -21,7 +22,10 @@ class HL7Field(val repetitions: List<List<HL7Component>>) {
     fun component(c: Int): HL7Component = first.getOrNull(c - 1) ?: HL7Component.EMPTY
 
     /** Component [c] (1-based) of repetition [r] (1-based). */
-    fun component(r: Int, c: Int): HL7Component = repetition(r).getOrNull(c - 1) ?: HL7Component.EMPTY
+    fun component(
+        r: Int,
+        c: Int,
+    ): HL7Component = repetition(r).getOrNull(c - 1) ?: HL7Component.EMPTY
 
     /** First component, first subcomponent of the first repetition — the plainest value. */
     val value: String get() = component(1).value
@@ -41,10 +45,14 @@ class HL7Field(val repetitions: List<List<HL7Component>>) {
         fun of(value: String): HL7Field = HL7Field(listOf(listOf(HL7Component(listOf(value)))))
 
         /** Parses one field's wire text into repetitions → components → subcomponents. */
-        fun parse(raw: String, d: HL7Delimiters): HL7Field {
-            val reps = raw.split(d.repetition).map { rep ->
-                rep.split(d.component).map { HL7Component.parse(it, d) }
-            }
+        fun parse(
+            raw: String,
+            d: HL7Delimiters,
+        ): HL7Field {
+            val reps =
+                raw.split(d.repetition).map { rep ->
+                    rep.split(d.component).map { HL7Component.parse(it, d) }
+                }
             return HL7Field(reps)
         }
     }

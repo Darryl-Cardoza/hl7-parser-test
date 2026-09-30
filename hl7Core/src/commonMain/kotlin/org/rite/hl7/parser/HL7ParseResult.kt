@@ -19,7 +19,10 @@ data class HL7ParseError(
  * Swift pattern-matches this as `if case .success(let message) = ...`.
  */
 sealed class HL7ParseResult {
-    data class Success(val message: HL7Message) : HL7ParseResult()
+    data class Success(
+        val message: HL7Message,
+    ) : HL7ParseResult()
+
     data class Failure(
         val errors: List<HL7ParseError>,
         val partialMessage: HL7Message? = null,
@@ -29,8 +32,9 @@ sealed class HL7ParseResult {
 
     /** The message if successful, else the partial message (may be null). */
     val messageOrNull: HL7Message?
-        get() = when (this) {
-            is Success -> message
-            is Failure -> partialMessage
-        }
+        get() =
+            when (this) {
+                is Success -> message
+                is Failure -> partialMessage
+            }
 }

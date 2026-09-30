@@ -21,11 +21,19 @@ data class ValidationConfig(
     val maxQuantity: Int = DEFAULT_MAX_QUANTITY,
 ) {
     companion object {
-        val DEFAULT_ADJUSTMENT_REASONS = setOf(
-            "CYCLE_COUNT", "PO_RECEIPT", "TRANSFER_IN", "TRANSFER_OUT",
-            "RETURN_TO_SUPPLIER", "BROKEN", "PHYSICAL_INVENTORY", "EXPIRED",
-            "DAMAGED_IN_TRANSIT", "LOSS",
-        )
+        val DEFAULT_ADJUSTMENT_REASONS =
+            setOf(
+                "CYCLE_COUNT",
+                "PO_RECEIPT",
+                "TRANSFER_IN",
+                "TRANSFER_OUT",
+                "RETURN_TO_SUPPLIER",
+                "BROKEN",
+                "PHYSICAL_INVENTORY",
+                "EXPIRED",
+                "DAMAGED_IN_TRANSIT",
+                "LOSS",
+            )
         val DEFAULT_ADJUSTMENT_TYPES = setOf("LOSS", "GAIN", "ADD", "SUBTRACT", "OVERWRITE", "+", "-", "O")
         const val DEFAULT_QUERY_NAME = "IHE PCC StockOnHandQuery"
         val DEFAULT_ORDER_CONTROL_CODES = setOf("NW", "XO", "CA")

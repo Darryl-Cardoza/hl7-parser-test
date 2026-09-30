@@ -19,13 +19,15 @@ package org.rite.hl7.encoding
  * (e.g. formatting `\.br\` or custom `\Zxx\`) survive a round trip.
  */
 object HL7Escaping {
-
     /**
      * Escapes a raw application string for the wire. The escape character is
      * replaced first so that escapes introduced for the other delimiters are
      * not double-escaped.
      */
-    fun escape(raw: String, d: HL7Delimiters): String {
+    fun escape(
+        raw: String,
+        d: HL7Delimiters,
+    ): String {
         if (raw.isEmpty()) return raw
         // Fast path: nothing to escape.
         if (raw.none { it == d.escape || it == d.field || it == d.component || it == d.subcomponent || it == d.repetition }) {
@@ -51,7 +53,10 @@ object HL7Escaping {
      * `\Xhh..\` hex sequences, and leaves unknown escapes intact.
      */
     @Suppress("LoopWithTooManyJumpStatements") // single-pass scanner; splitting the loop would obscure it
-    fun unescape(wire: String, d: HL7Delimiters): String {
+    fun unescape(
+        wire: String,
+        d: HL7Delimiters,
+    ): String {
         val e = d.escape
         if (wire.indexOf(e) < 0) return wire
 
@@ -85,7 +90,10 @@ object HL7Escaping {
     }
 
     /** Returns the decoded text for an escape code, or null if unrecognized. */
-    private fun decodeEscape(code: String, d: HL7Delimiters): String? {
+    private fun decodeEscape(
+        code: String,
+        d: HL7Delimiters,
+    ): String? {
         if (code.isEmpty()) return null
         return when (code[0]) {
             'E' -> if (code.length == 1) d.escape.toString() else null
@@ -112,10 +120,11 @@ object HL7Escaping {
         return bytes.decodeToString()
     }
 
-    private fun hexDigit(c: Char): Int? = when (c) {
-        in '0'..'9' -> c - '0'
-        in 'a'..'f' -> c - 'a' + 10
-        in 'A'..'F' -> c - 'A' + 10
-        else -> null
-    }
+    private fun hexDigit(c: Char): Int? =
+        when (c) {
+            in '0'..'9' -> c - '0'
+            in 'a'..'f' -> c - 'a' + 10
+            in 'A'..'F' -> c - 'A' + 10
+            else -> null
+        }
 }
