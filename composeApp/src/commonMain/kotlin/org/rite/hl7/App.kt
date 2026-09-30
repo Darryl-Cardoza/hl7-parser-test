@@ -17,8 +17,13 @@ fun App() {
             TabRow(selectedTabIndex = tab) {
                 Tab(selected = tab == 0, onClick = { tab = 0 }, text = { androidx.compose.material3.Text("Demo") })
                 Tab(selected = tab == 1, onClick = { tab = 1 }, text = { androidx.compose.material3.Text("Library Test") })
+                Tab(selected = tab == 2, onClick = { tab = 2 }, text = { androidx.compose.material3.Text("MLLP Server") })
             }
-            if (tab == 0) HL7DemoScreen() else HL7TestScreen()
+            when (tab) {
+                0 -> HL7DemoScreen()
+                1 -> HL7TestScreen()
+                2 -> MllpServerTab()
+            }
         }
     }
 }
