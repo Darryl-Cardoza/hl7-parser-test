@@ -1,6 +1,8 @@
 // Writes gradle.lockfile per project from the resolved dependency GRAPH, so Trivy can
 // scan real dependency versions. Usage:
-//   ./gradlew -I .github/gradle/dependency-locking.init.gradle dependencies --write-locks
+//   ./gradlew -I .github/gradle/dependency-locking.init.gradle \
+//       :hl7Core:dependencies :composeApp:dependencies --write-locks
+// (`dependencies` is per-project: run from the root alone it only resolves the root.)
 //
 // Deliberately not a CycloneDX Gradle plugin: it selects ARTIFACTS as well, and that
 // fails on this project ("cannot choose between the following variants of :hl7Core")

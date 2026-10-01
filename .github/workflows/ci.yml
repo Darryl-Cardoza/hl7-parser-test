@@ -159,7 +159,7 @@ jobs:
       # this is used instead of a CycloneDX Gradle plugin.
       - name: Write dependency lockfiles
         continue-on-error: true
-        run: ./gradlew -I .github/gradle/dependency-locking.init.gradle dependencies --write-locks --no-daemon --stacktrace
+        run: ./gradlew -I .github/gradle/dependency-locking.init.gradle :hl7Core:dependencies :composeApp:dependencies --write-locks --no-daemon --stacktrace
 
       - name: Install Trivy
         run: |
