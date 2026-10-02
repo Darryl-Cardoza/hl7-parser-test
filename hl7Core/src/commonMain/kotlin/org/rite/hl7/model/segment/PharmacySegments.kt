@@ -89,6 +89,25 @@ class RXRSegment(raw: HL7Segment) : TypedSegment(raw) {
     }
 }
 
+/** TQ1 — Timing/Quantity. */
+class TQ1Segment(raw: HL7Segment) : TypedSegment(raw) {
+    val setId: String get() = fieldValue(1)
+    val quantity: String get() = fieldValue(2)
+    val repeatPattern: String get() = fieldValue(3)
+    val explicitTime: String get() = fieldValue(4)
+    val relativeTimeUnits: String get() = fieldValue(5)
+    val serviceDuration: String get() = fieldValue(6)
+    val startDateTime: String get() = fieldValue(7)
+    val endDateTime: String get() = fieldValue(8)
+    /** TQ1-9: priority (e.g. "R" routine, "S" stat). */
+    val priorityRaw: String get() = component(9, 1)
+
+    companion object {
+        const val NAME = "TQ1"
+        val Definition = SegmentDefinition(NAME) { TQ1Segment(it) }
+    }
+}
+
 /** OBX — Observation/Result. */
 class OBXSegment(raw: HL7Segment) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)

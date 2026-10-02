@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinxSerialization)
     id("com.chromaticnoise.multiplatform-swiftpackage") version "2.0.3"
+    `maven-publish`
 }
 
 kotlin {
@@ -35,6 +36,11 @@ kotlin {
         }
     }
 }
+
+// Version read at config time so the swift package plugin picks it up for the zip filename
+val hl7CoreVersionEager = project.findProperty("hl7core.version")?.toString() ?: "unspecified"
+version = hl7CoreVersionEager
+
 
 multiplatformSwiftPackage {
     swiftToolsVersion("5.3")
@@ -220,4 +226,39 @@ kotlin {
 
 tasks.matching { it.name.startsWith("compileKotlin") || it.name.startsWith("compile") }.configureEach {
     dependsOn(generateSpecConstants)
+}
+
+// ---------------------------------------------------------------------------
+// Publishing — GitHub Packages (Android) and local Maven (dev/testing)
+// ---------------------------------------------------------------------------
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Rite-Technologies-23/mobrite_hl7_parser_builder")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                    ?: providers.gradleProperty("gpr.user").orNull
+                password = System.getenv("GITHUB_TOKEN")
+                    ?: providers.gradleProperty("gpr.token").orNull
+            }
+        }
+    }
+}
+
+// Publish only the Android release AAR to GitHub Packages.
+// iOS klibcs (iosArm64, iosX64, iosSimulatorArm64) are distributed via the
+// xcframework zip on GitHub Releases — not via Maven.
+afterEvaluate {
+    val hl7CoreVersion = project.findProperty("hl7core.version")?.toString() ?: "unspecified"
+    publishing.publications.withType<MavenPublication>().configureEach {
+        val pubName = name
+        groupId = "org.rite.hl7"
+        artifactId = "hl7core"
+        version = hl7CoreVersion
+        // Remove iOS-only publications from the GitHub Packages repo
+        if (pubName != "androidRelease") {
+            repositories.remove(repositories.findByName("GitHubPackages"))
+        }
+    }
 }
