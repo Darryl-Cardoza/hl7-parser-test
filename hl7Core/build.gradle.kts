@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinxSerialization)
     id("com.chromaticnoise.multiplatform-swiftpackage") version "2.0.3"
+    `maven-publish`
 }
 
 kotlin {
@@ -34,6 +35,11 @@ kotlin {
         }
     }
 }
+
+// Version read at config time so the swift package plugin picks it up for the zip filename
+val hl7CoreVersionEager = project.findProperty("hl7core.version")?.toString() ?: "unspecified"
+version = hl7CoreVersionEager
+
 
 multiplatformSwiftPackage {
     swiftToolsVersion("5.3")
@@ -167,5 +173,101 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+// Embeds hl7Core/specSource/**/*.json as Kotlin string constants at build time.
+// Real resource bundles don't survive this module's static xcframework + lipo
+// merge (no working mechanism without the Compose resources plugin), so spec
+// JSON is compiled directly into the binary instead.
+val specSourceDir = layout.projectDirectory.dir("specSource")
+val generatedSpecsDir = layout.buildDirectory.dir("generated/specs/commonMain/kotlin")
+
+val generateSpecConstants = tasks.register("generateSpecConstants") {
+    inputs.dir(specSourceDir)
+    val outputDir = generatedSpecsDir
+    outputs.dir(outputDir)
+
+    doLast {
+        val outDir = outputDir.get().asFile
+        outDir.deleteRecursively()
+        val pkgDir = File(outDir, "org/rite/hl7/spec")
+        pkgDir.mkdirs()
+
+        val entries = specSourceDir.asFile.walkTopDown()
+            .filter { it.isFile && it.extension == "json" }
+            .sortedBy { it.path }
+            .map { file ->
+                val relative = file.relativeTo(specSourceDir.asFile).invariantSeparatorsPath
+                val key = relative.removeSuffix(".json")
+                val escaped = file.readText()
+                    .replace("\\", "\\\\")
+                    .replace("$", "\${'$'}")
+                    .replace("\"\"\"", "\\\"\\\"\\\"")
+                key to escaped
+            }
+            .toList()
+
+        val body = buildString {
+            appendLine("package org.rite.hl7.spec")
+            appendLine()
+            appendLine("// GENERATED FILE. Do not edit by hand — edit hl7Core/specSource/**/*.json instead.")
+            appendLine("internal object GeneratedSpecs {")
+            appendLine("    val jsonByKey: Map<String, String> = mapOf(")
+            for ((key, json) in entries) {
+                appendLine("        \"$key\" to \"\"\"$json\"\"\",")
+            }
+            appendLine("    )")
+            appendLine("}")
+        }
+
+        File(pkgDir, "GeneratedSpecs.kt").writeText(body)
+    }
+}
+
+kotlin {
+    sourceSets {
+        commonMain {
+            kotlin.srcDir(generateSpecConstants.map { generatedSpecsDir.get() })
+        }
+    }
+}
+
+tasks.matching { it.name.startsWith("compileKotlin") || it.name.startsWith("compile") }.configureEach {
+    dependsOn(generateSpecConstants)
+}
+
+// ---------------------------------------------------------------------------
+// Publishing — GitHub Packages (Android) and local Maven (dev/testing)
+// ---------------------------------------------------------------------------
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Rite-Technologies-23/mobrite_hl7_parser_builder")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                    ?: providers.gradleProperty("gpr.user").orNull
+                password = System.getenv("GITHUB_TOKEN")
+                    ?: providers.gradleProperty("gpr.token").orNull
+            }
+        }
+    }
+}
+
+// Publish only the Android release AAR to GitHub Packages.
+// iOS klibcs (iosArm64, iosX64, iosSimulatorArm64) are distributed via the
+// xcframework zip on GitHub Releases — not via Maven.
+afterEvaluate {
+    val hl7CoreVersion = project.findProperty("hl7core.version")?.toString() ?: "unspecified"
+    publishing.publications.withType<MavenPublication>().configureEach {
+        val pubName = name
+        groupId = "org.rite.hl7"
+        artifactId = "hl7core"
+        version = hl7CoreVersion
+        // Remove iOS-only publications from the GitHub Packages repo
+        if (pubName != "androidRelease") {
+            repositories.remove(repositories.findByName("GitHubPackages"))
+        }
     }
 }

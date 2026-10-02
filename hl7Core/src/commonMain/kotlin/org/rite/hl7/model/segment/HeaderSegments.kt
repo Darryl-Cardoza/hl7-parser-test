@@ -106,6 +106,11 @@ class ORCSegment(
     val orderingProviderGivenName: String get() = component(12, 3)
     val orderingFacility: String get() = fieldValue(21)
 
+    /** ORC-7: quantity/timing (deprecated in 2.5.1, superseded by TQ1). */
+    val quantityTiming: QuantityTiming get() = QuantityTiming(component(7, 6))
+
+    data class QuantityTiming(val priority: String)
+
     companion object {
         const val NAME = "ORC"
         val Definition = SegmentDefinition(NAME) { ORCSegment(it) }

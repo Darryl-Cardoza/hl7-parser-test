@@ -73,6 +73,16 @@ class HL7Parser private constructor(
     /** Parses an MLLP-framed byte array. */
     fun parseMllp(bytes: ByteArray): HL7ParseResult = parse(Mllp.strip(bytes))
 
+    /**
+     * Parses a byte stream containing one or more concatenated MLLP frames
+     * (multiple HL7 messages sent back-to-back over the same MLLP connection),
+     * returning one [HL7ParseResult] per frame in order. A malformed frame
+     * fails independently and does not affect the others.
+     */
+    fun parseMllpBatch(bytes: ByteArray): List<HL7ParseResult> =
+        Mllp.stripAll(bytes).map { parse(it) }
+
+
     /** Fluent builder for [HL7Parser]. */
     class Builder {
         private val registry = SegmentRegistry()

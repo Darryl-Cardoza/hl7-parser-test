@@ -76,12 +76,18 @@ class HL7Validator(
         if (header.messageControlId.isBlank()) {
             issues += ValidationIssue(AckSeverity.REJECT, "Missing control ID (MSH-10)", "MSH", "10", "101")
         }
+        if (header.dateTimeOfMessage.isBlank()) {
+            issues += ValidationIssue(AckSeverity.REJECT, "Missing date/time of message (MSH-7)", "MSH", "7", "104")
+        }
+        if (header.processingId.isBlank()) {
+            issues += ValidationIssue(AckSeverity.REJECT, "Missing processing ID (MSH-11)", "MSH", "11", "105")
+        }
+        if (header.versionId.isBlank()) {
+            issues += ValidationIssue(AckSeverity.REJECT, "Missing version ID (MSH-12)", "MSH", "12", "106")
+        }
     }
 
-    private fun validateQuery(
-        message: HL7Message,
-        issues: MutableList<ValidationIssue>,
-    ) {
+    private fun validateQuery(message: HL7Message, issues: MutableList<ValidationIssue>) {
         if (message.messageCode != "QBP") return
         val qpd =
             message.segment<QPDSegment>(QPDSegment.NAME) ?: run {
@@ -199,9 +205,9 @@ class HL7Validator(
             issues += ValidationIssue(AckSeverity.REJECT, "Missing Rx number in ORC", "ORC", "2", "303")
         }
 
-        // A cancel order identifies the order to cancel via ORC alone —
-        // it carries no drug/quantity payload, so RXE isn't required.
-        if (control == "CA") return
+        // CA/HD/RL/DC/RF reference an existing order via ORC alone —
+        // no drug/quantity payload, so RXE isn't required.
+        if (control in NO_RXE_CONTROLS) return
 
         val rxeSegments = message.segments<RXESegment>(RXESegment.NAME)
         if (rxeSegments.isEmpty()) {
@@ -231,24 +237,45 @@ class HL7Validator(
                         )
             }
             when {
-                rxe.giveAmountMinimum.isBlank() ->
-                    issues +=
-                        ValidationIssue(
-                            AckSeverity.REJECT,
-                            "Missing quantity in RXE $position",
-                            "RXE",
-                            "3",
-                            "301",
-                        )
-                !isValidQuantity(rxe.giveAmountMinimum) ->
-                    issues +=
-                        ValidationIssue(
-                            AckSeverity.REJECT,
-                            "Invalid quantity in RXE $position",
-                            "RXE",
-                            "3",
-                            "301",
-                        )
+                rxe.giveAmountMinimum.isBlank() -> issues += ValidationIssue(
+                    AckSeverity.REJECT, "Missing give amount in RXE $position", "RXE", "3", "301",
+                )
+                !isValidQuantity(rxe.giveAmountMinimum) -> issues += ValidationIssue(
+                    AckSeverity.REJECT, "Invalid give amount in RXE $position", "RXE", "3", "301",
+                )
+            }
+            if (rxe.giveUnitsCode.isBlank()) {
+                issues += ValidationIssue(
+                    AckSeverity.REJECT, "Missing give units in RXE $position", "RXE", "5", "304",
+                )
+            }
+            when {
+                rxe.dispenseAmount.isBlank() -> issues += ValidationIssue(
+                    AckSeverity.REJECT, "Missing dispense amount in RXE $position", "RXE", "10", "305",
+                )
+                !isValidQuantity(rxe.dispenseAmount) -> issues += ValidationIssue(
+                    AckSeverity.REJECT, "Invalid dispense amount in RXE $position", "RXE", "10", "305",
+                )
+            }
+            if (rxe.dispenseUnitsCode.isBlank()) {
+                issues += ValidationIssue(
+                    AckSeverity.ERROR, "Missing dispense units in RXE $position", "RXE", "11", "306",
+                )
+            }
+            val refills = rxe.numberOfRefills
+            if (refills.isBlank()) {
+                issues += ValidationIssue(
+                    AckSeverity.ERROR, "Missing number of refills in RXE $position", "RXE", "12", "307",
+                )
+            } else if (refills.toIntOrNull() == null || refills.toInt() < 0) {
+                issues += ValidationIssue(
+                    AckSeverity.REJECT, "Invalid number of refills in RXE $position", "RXE", "12", "307",
+                )
+            }
+            if (rxe.prescriptionNumber.isBlank()) {
+                issues += ValidationIssue(
+                    AckSeverity.ERROR, "Missing prescription number in RXE $position", "RXE", "15", "308",
+                )
             }
         }
 
@@ -621,6 +648,8 @@ class HL7Validator(
         // "001" is a known device quirk (e.g. VIVID) sending a zero instead of
         // the standard letter-O trigger for RDE^O01.
         private val DISPENSE_TRIGGERS = setOf("O11", "O01", "001")
+        // Order control codes that reference an existing order; carry no RXE payload.
+        private val NO_RXE_CONTROLS = setOf("CA", "HD", "RL", "DC", "RF")
         private const val INVENTORY_TRIGGER = "U06"
 
         // 11-digit NDC (project convention, no hyphens) or the standard
