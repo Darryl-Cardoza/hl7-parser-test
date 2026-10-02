@@ -1,8 +1,0 @@
-framework module "Hl7Core" {
-    umbrella header "Hl7Core.h"
-
-    export *
-    module * { export * }
-
-    use Foundation
-}

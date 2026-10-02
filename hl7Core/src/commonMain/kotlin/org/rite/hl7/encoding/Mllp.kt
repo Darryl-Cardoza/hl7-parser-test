@@ -20,6 +20,35 @@ object Mllp {
         return out
     }
 
+    /**
+     * Splits a byte stream containing multiple concatenated MLLP frames into
+     * individual raw HL7 strings. Each frame is stripped of its SB/EB/CR framing.
+     * Bytes outside any frame (between EB+CR and the next SB) are ignored.
+     */
+    fun stripAll(bytes: ByteArray): List<String> {
+        val results = mutableListOf<String>()
+        var i = 0
+        while (i < bytes.size) {
+            if (bytes[i] == SB) {
+                val start = i + 1
+                var j = start
+                while (j < bytes.size - 1) {
+                    if (bytes[j] == EB && bytes[j + 1] == CR) break
+                    j++
+                }
+                if (j < bytes.size - 1) {
+                    results += bytes.copyOfRange(start, j).decodeToString()
+                    i = j + 2
+                } else {
+                    break
+                }
+            } else {
+                i++
+            }
+        }
+        return results
+    }
+
     /** Strips MLLP framing bytes and returns the raw HL7 message text. */
     fun strip(bytes: ByteArray): String {
         var start = 0
