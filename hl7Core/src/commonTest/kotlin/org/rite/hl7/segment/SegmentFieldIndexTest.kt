@@ -21,7 +21,7 @@ class SegmentFieldIndexTest {
         (HL7Parser.Builder().build().parse(hl7.trimIndent()) as HL7ParseResult.Success).message
 
     // --- ORC ---
-    @Test fun orc_orderControl_sealed() {
+    @Test fun orcOrderControlSealed() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             ORC|NW|RX001||CM|||||20240101120000|||DOC001
@@ -32,7 +32,7 @@ class SegmentFieldIndexTest {
         assertEquals("NW", orc.orderControlRaw)
     }
 
-    @Test fun orc_orderStatus_sealed() {
+    @Test fun orcOrderStatusSealed() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             ORC|NW|RX001|||CM
@@ -41,7 +41,7 @@ class SegmentFieldIndexTest {
         assertIs<OrderStatus.CM>(orc.orderStatus)
     }
 
-    @Test fun orc_new_fields() {
+    @Test fun orcNewFields() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             ORC|NW|RX001|||||||20240101||||DOC001||20240101130000||ORG001
@@ -52,7 +52,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- MSA ---
-    @Test fun msa_acknowledgmentCode_sealed() {
+    @Test fun msaAcknowledgmentCodeSealed() {
         val msg = parse("""
             MSH|^~\&|LIB|FAC|PMS|FAC|20240101120000||ACK^R01|CTL001|P|2.5
             MSA|AA|CTL001|OK
@@ -63,7 +63,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- TQ1 ---
-    @Test fun tq1_priority_sealed() {
+    @Test fun tq1PrioritySealed() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             TQ1|1|||||||20240101|S
@@ -74,7 +74,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- MSH new fields ---
-    @Test fun msh_new_fields() {
+    @Test fun mshNewFields() {
         // MSH-9.3 messageStructure, MSH-14 continuationPointer, MSH-15/16 ack types
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11^RDE_O11|CTL001|P|2.5|||AL|NE
@@ -86,7 +86,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- PID new fields ---
-    @Test fun pid_new_fields() {
+    @Test fun pidNewFields() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             PID|1||MRN001^^^HOS^PI||DOE^JOHN^M|||M||W|123 MAIN ST^^BOSTON^MA^02101^USA||(617)555-0100||EN|S||1001^^^ACC
@@ -97,7 +97,7 @@ class SegmentFieldIndexTest {
         assertEquals("1001", pid.patientAccountNumber)
     }
 
-    @Test fun pid_patientIdList_single() {
+    @Test fun pidPatientIdListSingle() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             PID|1||MRN001^^^HOS^PI
@@ -106,7 +106,7 @@ class SegmentFieldIndexTest {
         assertEquals(listOf("MRN001"), pid.patientIdList())
     }
 
-    @Test fun pid_patientIdList_multiple_repetitions() {
+    @Test fun pidPatientIdListMultipleRepetitions() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             PID|1||MRN001^^^HOS^PI~SSN999^^^SSA^SS
@@ -116,7 +116,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- PV1 new fields ---
-    @Test fun pv1_new_fields() {
+    @Test fun pv1NewFields() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             PV1|1|I|W^101^A^GH|||||7101^SMITH^JOHN||MED|||||||||||1234^^^VN|||||||||||||||||20240101|||||20240201
@@ -127,7 +127,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- RXD ---
-    @Test fun rxd_substitutionStatus_sealed() {
+    @Test fun rxdSubstitutionStatusSealed() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             RXD|1|00069015505^Drug^NDC|20240101|30|EA||RX001|||10|G
@@ -137,7 +137,7 @@ class SegmentFieldIndexTest {
         assertEquals("G", rxd.substitutionStatusRaw)
     }
 
-    @Test fun rxd_new_field() {
+    @Test fun rxdNewField() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             RXD|1|00069015505^Drug^NDC|20240101|30|EA||RX001|||10|G|||||||||||||||||||||BP
@@ -147,7 +147,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- OBX ---
-    @Test fun obx_resultStatus_sealed() {
+    @Test fun obxResultStatusSealed() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             OBX|1|NM|HEIGHT^Height^L||180|cm|||||F
@@ -157,7 +157,7 @@ class SegmentFieldIndexTest {
         assertEquals("F", obx.resultStatusRaw)
     }
 
-    @Test fun obx_new_fields() {
+    @Test fun obxNewFields() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             OBX|1|NM|HT^Height^L|SUB1|180|cm|100-200||||F|20240101|ACCESS||PROD001|RESP001|RESP001|EQ001|OBS001|METHOD|20240101130000
@@ -168,7 +168,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- RXR ---
-    @Test fun rxr_new_fields() {
+    @Test fun rxrNewFields() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             RXR|PO^Oral^HL70162|M^Mouth^HL70163|SPR|SLOW|ROUTING_NOTE
@@ -179,7 +179,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- RXC ---
-    @Test fun rxc_new_fields() {
+    @Test fun rxcNewFields() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             RXC|A|00069015505^Drug^NDC|1|TAB|||SUPP|5.0
@@ -190,7 +190,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- EQU ---
-    @Test fun equ_equipmentState_sealed() {
+    @Test fun equEquipmentStateSealed() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||INR^U06|CTL001|P|2.5
             EQU|EQ001^Robot1^L|20240101120000|OP|L|W
@@ -203,7 +203,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- INV ---
-    @Test fun inv_substanceIdentifier_renamed() {
+    @Test fun invSubstanceIdentifierRenamed() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||INR^U06|CTL001|P|2.5
             INV|NDC001^LISINOPRIL^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001
@@ -212,7 +212,7 @@ class SegmentFieldIndexTest {
         assertEquals("NDC001", inv.substanceIdentifier)
     }
 
-    @Test fun inv_substanceStatus_sealed() {
+    @Test fun invSubstanceStatusSealed() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||INR^U06|CTL001|P|2.5
             INV|NDC001^LISINOPRIL^L|EW^Expired Warning^HL70383|DRUG^Drug^HL70384
@@ -223,7 +223,7 @@ class SegmentFieldIndexTest {
     }
 
     // --- RXE ---
-    @Test fun rxe_new_fields() {
+    @Test fun rxeNewFields() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O11|CTL001|P|2.5
             RXE||00069015505^Drug^NDC|30|60|TAB||||G||||DR001||RX001||||||||||||||||||||DEA_CLASS

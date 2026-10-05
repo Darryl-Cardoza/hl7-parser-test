@@ -13,22 +13,22 @@ class RegistryCleanupTest {
     // ZIN and ZPR remain registered because HL7Validator and OrderGroup consume them
     // as typed segments — unregistering breaks typed parsing. See ledger ruling Task 5.
 
-    @Test fun zin_still_registered() {
+    @Test fun zinStillRegistered() {
         val registry = SegmentRegistry()
         assertTrue(registry.isRegistered(ZINSegment.NAME), "ZIN must remain registered (used by validator)")
     }
 
-    @Test fun zpr_still_registered() {
+    @Test fun zprStillRegistered() {
         val registry = SegmentRegistry()
         assertTrue(registry.isRegistered(ZPRSegment.NAME), "ZPR must remain registered (used by validator and OrderGroup)")
     }
 
-    @Test fun zni_still_registered() {
+    @Test fun zniStillRegistered() {
         val registry = SegmentRegistry()
         assertTrue(registry.isRegistered(ZNISegment.NAME), "ZNI must remain registered")
     }
 
-    @Test fun zui_still_registered() {
+    @Test fun zuiStillRegistered() {
         val registry = SegmentRegistry()
         assertTrue(registry.isRegistered(ZUISegment.NAME), "ZUI must remain registered")
     }

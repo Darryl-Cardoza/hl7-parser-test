@@ -16,17 +16,6 @@ import kotlin.test.assertTrue
  */
 class MllpServerViewModelTest {
 
-    private fun makeInfo(ackCode: String = "AA", errorCount: Int = 0) = MllpMessageInfo(
-        messageType = "RDE^O11",
-        controlId = "CTL001",
-        senderFacility = "PHARMACY",
-        senderApp = "PMS",
-        ackCode = ackCode,
-        validationErrors = List(errorCount) { "Error $it" },
-        rawSegments = listOf("MSH", "ORC", "RXE"),
-        receivedAt = "12:00:00",
-    )
-
     @Test
     fun initialStateIsStoppedWithDefaultPort() {
         val vm = MllpServerViewModel(FakeMllpServerDelegate())
@@ -100,17 +89,9 @@ class MllpServerViewModelTest {
     @Test
     fun lateServerStoppedFromOldSessionIgnoredWhenNewSessionRunning() {
         val fake = FakeMllpServerDelegate()
-        var capturedCallback: ((MllpSessionEvent) -> Unit)? = null
-        val delegate = object : MllpServerDelegate {
-            override fun start(port: Int, onEvent: (MllpSessionEvent) -> Unit) {
-                capturedCallback = onEvent
-            }
-            override fun stop() {}
-        }
-        val vm = MllpServerViewModel(delegate)
+        val vm = MllpServerViewModel(fake)
 
-        vm.start(2575)                        // session 1 callback captured
-        val session1Callback = capturedCallback!!
+        vm.start(2575)
 
         vm.stop()
         vm.start(9999)                        // session 2 starts

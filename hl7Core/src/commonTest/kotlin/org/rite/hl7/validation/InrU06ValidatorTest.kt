@@ -13,7 +13,7 @@ class InrU06ValidatorTest {
     private fun parse(hl7: String) =
         (parser.parse(hl7.trimIndent()) as HL7ParseResult.Success).message
 
-    @Test fun happy_path_inr_u06() {
+    @Test fun happyPathInrU06() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||INR^U06|CTL001|P|2.5
             EQU|EQ001^Robot1^L|20240101120000|OP
@@ -23,7 +23,7 @@ class InrU06ValidatorTest {
         assertTrue(result.isValid, "INR^U06 with valid INV must pass; issues=${result.issues}")
     }
 
-    @Test fun missing_inv_rejected() {
+    @Test fun missingInvRejected() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||INR^U06|CTL001|P|2.5
             EQU|EQ001^Robot1^L|20240101120000|OP
@@ -35,7 +35,7 @@ class InrU06ValidatorTest {
         )
     }
 
-    @Test fun invalid_ndc_in_inv_rejected() {
+    @Test fun invalidNdcInInvRejected() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||INR^U06|CTL001|P|2.5
             INV|BADNDC^Bad Drug^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001
@@ -47,7 +47,7 @@ class InrU06ValidatorTest {
         )
     }
 
-    @Test fun missing_status_in_inv_rejected() {
+    @Test fun missingStatusInInvRejected() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||INR^U06|CTL001|P|2.5
             INV|00069015505^LISINOPRIL 10MG^L||DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001

@@ -17,17 +17,17 @@ import kotlin.test.assertNull
 class MllpFrameReaderTest {
 
     // MLLP framing constants
-    private val SB: Byte = 0x0B  // Start Block (Vertical Tab)
-    private val EB: Byte = 0x1C  // End Block (File Separator)
-    private val CR: Byte = 0x0D  // Carriage Return
+    private val startBlock: Byte = 0x0B  // Start Block (Vertical Tab)
+    private val endBlock: Byte = 0x1C  // End Block (File Separator)
+    private val carriageReturn: Byte = 0x0D  // Carriage Return
 
     private fun frame(text: String): ByteArray {
         val body = text.encodeToByteArray()
         val out = ByteArray(body.size + 3)
-        out[0] = SB
+        out[0] = startBlock
         body.copyInto(out, destinationOffset = 1)
-        out[body.size + 1] = EB
-        out[body.size + 2] = CR
+        out[body.size + 1] = endBlock
+        out[body.size + 2] = carriageReturn
         return out
     }
 
@@ -50,8 +50,8 @@ class MllpFrameReaderTest {
 
     @Test
     fun partialFrameWithoutSentinelReturnsNull() {
-        // Frame bytes with no EB+CR — client disconnected mid-frame
-        val partial = byteArrayOf(SB, 'M'.code.toByte(), 'S'.code.toByte(), 'H'.code.toByte())
+        // Frame bytes with no endBlock+carriageReturn — client disconnected mid-frame
+        val partial = byteArrayOf(startBlock, 'M'.code.toByte(), 'S'.code.toByte(), 'H'.code.toByte())
         val result = MllpFrameReader.readFrame(partial)
         assertNull(result, "Frame without end-block sentinel should return null")
     }
@@ -63,8 +63,8 @@ class MllpFrameReaderTest {
         val body = hl7.encodeToByteArray()
         val input = ByteArray(body.size + 2)
         body.copyInto(input)
-        input[body.size] = EB
-        input[body.size + 1] = CR
+        input[body.size] = endBlock
+        input[body.size + 1] = carriageReturn
 
         val result = MllpFrameReader.readFrame(input)
         // Should return bytes up to and including the sentinel
@@ -73,15 +73,15 @@ class MllpFrameReaderTest {
 
     @Test
     fun sentinelEbWithoutFollowingCrDoesNotTerminate() {
-        // EB byte alone (not followed by CR) should not terminate the frame
+        // endBlock byte alone (not followed by carriageReturn) should not terminate the frame
         val hl7 = "MSH|^~\\&|App|Fac"
         val body = hl7.encodeToByteArray()
-        // Inject a lone EB in the middle, then proper EB+CR at end
-        val input = byteArrayOf(SB) +
+        // Inject a lone endBlock in the middle, then proper endBlock+carriageReturn at end
+        val input = byteArrayOf(startBlock) +
             body.copyOfRange(0, 3) +
-            byteArrayOf(EB) +      // lone EB — not a sentinel
+            byteArrayOf(endBlock) +      // lone endBlock — not a sentinel
             body.copyOfRange(3, body.size) +
-            byteArrayOf(EB, CR)    // real sentinel
+            byteArrayOf(endBlock, carriageReturn)    // real sentinel
         val result = MllpFrameReader.readFrame(input)
         assertEquals(input.toList(), result?.toList())
     }

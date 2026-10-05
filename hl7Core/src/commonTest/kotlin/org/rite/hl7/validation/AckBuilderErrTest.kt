@@ -23,14 +23,14 @@ class AckBuilderErrTest {
         RXE||00069015505^Drug^NDC|1||TAB
     """)
 
-    @Test fun zero_issues_produces_zero_err_segments() {
+    @Test fun zeroIssuesProducesZeroErrSegments() {
         val result = ValidationResult(emptyList())
         val ack = builder.build(minimalInbound, result)
         val errSegments = ack.segments<ERRSegment>(ERRSegment.NAME)
         assertEquals(0, errSegments.size, "No ERR segments expected when result is clean")
     }
 
-    @Test fun accept_severity_issues_produce_zero_err_segments() {
+    @Test fun acceptSeverityIssuesProduceZeroErrSegments() {
         val result = ValidationResult(listOf(
             ValidationIssue(AckSeverity.ACCEPT, "informational note")
         ))
@@ -38,7 +38,7 @@ class AckBuilderErrTest {
         assertEquals(0, ack.segments<ERRSegment>(ERRSegment.NAME).size)
     }
 
-    @Test fun one_reject_issue_produces_one_err_with_correct_fields() {
+    @Test fun oneRejectIssueProducesOneErrWithCorrectFields() {
         val issue = ValidationIssue(
             severity = AckSeverity.REJECT,
             errorText = "Missing NDC in RXE",
@@ -58,7 +58,7 @@ class AckBuilderErrTest {
         assertEquals("E", err.severity)
     }
 
-    @Test fun two_issues_produce_two_err_segments_in_order() {
+    @Test fun twoIssuesProduceTwoErrSegmentsInOrder() {
         val issues = listOf(
             ValidationIssue(AckSeverity.REJECT, "First error", "ORC", "1", "300"),
             ValidationIssue(AckSeverity.ERROR, "Second error", "RXE", "3", "301")
@@ -73,7 +73,7 @@ class AckBuilderErrTest {
         assertEquals("W", errs[1].severity)
     }
 
-    @Test fun msa_acknowledgment_code_reflects_worst_severity() {
+    @Test fun msaAcknowledgmentCodeReflectsWorstSeverity() {
         val issues = listOf(
             ValidationIssue(AckSeverity.ERROR, "non-fatal error", "RXE", "2", "301"),
             ValidationIssue(AckSeverity.REJECT, "fatal error", "MSH", "9", "103")
@@ -84,7 +84,7 @@ class AckBuilderErrTest {
         assertEquals("AR", msa?.acknowledgmentCodeRaw, "Worst severity REJECT should map to AR")
     }
 
-    @Test fun msa_first_failure_error_text_appears_in_msa_3() {
+    @Test fun msaFirstFailureErrorTextAppearsInMsa3() {
         val issues = listOf(
             ValidationIssue(AckSeverity.REJECT, "first failure message", "ORC", "0", "300"),
             ValidationIssue(AckSeverity.REJECT, "second failure message", "RXE", "0", "300")
@@ -95,7 +95,7 @@ class AckBuilderErrTest {
         assertEquals("first failure message", msa?.textMessage)
     }
 
-    @Test fun accept_only_produces_aa_and_no_err() {
+    @Test fun acceptOnlyProducesAaAndNoErr() {
         val result = ValidationResult.VALID
         val ack = builder.build(minimalInbound, result)
 

@@ -8,6 +8,7 @@ import org.rite.hl7.encoding.Mllp
 import org.rite.hl7.parser.HL7ParseResult
 import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.net.SocketException
@@ -71,6 +72,7 @@ class MllpServer : MllpServerDelegate {
                     val client = try {
                         ss.accept()
                     } catch (e: SocketException) {
+                        if (!stopped && !ss.isClosed) throw e
                         // ServerSocket.close() from stop() causes SocketException here —
                         // this is the normal, expected exit path for a clean stop.
                         break
@@ -83,7 +85,7 @@ class MllpServer : MllpServerDelegate {
                     handleConnection(client, onEvent)
                     activeClient = null
                 }
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 if (!stopped) {
                     onEvent(MllpSessionEvent.ServerError(e.message ?: "Unknown error starting server"))
                 }
@@ -187,13 +189,16 @@ class MllpServer : MllpServerDelegate {
                 onEvent(MllpSessionEvent.MessageReceived(info))
 
             } catch (e: SocketTimeoutException) {
+                android.util.Log.w("MllpServer", "Client read timed out", e)
                 // Client connected but sent no data within CLIENT_TIMEOUT_MS.
                 // Emit ConnectionError (not ServerError) so the accept loop continues.
                 onEvent(MllpSessionEvent.ConnectionError("Client timed out: ${socket.remoteSocketAddress}"))
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 // Any other per-connection error (write failure, client reset, etc).
                 // Do not emit ServerError — the server itself is still running.
                 onEvent(MllpSessionEvent.ConnectionError("Connection error: ${e.message}"))
+            } catch (e: IllegalStateException) {
+                onEvent(MllpSessionEvent.ConnectionError("Invalid frame: ${e.message}"))
             }
         }
     }
@@ -223,8 +228,8 @@ class MllpServer : MllpServerDelegate {
             bytesRead++
 
             // Guard against unbounded growth (e.g. malformed frames, adversarial clients).
-            if (bytesRead > MAX_FRAME_BYTES) {
-                throw IllegalStateException("MLLP frame exceeded ${MAX_FRAME_BYTES / 1024} KB limit")
+            check(bytesRead <= MAX_FRAME_BYTES) {
+                "MLLP frame exceeded ${MAX_FRAME_BYTES / 1024} KB limit"
             }
 
             // End-block sentinel: File Separator (0x1C) + Carriage Return (0x0D).
@@ -287,7 +292,8 @@ class MllpServer : MllpServerDelegate {
                     ?.map { it.hostAddress ?: "" }
                     ?.filter { it.isNotEmpty() }
                     ?: emptyList()
-            } catch (_: Exception) {
+            } catch (e: SocketException) {
+                android.util.Log.w("MllpServer", "Could not enumerate network interfaces", e)
                 emptyList()
             }
     }

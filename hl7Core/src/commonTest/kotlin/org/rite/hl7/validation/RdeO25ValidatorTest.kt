@@ -19,12 +19,12 @@ class RdeO25ValidatorTest {
         RXR|PO^Oral^HL70162
     """
 
-    @Test fun happy_path_rde_o25() {
+    @Test fun happyPathRdeO25() {
         val result = validator.validate(parse(validRdeO25))
         assertTrue(result.isValid, "RDE^O25 valid message must pass; issues=${result.issues}")
     }
 
-    @Test fun missing_orc_rejected() {
+    @Test fun missingOrcRejected() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O25|CTL001|P|2.5
             PID|1||MRN001
@@ -34,7 +34,7 @@ class RdeO25ValidatorTest {
         assertTrue(result.issues.any { it.severity == AckSeverity.REJECT && it.segmentId == "ORC" })
     }
 
-    @Test fun invalid_ndc_rejected() {
+    @Test fun invalidNdcRejected() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O25|CTL001|P|2.5
             ORC|RF|RX001
@@ -44,7 +44,7 @@ class RdeO25ValidatorTest {
         assertTrue(result.issues.any { it.severity == AckSeverity.REJECT && it.segmentId == "RXE" })
     }
 
-    @Test fun invalid_qty_rejected() {
+    @Test fun invalidQtyRejected() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O25|CTL001|P|2.5
             ORC|RF|RX001
@@ -54,7 +54,7 @@ class RdeO25ValidatorTest {
         assertTrue(result.issues.any { it.severity == AckSeverity.REJECT && it.segmentId == "RXE" })
     }
 
-    @Test fun multi_orc_all_validated() {
+    @Test fun multiOrcAllValidated() {
         val msg = parse("""
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O25|CTL001|P|2.5
             ORC|RF|RX001

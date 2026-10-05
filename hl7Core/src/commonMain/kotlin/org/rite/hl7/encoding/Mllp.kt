@@ -31,22 +31,21 @@ object Mllp {
         while (i < bytes.size) {
             if (bytes[i] == SB) {
                 val start = i + 1
-                var j = start
-                while (j < bytes.size - 1) {
-                    if (bytes[j] == EB && bytes[j + 1] == CR) break
-                    j++
-                }
-                if (j < bytes.size - 1) {
-                    results += bytes.copyOfRange(start, j).decodeToString()
-                    i = j + 2
-                } else {
-                    break
-                }
+                val end = frameEnd(bytes, start)
+                if (end >= bytes.size - 1) break
+                results += bytes.copyOfRange(start, end).decodeToString()
+                i = end + 2
             } else {
                 i++
             }
         }
         return results
+    }
+
+    private fun frameEnd(bytes: ByteArray, start: Int): Int {
+        var end = start
+        while (end < bytes.size - 1 && !(bytes[end] == EB && bytes[end + 1] == CR)) end++
+        return end
     }
 
     /** Strips MLLP framing bytes and returns the raw HL7 message text. */
