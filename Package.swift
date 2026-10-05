@@ -1,7 +1,8 @@
 // swift-tools-version:5.3
 import PackageDescription
 
-// RELEASE: the Release workflow updates url and checksum in the version tag.
+// RELEASE: the Release workflow attaches the updated manifest to the release.
+// Manual branch releases also include it in the newly created version tag.
 // See docs/RELEASING.md for the release procedure.
 let package = Package(
     name: "Hl7Core",

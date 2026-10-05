@@ -1,8 +1,9 @@
 name: Release
 
-# Run on the commit to release; the workflow creates an immutable version tag
-# containing the final Swift manifest after building and checking both platforms.
+# Tag pushes publish the existing tag. Manual branch runs create a release tag.
 on:
+  push:
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -40,14 +41,18 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - uses: android-actions/setup-android@v3
 
-      - name: Resolve version and check tag availability
+      - name: Resolve version and validate release tag
         id: version
         run: |
           VERSION=$(sed -n 's/^hl7core.version=//p' gradle.properties | tr -d '[:space:]')
           [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo '::error::Expected hl7core.version=X.Y.Z'; exit 1; }
           TAG="v$VERSION"
-          git ls-remote --tags origin "refs/tags/$TAG" > existing-tag.txt
-          [ ! -s existing-tag.txt ] || { echo "::error::Tag $TAG already exists; bump hl7core.version."; exit 1; }
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            [ "$GITHUB_REF_NAME" = "$TAG" ] || { echo "::error::Tag must match hl7core.version ($TAG)."; exit 1; }
+          else
+            git ls-remote --tags origin "refs/tags/$TAG" > existing-tag.txt
+            [ ! -s existing-tag.txt ] || { echo "::error::Tag $TAG already exists; bump hl7core.version."; exit 1; }
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
@@ -77,6 +82,13 @@ jobs:
           swift package dump-package > /dev/null
           cp Package.swift release-assets/
 
+      - name: Report Swift manifest status for an existing tag
+        if: github.ref_type == 'tag'
+        run: |
+          if ! git diff --quiet -- Package.swift; then
+            echo '::warning::The tagged Swift manifest differs from the built artifact. Use the release ZIP and attached Package.swift; repository-based SwiftPM installation at this tag will not use the updated manifest.'
+          fi
+
       - uses: actions/upload-artifact@v4
         with:
           name: release-assets
@@ -84,6 +96,7 @@ jobs:
           if-no-files-found: error
 
       - name: Create release tag containing the Swift manifest
+        if: github.ref_type != 'tag'
         env:
           TAG: ${{ steps.version.outputs.tag }}
         run: |
@@ -109,7 +122,8 @@ jobs:
           cat > release-notes.md <<EOF
           ## Hl7Core $TAG
 
-          iOS: Add https://github.com/${GITHUB_REPOSITORY} in Xcode Package Dependencies.
+          iOS: Download the XCFramework ZIP and matching Package.swift attached to this release.
+          For tag-triggered releases, the generated manifest is an attachment; the existing tag is not modified.
           See docs/consumer/IOS_INTEGRATION.md for Swift integration.
 
           Android: org.rite.hl7:hl7core:${VERSION}
