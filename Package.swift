@@ -1,8 +1,8 @@
 // swift-tools-version:5.3
 import PackageDescription
 
-// RELEASE: url and checksum are updated automatically by scripts/publish-release.sh
-// Do not edit these values manually — run the release script instead.
+// RELEASE: the Release workflow updates url and checksum in the version tag.
+// See docs/RELEASING.md for the release procedure.
 let package = Package(
     name: "Hl7Core",
     platforms: [

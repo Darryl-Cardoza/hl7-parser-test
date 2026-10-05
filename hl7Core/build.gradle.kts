@@ -10,6 +10,7 @@ plugins {
 
 kotlin {
     androidTarget {
+        publishLibraryVariants("release")
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
@@ -261,13 +262,13 @@ publishing {
 afterEvaluate {
     val hl7CoreVersion = project.findProperty("hl7core.version")?.toString() ?: "unspecified"
     publishing.publications.withType<MavenPublication>().configureEach {
-        val pubName = name
         groupId = "org.rite.hl7"
-        artifactId = "hl7core"
+        if (name == "androidRelease") artifactId = "hl7core"
         version = hl7CoreVersion
-        // Remove iOS-only publications from the GitHub Packages repo
-        if (pubName != "androidRelease") {
-            repositories.remove(repositories.findByName("GitHubPackages"))
-        }
     }
+}
+
+// Filter publishing tasks without removing the repository shared by all publications.
+tasks.withType<org.gradle.api.publish.maven.tasks.PublishToMavenRepository>().configureEach {
+    onlyIf { repository.name != "GitHubPackages" || publication.name == "androidRelease" }
 }
