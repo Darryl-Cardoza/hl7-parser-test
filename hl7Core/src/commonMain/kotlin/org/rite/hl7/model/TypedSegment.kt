@@ -6,8 +6,8 @@ import org.rite.hl7.model.ast.HL7Segment
 /**
  * Base class for all typed segment views. A typed segment is a thin wrapper over
  * a generic [HL7Segment]; its properties are computed getters over fixed 1-based
- * field indices. Every value is a plain [String] — date/enum conversion belongs
- * in the service layer, not here.
+ * field indices. Coded fields expose typed values alongside raw string accessors;
+ * other field values remain strings.
  *
  * Subclasses expose named getters like:
  * ```

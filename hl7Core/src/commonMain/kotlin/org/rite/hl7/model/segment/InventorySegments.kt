@@ -3,6 +3,8 @@ package org.rite.hl7.model.segment
 import org.rite.hl7.model.SegmentDefinition
 import org.rite.hl7.model.TypedSegment
 import org.rite.hl7.model.ast.HL7Segment
+import org.rite.hl7.model.codedfield.EquipmentState
+import org.rite.hl7.model.codedfield.SubstanceStatus
 
 /**
  * EQU — Equipment Detail. Standard HL7 EQU-1 is the equipment identifier
@@ -20,7 +22,8 @@ class EQUSegment(
 
     val equipmentId: String get() = component(idField, 1)
     val eventDateTime: String get() = fieldValue(idField + 1)
-    val equipmentState: String get() = fieldValue(idField + 2)
+    val equipmentStateRaw: String get() = fieldValue(idField + 2)
+    val equipmentState: EquipmentState get() = EquipmentState.from(equipmentStateRaw)
     val localRemoteControlState: String get() = fieldValue(idField + 3)
     val alertLevel: String get() = fieldValue(idField + 4)
 
@@ -93,6 +96,10 @@ class INVSegment(
     val units: String get() = fieldValue(6)
 
     // --- Device Inventory Sync accessors (Parata, no leading Set-ID) ---
+    /** Item identifier in the device inventory layout (INV-1). */
+    val substanceIdentifier: String get() = component(1, 1)
+    val substanceStatusRaw: String get() = component(2, 1)
+    val substanceStatus: SubstanceStatus get() = SubstanceStatus.from(substanceStatusRaw)
     val deviceItemCode: String get() = component(1, 1)
     val deviceItemName: String get() = component(1, 2)
     val deviceStatusCode: String get() = component(2, 1)

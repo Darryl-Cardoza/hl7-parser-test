@@ -25,7 +25,7 @@ enum class HL7MessageKind {
         fun from(message: HL7Message): HL7MessageKind {
             val type = message.messageCode.uppercase()
             val trigger = message.triggerEvent.uppercase()
-            val control = message.segment<ORCSegment>(ORCSegment.NAME)?.orderControl?.uppercase()
+            val control = message.segment<ORCSegment>(ORCSegment.NAME)?.orderControlRaw?.uppercase()
 
             return when {
                 control == "CA" -> CANCEL_ORDER

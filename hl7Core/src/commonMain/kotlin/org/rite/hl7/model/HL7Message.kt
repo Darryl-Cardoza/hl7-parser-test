@@ -29,6 +29,9 @@ class HL7Message internal constructor(
     /** Business classification (DISPENSE, INVENTORY_ADJUSTMENT, QUERY, …). */
     val kind: HL7MessageKind get() = HL7MessageKind.from(this)
 
+    /** Order groups derived from the flat segment list, preserving wire order. */
+    val orderGroups: List<OrderGroup> by lazy { OrderGroupAssembler.assemble(typedSegments) }
+
     /** All typed segments with the given name, in order. */
     fun segmentsNamed(name: String): List<TypedSegment> = typedSegments.filter { it.segmentName == name }
 

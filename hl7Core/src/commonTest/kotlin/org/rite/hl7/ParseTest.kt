@@ -115,7 +115,7 @@ class ParseTest {
         assertNotNull(equ)
         assertEquals("TERMINAL_13", equ.equipmentId)
         assertEquals("20260901134041", equ.eventDateTime)
-        assertEquals("A", equ.equipmentState)
+        assertEquals("A", equ.equipmentStateRaw)
     }
 
     @Test
@@ -129,7 +129,7 @@ class ParseTest {
         assertNotNull(equ)
         assertEquals("ROBOT1", equ.equipmentId)
         assertEquals("20251113190000", equ.eventDateTime)
-        assertEquals("A", equ.equipmentState)
+        assertEquals("A", equ.equipmentStateRaw)
     }
 
     @Test
@@ -143,6 +143,6 @@ class ParseTest {
         assertNotNull(equ)
         assertEquals("DEVICE-1", equ.equipmentId)
         assertEquals("20260623091205", equ.eventDateTime)
-        assertEquals("A", equ.equipmentState)
+        assertEquals("A", equ.equipmentStateRaw)
     }
 }

@@ -3,6 +3,9 @@ package org.rite.hl7.model.segment
 import org.rite.hl7.model.SegmentDefinition
 import org.rite.hl7.model.TypedSegment
 import org.rite.hl7.model.ast.HL7Segment
+import org.rite.hl7.model.codedfield.AckCode
+import org.rite.hl7.model.codedfield.OrderControl
+import org.rite.hl7.model.codedfield.OrderStatus
 
 /** MSH — Message Header. */
 class MSHSegment(
@@ -35,6 +38,9 @@ class MSHSegment(
     val processingId: String get() = fieldValue(11)
     val versionId: String get() = fieldValue(12)
     val sequenceNumber: String get() = fieldValue(13)
+    val messageStructure: String get() = component(9, 3)
+    val acceptAcknowledgmentType: String get() = fieldValue(15)
+    val applicationAcknowledgmentType: String get() = fieldValue(16)
     val countryCode: String get() = fieldValue(17)
 
     companion object {
@@ -51,6 +57,10 @@ class PIDSegment(
     val patientId: String get() = component(3, 1)
     val patientIdAssigningAuthority: String get() = component(3, 4)
     val patientIdType: String get() = component(3, 5)
+    fun patientIdList(): List<String> = repetitions(3)
+    val race: String get() = fieldValue(10)
+    val maritalStatus: String get() = fieldValue(16)
+    val patientAccountNumber: String get() = component(18, 1)
     val familyName: String get() = component(5, 1)
     val givenName: String get() = component(5, 2)
     val middleName: String get() = component(5, 3)
@@ -81,6 +91,8 @@ class PV1Segment(
     val attendingDoctorId: String get() = component(7, 1)
     val attendingDoctorFamilyName: String get() = component(7, 2)
     val attendingDoctorGivenName: String get() = component(7, 3)
+    val referringDoctorId: String get() = component(8, 1)
+    val hospitalService: String get() = fieldValue(10)
     val visitNumber: String get() = component(19, 1)
     val admitDateTime: String get() = fieldValue(44)
 
@@ -94,16 +106,20 @@ class PV1Segment(
 class ORCSegment(
     raw: HL7Segment,
 ) : TypedSegment(raw) {
-    val orderControl: String get() = fieldValue(1)
+    val orderControlRaw: String get() = fieldValue(1)
+    val orderControl: OrderControl get() = OrderControl.from(orderControlRaw)
     val placerOrderNumber: String get() = component(2, 1)
     val placerOrderNamespace: String get() = component(2, 2)
     val fillerOrderNumber: String get() = component(3, 1)
     val fillerOrderNamespace: String get() = component(3, 2)
-    val orderStatus: String get() = fieldValue(5)
+    val orderStatusRaw: String get() = fieldValue(5)
+    val orderStatus: OrderStatus get() = OrderStatus.from(orderStatusRaw)
     val dateTimeOfTransaction: String get() = fieldValue(9)
     val orderingProviderId: String get() = component(12, 1)
     val orderingProviderFamilyName: String get() = component(12, 2)
     val orderingProviderGivenName: String get() = component(12, 3)
+    val orderEffectiveDateTime: String get() = fieldValue(15)
+    val enteringOrganization: String get() = fieldValue(17)
     val orderingFacility: String get() = fieldValue(21)
 
     /** ORC-7: quantity/timing (deprecated in 2.5.1, superseded by TQ1). */
@@ -121,7 +137,8 @@ class ORCSegment(
 class MSASegment(
     raw: HL7Segment,
 ) : TypedSegment(raw) {
-    val acknowledgmentCode: String get() = fieldValue(1) // AA / AE / AR
+    val acknowledgmentCodeRaw: String get() = fieldValue(1)
+    val acknowledgmentCode: AckCode get() = AckCode.from(acknowledgmentCodeRaw) // AA / AE / AR
     val messageControlId: String get() = fieldValue(2)
     val textMessage: String get() = fieldValue(3)
 

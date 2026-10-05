@@ -190,7 +190,7 @@ class HL7Validator(
             return
         }
 
-        val control = orc.orderControl
+        val control = orc.orderControlRaw
         if (control !in config.knownOrderControlCodes) {
             issues +=
                 ValidationIssue(

@@ -3,11 +3,18 @@ package org.rite.hl7.model.segment
 import org.rite.hl7.model.SegmentDefinition
 import org.rite.hl7.model.TypedSegment
 import org.rite.hl7.model.ast.HL7Segment
+import org.rite.hl7.model.codedfield.SubstitutionStatus
+import org.rite.hl7.model.codedfield.ObsResultStatus
+import org.rite.hl7.model.codedfield.Priority
 
 /** RXE — Pharmacy/Treatment Encoded Order. */
 class RXESegment(
     raw: HL7Segment,
 ) : TypedSegment(raw) {
+    val substitutionStatusRaw: String get() = fieldValue(9)
+    val substitutionStatus: SubstitutionStatus get() = SubstitutionStatus.from(substitutionStatusRaw)
+    val orderingProviderDeaNumber: String get() = component(13, 1)
+    val controlledSubstanceSchedule: String get() = component(35, 1)
     val giveCode: String get() = component(2, 1)
     val giveName: String get() = component(2, 2)
     val giveCodeSystem: String get() = component(2, 3)
@@ -35,6 +42,7 @@ class RXESegment(
 class RXDSegment(
     raw: HL7Segment,
 ) : TypedSegment(raw) {
+    val pharmacyOrderType: String get() = fieldValue(32)
     val dispenseSubIdCounter: String get() = fieldValue(1)
     val dispenseGiveCode: String get() = component(2, 1)
     val dispenseGiveName: String get() = component(2, 2)
@@ -47,7 +55,8 @@ class RXDSegment(
     val prescriptionNumber: String get() = fieldValue(7)
     val dispensingProviderId: String get() = component(10, 1)
 
-    val substitutionStatus: String get() = fieldValue(11)
+    val substitutionStatusRaw: String get() = fieldValue(11)
+    val substitutionStatus: SubstitutionStatus get() = SubstitutionStatus.from(substitutionStatusRaw)
     val lotNumber: String get() = fieldValue(15)
     val expirationDate: String get() = fieldValue(16)
     val substanceManufacturerName: String get() = component(17, 2)
@@ -70,6 +79,8 @@ class RXCSegment(
     val componentUnitsCode: String get() = component(4, 1)
     val componentUnitsText: String get() = component(4, 2)
     val componentStrength: String get() = fieldValue(5)
+    val supplementaryCode: String get() = fieldValue(7)
+    val componentDrugStrengthVolume: String get() = fieldValue(8)
     val componentStrengthUnits: String get() = fieldValue(6)
 
     companion object {
@@ -82,6 +93,8 @@ class RXCSegment(
 class RXRSegment(
     raw: HL7Segment,
 ) : TypedSegment(raw) {
+    val administrationMethod: String get() = fieldValue(4)
+    val routingInstruction: String get() = fieldValue(5)
     val routeCode: String get() = component(1, 1)
     val routeText: String get() = component(1, 2)
     val routeCodeSystem: String get() = component(1, 3)
@@ -107,6 +120,7 @@ class TQ1Segment(raw: HL7Segment) : TypedSegment(raw) {
     val startDateTime: String get() = fieldValue(7)
     val endDateTime: String get() = fieldValue(8)
     /** TQ1-9: priority (e.g. "R" routine, "S" stat). */
+    val priority: Priority get() = Priority.from(priorityRaw)
     val priorityRaw: String get() = component(9, 1)
 
     companion object {
@@ -129,9 +143,12 @@ class OBXSegment(
     val units: String get() = component(6, 1)
     val referenceRange: String get() = fieldValue(7)
     val abnormalFlags: String get() = fieldValue(8)
-    val resultStatus: String get() = fieldValue(11)
+    val resultStatusRaw: String get() = fieldValue(11)
+    val resultStatus: ObsResultStatus get() = ObsResultStatus.from(resultStatusRaw)
     val dateTimeOfObservation: String get() = fieldValue(14)
     val responsibleObserver: String get() = component(16, 1)
+    val effectiveDateOfReferenceRange: String get() = fieldValue(12)
+    val producersId: String get() = component(15, 1)
     val observationMethod: String get() = fieldValue(17)
 
     companion object {

@@ -68,6 +68,12 @@ class RdsO13Scope : MessageScope() {
 
 /** Scope for RDE^O11 dispense order. */
 class RdeO11Scope : MessageScope() {
+    /** Groups consecutive order segments without adding another message header. */
+    fun order(block: RdeO11Scope.() -> Unit) {
+        val scope = RdeO11Scope().apply(block)
+        builders += scope.builders.drop(1)
+    }
+
     fun pid(block: (PIDBuilder) -> Unit) = add(PIDBuilder(), block)
 
     fun pv1(block: (PV1Builder) -> Unit) = add(PV1Builder(), block)

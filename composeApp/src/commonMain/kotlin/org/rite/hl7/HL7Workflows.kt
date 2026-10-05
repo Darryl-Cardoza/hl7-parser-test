@@ -253,7 +253,7 @@ class HL7Workflows(
                         messageId = msg.messageControlId,
                         timestamp = msg.header?.dateTimeOfMessage ?: "",
                         robotId = equ?.equipmentId ?: "",
-                        equipmentState = equ?.equipmentState ?: "",
+                        equipmentState = equ?.equipmentStateRaw ?: "",
                         items = items,
                         notes = notes,
                     ),
