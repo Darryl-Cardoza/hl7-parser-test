@@ -1,15 +1,14 @@
 package org.rite.hl7.parser
 
 import org.rite.hl7.encoding.HL7Delimiters
-import org.rite.hl7.model.datatype.TQ
 import org.rite.hl7.model.ast.HL7Field
+import org.rite.hl7.model.datatype.TQ
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class TQTest {
-
     private fun tqOf(raw: String): TQ = TQ.parse(HL7Field.parse(raw, HL7Delimiters.DEFAULT))
 
     @Test

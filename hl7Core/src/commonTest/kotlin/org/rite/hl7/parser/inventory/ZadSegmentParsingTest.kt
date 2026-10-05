@@ -15,14 +15,19 @@ import kotlin.test.assertTrue
  * multi-row ZAD, optional comment field, and version variants 2.3.1 / 2.5.1.
  */
 class ZadSegmentParsingTest {
+    private fun parser() =
+        HL7Parser
+            .Builder()
+            .registerCustomSegment(ZADSegment.Definition)
+            .build()
 
-    private fun parser() = HL7Parser.Builder()
-        .registerCustomSegment(ZADSegment.Definition)
-        .build()
-
-    private fun parseZad(zadLine: String, version: String = "2.5"): ZADSegment {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|$version\r" +
-            "INV|1|123^Drug^NDC|||10|EA\r$zadLine"
+    private fun parseZad(
+        zadLine: String,
+        version: String = "2.5",
+    ): ZADSegment {
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|$version\r" +
+                "INV|1|123^Drug^NDC|||10|EA\r$zadLine"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success, "parse failed")
         val zad = result.message.segment<ZADSegment>(ZADSegment.NAME)
@@ -130,10 +135,11 @@ class ZadSegmentParsingTest {
 
     @Test
     fun multipleZadRowsAllParsed() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-            "INV|1|123^Drug^NDC|||10|EA\r" +
-            "ZAD|1|+|10|TRANSFER_IN|20260101|JDOE\r" +
-            "ZAD|2|O|150|PHYSICAL_INVENTORY|20260101|JDOE"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
+                "INV|1|123^Drug^NDC|||10|EA\r" +
+                "ZAD|1|+|10|TRANSFER_IN|20260101|JDOE\r" +
+                "ZAD|2|O|150|PHYSICAL_INVENTORY|20260101|JDOE"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val zads = result.message.segments<ZADSegment>("ZAD")
@@ -146,8 +152,9 @@ class ZadSegmentParsingTest {
 
     @Test
     fun messageWithoutZadReturnsNull() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-            "INV|1|123^Drug^NDC|||10|EA"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
+                "INV|1|123^Drug^NDC|||10|EA"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertNull(result.message.segment<ZADSegment>(ZADSegment.NAME))

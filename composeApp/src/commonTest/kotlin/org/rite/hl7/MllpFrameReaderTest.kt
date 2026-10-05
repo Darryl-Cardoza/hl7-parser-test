@@ -15,11 +15,10 @@ import kotlin.test.assertNull
  *  - Frame split across multiple simulated reads (sentinel at end)
  */
 class MllpFrameReaderTest {
-
     // MLLP framing constants
-    private val startBlock: Byte = 0x0B  // Start Block (Vertical Tab)
-    private val endBlock: Byte = 0x1C  // End Block (File Separator)
-    private val carriageReturn: Byte = 0x0D  // Carriage Return
+    private val startBlock: Byte = 0x0B // Start Block (Vertical Tab)
+    private val endBlock: Byte = 0x1C // End Block (File Separator)
+    private val carriageReturn: Byte = 0x0D // Carriage Return
 
     private fun frame(text: String): ByteArray {
         val body = text.encodeToByteArray()
@@ -77,11 +76,12 @@ class MllpFrameReaderTest {
         val hl7 = "MSH|^~\\&|App|Fac"
         val body = hl7.encodeToByteArray()
         // Inject a lone endBlock in the middle, then proper endBlock+carriageReturn at end
-        val input = byteArrayOf(startBlock) +
-            body.copyOfRange(0, 3) +
-            byteArrayOf(endBlock) +      // lone endBlock — not a sentinel
-            body.copyOfRange(3, body.size) +
-            byteArrayOf(endBlock, carriageReturn)    // real sentinel
+        val input =
+            byteArrayOf(startBlock) +
+                body.copyOfRange(0, 3) +
+                byteArrayOf(endBlock) + // lone endBlock — not a sentinel
+                body.copyOfRange(3, body.size) +
+                byteArrayOf(endBlock, carriageReturn) // real sentinel
         val result = MllpFrameReader.readFrame(input)
         assertEquals(input.toList(), result?.toList())
     }

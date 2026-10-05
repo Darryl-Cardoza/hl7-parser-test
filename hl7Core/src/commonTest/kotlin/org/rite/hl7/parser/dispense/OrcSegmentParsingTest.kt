@@ -13,10 +13,12 @@ import kotlin.test.assertTrue
  * order status, and order control typed enum across versions.
  */
 class OrcSegmentParsingTest {
-
     private fun parser() = HL7Parser.Builder().build()
 
-    private fun parseOrc(orcLine: String, version: String = "2.5"): ORCSegment {
+    private fun parseOrc(
+        orcLine: String,
+        version: String = "2.5",
+    ): ORCSegment {
         val raw = "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|$version\r$orcLine"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success, "parse failed")
@@ -97,8 +99,9 @@ class OrcSegmentParsingTest {
 
     @Test
     fun parsesOrcInRdsMessage() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||RDS^O13|1|P|2.5\r" +
-            "ORC|RE|ORD-A|RX-B||CM"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||RDS^O13|1|P|2.5\r" +
+                "ORC|RE|ORD-A|RX-B||CM"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val orc = result.message.segment<ORCSegment>(ORCSegment.NAME)!!

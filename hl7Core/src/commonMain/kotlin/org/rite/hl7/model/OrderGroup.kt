@@ -19,7 +19,8 @@ data class OrderGroup(
 ) {
     /** TQ1-9 -> ORC-7.6 (TQ.6) -> ZPR.priority fallback, first non-blank wins. */
     val resolvedPriority: String
-        get() = tq1?.priorityRaw?.takeIf { it.isNotBlank() }
-            ?: orc.quantityTiming.priority.takeIf { it.isNotBlank() }
-            ?: zpr.firstOrNull()?.priority.orEmpty()
+        get() =
+            tq1?.priorityRaw?.takeIf { it.isNotBlank() }
+                ?: orc.quantityTiming.priority.takeIf { it.isNotBlank() }
+                ?: zpr.firstOrNull()?.priority.orEmpty()
 }

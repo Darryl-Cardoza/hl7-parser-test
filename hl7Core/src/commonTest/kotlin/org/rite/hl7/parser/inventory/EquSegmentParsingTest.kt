@@ -20,10 +20,12 @@ import kotlin.test.assertTrue
  * Covers equipmentId, eventDateTime, equipmentState, and version variants.
  */
 class EquSegmentParsingTest {
-
     private fun parser() = HL7Parser.Builder().build()
 
-    private fun parseEqu(equLine: String, version: String = "2.5.1"): EQUSegment {
+    private fun parseEqu(
+        equLine: String,
+        version: String = "2.5.1",
+    ): EQUSegment {
         val raw = "MSH|^~\\&|PMS|PHARM|PARATA|ROBOT|20260101||INR^U06|1|P|$version\r$equLine"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success, "parse failed: ${(result as? HL7ParseResult.Failure)?.errors}")
@@ -106,8 +108,9 @@ class EquSegmentParsingTest {
 
     @Test
     fun messageWithoutEquReturnsNull() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5.1\r" +
-            "INV|1|00069015505^Drug^NDC|LOT-A|20251201|150|EA"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5.1\r" +
+                "INV|1|00069015505^Drug^NDC|LOT-A|20251201|150|EA"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertNull(result.message.segment<EQUSegment>(EQUSegment.NAME))

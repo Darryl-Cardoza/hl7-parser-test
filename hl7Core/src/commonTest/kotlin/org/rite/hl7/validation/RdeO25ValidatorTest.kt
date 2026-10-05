@@ -6,10 +6,9 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class RdeO25ValidatorTest {
-
     private val validator = HL7Validator()
-    private fun parse(hl7: String) =
-        (HL7Parser.Builder().build().parse(hl7.trimIndent()) as HL7ParseResult.Success).message
+
+    private fun parse(hl7: String) = (HL7Parser.Builder().build().parse(hl7.trimIndent()) as HL7ParseResult.Success).message
 
     private val validRdeO25 = """
         MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O25|CTL001|P|2.5
@@ -25,43 +24,55 @@ class RdeO25ValidatorTest {
     }
 
     @Test fun missingOrcRejected() {
-        val msg = parse("""
+        val msg =
+            parse(
+                """
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O25|CTL001|P|2.5
             PID|1||MRN001
             RXE||00069015505^Lisinopril^NDC|30|60|TAB
-        """)
+        """,
+            )
         val result = validator.validate(msg)
         assertTrue(result.issues.any { it.severity == AckSeverity.REJECT && it.segmentId == "ORC" })
     }
 
     @Test fun invalidNdcRejected() {
-        val msg = parse("""
+        val msg =
+            parse(
+                """
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O25|CTL001|P|2.5
             ORC|RF|RX001
             RXE||BADNDC^Lisinopril^NDC|30|60|TAB
-        """)
+        """,
+            )
         val result = validator.validate(msg)
         assertTrue(result.issues.any { it.severity == AckSeverity.REJECT && it.segmentId == "RXE" })
     }
 
     @Test fun invalidQtyRejected() {
-        val msg = parse("""
+        val msg =
+            parse(
+                """
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O25|CTL001|P|2.5
             ORC|RF|RX001
             RXE||00069015505^Lisinopril^NDC|0|60|TAB
-        """)
+        """,
+            )
         val result = validator.validate(msg)
         assertTrue(result.issues.any { it.severity == AckSeverity.REJECT && it.segmentId == "RXE" })
     }
 
     @Test fun multiOrcAllValidated() {
-        val msg = parse("""
+        val msg =
+            parse(
+                """
             MSH|^~\&|PMS|FAC|LIB|FAC|20240101120000||RDE^O25|CTL001|P|2.5
             ORC|RF|RX001
             RXE||00069015505^Lisi^NDC|30|60|TAB
             ORC|RF|RX002
             RXE||BADNDC^Bad^NDC|30|60|TAB
-        """)
+        """,
+            )
         val result = validator.validate(msg)
         assertTrue(result.issues.any { it.severity == AckSeverity.REJECT })
     }

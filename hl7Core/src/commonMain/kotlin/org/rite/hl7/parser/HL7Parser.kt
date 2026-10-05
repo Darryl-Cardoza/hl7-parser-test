@@ -79,9 +79,7 @@ class HL7Parser private constructor(
      * returning one [HL7ParseResult] per frame in order. A malformed frame
      * fails independently and does not affect the others.
      */
-    fun parseMllpBatch(bytes: ByteArray): List<HL7ParseResult> =
-        Mllp.stripAll(bytes).map { parse(it) }
-
+    fun parseMllpBatch(bytes: ByteArray): List<HL7ParseResult> = Mllp.stripAll(bytes).map { parse(it) }
 
     /** Fluent builder for [HL7Parser]. */
     class Builder {

@@ -23,7 +23,6 @@ class MllpServerViewModel(
     private val delegate: MllpServerDelegate,
     private val localAddresses: () -> List<String> = { emptyList() },
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(MllpServerState())
     val uiState: StateFlow<MllpServerState> = _uiState.asStateFlow()
 
@@ -40,7 +39,12 @@ class MllpServerViewModel(
     fun start(port: Int) {
         currentSession++
         val session = currentSession
-        val addresses = try { localAddresses() } catch (_: Exception) { emptyList() }
+        val addresses =
+            try {
+                localAddresses()
+            } catch (_: Exception) {
+                emptyList()
+            }
         _uiState.update {
             it.copy(
                 status = MllpServerStatus.LISTENING,
@@ -76,7 +80,10 @@ class MllpServerViewModel(
         delegate.stop()
     }
 
-    internal fun handleEvent(event: MllpSessionEvent, session: Int = currentSession) {
+    internal fun handleEvent(
+        event: MllpSessionEvent,
+        session: Int = currentSession,
+    ) {
         when (event) {
             is MllpSessionEvent.MessageReceived -> {
                 _uiState.update { state ->
@@ -99,11 +106,13 @@ class MllpServerViewModel(
             }
             is MllpSessionEvent.ServerError -> {
                 // Fatal: the server socket itself failed. Accept loop has exited.
-                _uiState.update { it.copy(
-                    status = MllpServerStatus.STOPPED,
-                    boundAddresses = emptyList(),
-                    lastError = event.message,
-                ) }
+                _uiState.update {
+                    it.copy(
+                        status = MllpServerStatus.STOPPED,
+                        boundAddresses = emptyList(),
+                        lastError = event.message,
+                    )
+                }
             }
             is MllpSessionEvent.ServerStopped -> {
                 // Guard against a late ServerStopped from a previous loop firing

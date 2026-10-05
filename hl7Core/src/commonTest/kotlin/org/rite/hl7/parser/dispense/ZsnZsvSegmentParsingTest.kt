@@ -16,14 +16,14 @@ import kotlin.test.assertTrue
  * and both HL7 versions 2.3.1 and 2.5.1.
  */
 class ZsnZsvSegmentParsingTest {
+    private fun parser() =
+        HL7Parser
+            .Builder()
+            .registerCustomSegment(ZSNSegment.Definition)
+            .registerCustomSegment(ZSVSegment.Definition)
+            .build()
 
-    private fun parser() = HL7Parser.Builder()
-        .registerCustomSegment(ZSNSegment.Definition)
-        .registerCustomSegment(ZSVSegment.Definition)
-        .build()
-
-    private fun mshRds(version: String) =
-        "MSH|^~\\&|A|B|C|D|20260101||${if (version < "2.5") "RDS^O01" else "RDS^O13"}|1|P|$version"
+    private fun mshRds(version: String) = "MSH|^~\\&|A|B|C|D|20260101||${if (version < "2.5") "RDS^O01" else "RDS^O13"}|1|P|$version"
 
     // --- ZSN field-by-field ---
 
@@ -89,10 +89,11 @@ class ZsnZsvSegmentParsingTest {
 
     @Test
     fun multipleZsnRowsAllParsed() {
-        val raw = "${mshRds("2.5")}\rRXD|1|00093-0058-01||90\r" +
-            "ZSN|1|21N4F9XK0042|00093-0058-01|LOT1|20271031|D\r" +
-            "ZSN|2|21N4F9XK0099|00093-0058-01|LOT1|20271031|D\r" +
-            "ZSN|3|21N4F9XK0100|00093-0058-01|LOT1|20271031|D"
+        val raw =
+            "${mshRds("2.5")}\rRXD|1|00093-0058-01||90\r" +
+                "ZSN|1|21N4F9XK0042|00093-0058-01|LOT1|20271031|D\r" +
+                "ZSN|2|21N4F9XK0099|00093-0058-01|LOT1|20271031|D\r" +
+                "ZSN|3|21N4F9XK0100|00093-0058-01|LOT1|20271031|D"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val zsns = result.message.segments<ZSNSegment>("ZSN")
@@ -183,9 +184,10 @@ class ZsnZsvSegmentParsingTest {
 
     @Test
     fun zsnAndZsvBothPresentAreIndependentlyParsed() {
-        val raw = "${mshRds("2.5")}\rRXD|1|00093-0058-01||90\r" +
-            "ZSN|1|SN-001|00093-0058-01|LOT1|20271031|D\r" +
-            "ZSV|1|00093-0058-01|00093-0058-01|MATCH|GS1||20260101|EXACT"
+        val raw =
+            "${mshRds("2.5")}\rRXD|1|00093-0058-01||90\r" +
+                "ZSN|1|SN-001|00093-0058-01|LOT1|20271031|D\r" +
+                "ZSV|1|00093-0058-01|00093-0058-01|MATCH|GS1||20260101|EXACT"
         val msg = (parser().parse(raw) as HL7ParseResult.Success).message
         assertNotNull(msg.segment<ZSNSegment>(ZSNSegment.NAME))
         assertNotNull(msg.segment<ZSVSegment>(ZSVSegment.NAME))

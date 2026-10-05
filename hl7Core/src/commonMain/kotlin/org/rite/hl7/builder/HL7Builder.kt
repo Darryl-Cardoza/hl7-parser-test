@@ -48,8 +48,7 @@ class HL7Builder private constructor(
     fun rdeO25(block: RdeO11Scope.() -> Unit): HL7Message =
         assembleVersioned(RdeO11Scope().apply(block), pre25 = "RDE^O01", from25 = "RDE^O25")
 
-    fun inrU05(block: InrU05Scope.() -> Unit): HL7Message =
-        assemble("INR^U05", InrU05Scope().apply(block))
+    fun inrU05(block: InrU05Scope.() -> Unit): HL7Message = assemble("INR^U05", InrU05Scope().apply(block))
 
     fun inrU06(block: InrU06Scope.() -> Unit): HL7Message = assemble("INR^U06", InrU06Scope().apply(block))
 

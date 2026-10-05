@@ -15,11 +15,12 @@ import kotlin.test.assertTrue
  * component splits, blank fields, and invalid scenarios.
  */
 class ZuiSegmentParsingTest {
-
     private fun parser() = HL7Parser.Builder().build()
 
-    private fun msh(msgType: String, version: String) =
-        "MSH|^~\\&|A|B|C|D|20260101||$msgType|1|P|$version"
+    private fun msh(
+        msgType: String,
+        version: String,
+    ) = "MSH|^~\\&|A|B|C|D|20260101||$msgType|1|P|$version"
 
     // --- Order Data Packet layout (RDE^O11) ---
 
@@ -80,40 +81,45 @@ class ZuiSegmentParsingTest {
 
     @Test
     fun parsesZuiDispenseVividUserName() {
-        val raw = "${msh("RDS^O13", "2.5")}\r" +
-            "ZUI|12345678901|JSMITH|TXN-1001|RX-4853|2|30|Done"
+        val raw =
+            "${msh("RDS^O13", "2.5")}\r" +
+                "ZUI|12345678901|JSMITH|TXN-1001|RX-4853|2|30|Done"
         val zui = (parser().parse(raw) as HL7ParseResult.Success).message.segment<ZUISegment>(ZUISegment.NAME)!!
         assertEquals("JSMITH", zui.dispenseVividUserName)
     }
 
     @Test
     fun parsesZuiDispensedQuantity() {
-        val raw = "${msh("RDS^O13", "2.5")}\r" +
-            "ZUI|12345678901|JSMITH|TXN-1001|RX-4853|2|30|Done"
+        val raw =
+            "${msh("RDS^O13", "2.5")}\r" +
+                "ZUI|12345678901|JSMITH|TXN-1001|RX-4853|2|30|Done"
         val zui = (parser().parse(raw) as HL7ParseResult.Success).message.segment<ZUISegment>(ZUISegment.NAME)!!
         assertEquals("30", zui.dispensedQuantity)
     }
 
     @Test
     fun parsesZuiTransactionStatus() {
-        val raw = "${msh("RDS^O13", "2.5")}\r" +
-            "ZUI|12345678901|JSMITH|TXN-1001|RX-4853|2|30|Done"
+        val raw =
+            "${msh("RDS^O13", "2.5")}\r" +
+                "ZUI|12345678901|JSMITH|TXN-1001|RX-4853|2|30|Done"
         val zui = (parser().parse(raw) as HL7ParseResult.Success).message.segment<ZUISegment>(ZUISegment.NAME)!!
         assertEquals("Done", zui.transactionStatus)
     }
 
     @Test
     fun parsesZuiDispenseDrugLotNumber() {
-        val raw = "${msh("RDS^O13", "2.5")}\r" +
-            "ZUI|12345678901|JSMITH|TXN-1001|RX-4853|2|30|Done||LOT78321"
+        val raw =
+            "${msh("RDS^O13", "2.5")}\r" +
+                "ZUI|12345678901|JSMITH|TXN-1001|RX-4853|2|30|Done||LOT78321"
         val zui = (parser().parse(raw) as HL7ParseResult.Success).message.segment<ZUISegment>(ZUISegment.NAME)!!
         assertEquals("LOT78321", zui.drugLotNumber)
     }
 
     @Test
     fun parsesZuiDispenseDrugExpiration() {
-        val raw = "${msh("RDS^O13", "2.5")}\r" +
-            "ZUI|12345678901|JSMITH|TXN-1001|RX-4853|2|30|Done|||SN123|271031"
+        val raw =
+            "${msh("RDS^O13", "2.5")}\r" +
+                "ZUI|12345678901|JSMITH|TXN-1001|RX-4853|2|30|Done|||SN123|271031"
         val zui = (parser().parse(raw) as HL7ParseResult.Success).message.segment<ZUISegment>(ZUISegment.NAME)!!
         assertEquals("271031", zui.drugExpirationDate)
     }

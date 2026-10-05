@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class SealedClassTest {
-
     @Test fun orderControlKnownRoundTrip() {
         assertEquals("NW", OrderControl.from("NW").code)
         assertEquals("CA", OrderControl.from("CA").code)
@@ -20,7 +19,7 @@ class SealedClassTest {
     @Test fun orderControlUnknownPreservesRaw() {
         val u = OrderControl.from("ZZ")
         assertIs<OrderControl.Unknown>(u)
-        assertEquals("ZZ", u.raw)   // raw preserved, NOT uppercased
+        assertEquals("ZZ", u.raw) // raw preserved, NOT uppercased
         assertEquals("ZZ", u.code)
     }
 

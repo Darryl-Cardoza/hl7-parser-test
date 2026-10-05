@@ -6,9 +6,7 @@ import org.rite.hl7.parser.HL7ParseResult
 import org.rite.hl7.parser.HL7Parser
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 /**
  * ZIN (Inventory Count Row) and ZCC (Device Inventory Row with GS1) segment parsing.
@@ -16,13 +14,13 @@ import kotlin.test.assertTrue
  * ZCC: all 24 fields including imagePaths repetition (~separator), operator, notes.
  */
 class ZinZccSegmentParsingTest {
+    private fun parser() =
+        HL7Parser
+            .Builder()
+            .registerCustomSegment(ZCCSegment.Definition)
+            .build()
 
-    private fun parser() = HL7Parser.Builder()
-        .registerCustomSegment(ZCCSegment.Definition)
-        .build()
-
-    private fun mshInu(version: String = "2.5") =
-        "MSH|^~\\&|A|B|C|D|20260101||INU^U05|1|P|$version"
+    private fun mshInu(version: String = "2.5") = "MSH|^~\\&|A|B|C|D|20260101||INU^U05|1|P|$version"
 
     // --- ZIN field-by-field ---
 
@@ -84,10 +82,12 @@ class ZinZccSegmentParsingTest {
 
     // --- ZCC field-by-field ---
 
-    private fun zccLine(ndcCode: String = "00069-3820-20", qty: String = "55") =
-        "ZCC|$ndcCode|LISINOPRIL 10MG TABLET|TABLET|MERCK SHARP DOHME|MSD001|00069382020005|" +
-            "CELL_A1|$qty|5|1|50|1|LOTLIS001|SN-2025-001-ABC|20260131|20231101|TAB^Tablets^UCUM|100|100|OK|" +
-            "/images/sealed.jpg~/images/open.jpg|COMPLETE|Maria Garcia|All verified"
+    private fun zccLine(
+        ndcCode: String = "00069-3820-20",
+        qty: String = "55",
+    ) = "ZCC|$ndcCode|LISINOPRIL 10MG TABLET|TABLET|MERCK SHARP DOHME|MSD001|00069382020005|" +
+        "CELL_A1|$qty|5|1|50|1|LOTLIS001|SN-2025-001-ABC|20260131|20231101|TAB^Tablets^UCUM|100|100|OK|" +
+        "/images/sealed.jpg~/images/open.jpg|COMPLETE|Maria Garcia|All verified"
 
     @Test
     fun zccParsesNdcCode() {

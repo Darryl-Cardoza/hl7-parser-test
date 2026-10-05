@@ -16,11 +16,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
  */
 @Composable
 actual fun MllpServerTab() {
-    val vm: MllpServerViewModel = viewModel {
-        MllpServerViewModel(
-            delegate = MllpServer(),
-            localAddresses = { MllpServer.localAddresses() },
-        )
-    }
+    val vm: MllpServerViewModel =
+        viewModel {
+            MllpServerViewModel(
+                delegate = MllpServer(),
+                localAddresses = { MllpServer.localAddresses() },
+            )
+        }
     MllpServerScreen(viewModel = vm)
 }

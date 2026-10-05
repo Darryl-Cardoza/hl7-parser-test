@@ -3,19 +3,18 @@ package org.rite.hl7.parser
 import org.rite.hl7.builder.HL7Builder
 import org.rite.hl7.encoding.Mllp
 import org.rite.hl7.model.segment.MSHSegment
-import org.rite.hl7.parser.HL7ParseResult
-import org.rite.hl7.parser.HL7Parser
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MllpBatchTest {
-
-    private fun parser() = HL7Parser.Builder()
-        .defaultVersion("2.5")
-        .strictMode(false)
-        .build()
+    private fun parser() =
+        HL7Parser
+            .Builder()
+            .defaultVersion("2.5")
+            .strictMode(false)
+            .build()
 
     private val msg1 = "MSH|^~\\&|PillCounter|ROBOT|PMS|PHARMACY|20260623091205||RDS^O13|1|P|2.5"
     private val msg2 = "MSH|^~\\&|PillCounter|ROBOT|PMS|PHARMACY|20260623091206||RDS^O13|2|P|2.5"
@@ -88,17 +87,33 @@ class MllpBatchTest {
     @Test
     fun rdeO25MultiOrcRoundTrip() {
         val builder = HL7Builder.builder().defaultVersion("2.5").build()
-        val msg = builder.rdeO25 {
-            msh { it.messageControlId = "O25MULTI001"; it.sendingApplication = "PMS" }
-            order {
-                orc { it.orderControl = "RF"; it.placerOrderNumber = "RX101" }
-                rxe { it.giveCode = "00069015505"; it.giveAmountMinimum = "30" }
+        val msg =
+            builder.rdeO25 {
+                msh {
+                    it.messageControlId = "O25MULTI001"
+                    it.sendingApplication = "PMS"
+                }
+                order {
+                    orc {
+                        it.orderControl = "RF"
+                        it.placerOrderNumber = "RX101"
+                    }
+                    rxe {
+                        it.giveCode = "00069015505"
+                        it.giveAmountMinimum = "30"
+                    }
+                }
+                order {
+                    orc {
+                        it.orderControl = "RF"
+                        it.placerOrderNumber = "RX102"
+                    }
+                    rxe {
+                        it.giveCode = "00093005801"
+                        it.giveAmountMinimum = "60"
+                    }
+                }
             }
-            order {
-                orc { it.orderControl = "RF"; it.placerOrderNumber = "RX102" }
-                rxe { it.giveCode = "00093005801"; it.giveAmountMinimum = "60" }
-            }
-        }
         val encoded = msg.encode()
         val decoded = (parser().parse(encoded) as HL7ParseResult.Success).message
 

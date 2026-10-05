@@ -35,7 +35,10 @@ internal object OrderGroupAssembler {
 
         for (seg in segments) {
             when {
-                seg is ORCSegment -> { flush(); currentOrc = seg }
+                seg is ORCSegment -> {
+                    flush()
+                    currentOrc = seg
+                }
                 currentOrc == null -> Unit
                 seg is RXESegment -> currentRxe = seg
                 seg is RXRSegment -> currentRxr += seg

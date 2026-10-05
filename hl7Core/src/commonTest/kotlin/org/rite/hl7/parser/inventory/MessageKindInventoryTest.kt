@@ -14,12 +14,17 @@ import kotlin.test.assertTrue
  * INVENTORY_UPDATE, and boundary conditions.
  */
 class MessageKindInventoryTest {
+    private fun parser() =
+        HL7Parser
+            .Builder()
+            .registerCustomSegment(ZADSegment.Definition)
+            .build()
 
-    private fun parser() = HL7Parser.Builder()
-        .registerCustomSegment(ZADSegment.Definition)
-        .build()
-
-    private fun kindOf(msgType: String, version: String = "2.5", extra: String = ""): HL7MessageKind {
+    private fun kindOf(
+        msgType: String,
+        version: String = "2.5",
+        extra: String = "",
+    ): HL7MessageKind {
         val raw = "MSH|^~\\&|A|B|C|D|20260101||$msgType|1|P|$version$extra"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
@@ -47,8 +52,9 @@ class MessageKindInventoryTest {
 
     @Test
     fun inrU06WithoutZadIsInventoryRequest() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-            "INV|00069-3820-20^LISI^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
+                "INV|00069-3820-20^LISI^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals(HL7MessageKind.INVENTORY_REQUEST, result.message.kind)
@@ -56,8 +62,9 @@ class MessageKindInventoryTest {
 
     @Test
     fun inrU06For231WithoutZadIsInventoryRequest() {
-        val raw = "MSH|^~\\&|A|B|C|D|20060101||INR^U06|1|P|2.3.1\r" +
-            "INV|1|00069015505^Drug^NDC|||100|EA"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20060101||INR^U06|1|P|2.3.1\r" +
+                "INV|1|00069015505^Drug^NDC|||100|EA"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals(HL7MessageKind.INVENTORY_REQUEST, result.message.kind)
@@ -67,9 +74,10 @@ class MessageKindInventoryTest {
 
     @Test
     fun inrU06WithZadIsInventoryAdjustment() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-            "INV|1|123^Drug^NDC|||10|EA\r" +
-            "ZAD|1|LOSS|5|DAMAGED_IN_TRANSIT|20260101|JD"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
+                "INV|1|123^Drug^NDC|||10|EA\r" +
+                "ZAD|1|LOSS|5|DAMAGED_IN_TRANSIT|20260101|JD"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals(HL7MessageKind.INVENTORY_ADJUSTMENT, result.message.kind)
@@ -77,9 +85,10 @@ class MessageKindInventoryTest {
 
     @Test
     fun inrU06WithZadFor231IsInventoryAdjustment() {
-        val raw = "MSH|^~\\&|A|B|C|D|20060101||INR^U06|1|P|2.3.1\r" +
-            "INV|1|123^Drug^NDC|||10|EA\r" +
-            "ZAD|1|+|5|PO_RECEIPT|20060101|JDOE"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20060101||INR^U06|1|P|2.3.1\r" +
+                "INV|1|123^Drug^NDC|||10|EA\r" +
+                "ZAD|1|+|5|PO_RECEIPT|20060101|JDOE"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals(HL7MessageKind.INVENTORY_ADJUSTMENT, result.message.kind)
@@ -87,9 +96,10 @@ class MessageKindInventoryTest {
 
     @Test
     fun inrU06WithZadFor251IsInventoryAdjustment() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5.1\r" +
-            "INV|1|123^Drug^NDC|||10|EA\r" +
-            "ZAD|1|-|3|BROKEN|20260101|JANE.DOE"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5.1\r" +
+                "INV|1|123^Drug^NDC|||10|EA\r" +
+                "ZAD|1|-|3|BROKEN|20260101|JANE.DOE"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals(HL7MessageKind.INVENTORY_ADJUSTMENT, result.message.kind)
@@ -116,8 +126,9 @@ class MessageKindInventoryTest {
 
     @Test
     fun inrU06KindSwitchesWhenZadAdded() {
-        val rawWithout = "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
-            "INV|1|123^Drug^NDC|||10|EA"
+        val rawWithout =
+            "MSH|^~\\&|A|B|C|D|20260101||INR^U06|1|P|2.5\r" +
+                "INV|1|123^Drug^NDC|||10|EA"
         val rawWith = rawWithout + "\rZAD|1|LOSS|5|DAMAGED_IN_TRANSIT|20260101|JD"
 
         val withoutZad = (parser().parse(rawWithout) as HL7ParseResult.Success).message.kind

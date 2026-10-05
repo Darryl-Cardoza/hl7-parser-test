@@ -3,7 +3,6 @@ package org.rite.hl7
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 /**
  * Unit tests for [MllpServerViewModel] state transitions.
@@ -15,7 +14,6 @@ import kotlin.test.assertTrue
  * via a stored callback, and we call it after the ViewModel is set up.
  */
 class MllpServerViewModelTest {
-
     @Test
     fun initialStateIsStoppedWithDefaultPort() {
         val vm = MllpServerViewModel(FakeMllpServerDelegate())
@@ -94,7 +92,7 @@ class MllpServerViewModelTest {
         vm.start(2575)
 
         vm.stop()
-        vm.start(9999)                        // session 2 starts
+        vm.start(9999) // session 2 starts
 
         // Session 1's late ServerStopped must NOT flip the new session to STOPPED
         vm.handleEvent(MllpSessionEvent.ServerStopped, session = 1)
@@ -112,7 +110,10 @@ private class FakeMllpServerDelegate : MllpServerDelegate {
     private var callback: ((MllpSessionEvent) -> Unit)? = null
     var stopped = false
 
-    override fun start(port: Int, onEvent: (MllpSessionEvent) -> Unit) {
+    override fun start(
+        port: Int,
+        onEvent: (MllpSessionEvent) -> Unit,
+    ) {
         callback = onEvent
     }
 

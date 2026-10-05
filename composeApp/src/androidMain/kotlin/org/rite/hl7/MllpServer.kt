@@ -38,7 +38,6 @@ import java.net.SocketTimeoutException
  * One [HL7] facade instance is created per server — immutable and thread-safe.
  */
 class MllpServer : MllpServerDelegate {
-
     // Pre-wired HL7 facade: parser + builder + validator + extension segments.
     private val hl7 = HL7()
 
@@ -46,13 +45,17 @@ class MllpServer : MllpServerDelegate {
 
     // @Volatile: stop() may run on any thread before the IO coroutine has bound.
     @Volatile private var serverSocket: ServerSocket? = null
+
     @Volatile private var activeClient: java.net.Socket? = null
 
     // Flag prevents a late ServerStopped (emitted from the old loop's finally{})
     // from flipping a newly-started server back to STOPPED.
     @Volatile private var stopped = false
 
-    override fun start(port: Int, onEvent: (MllpSessionEvent) -> Unit) {
+    override fun start(
+        port: Int,
+        onEvent: (MllpSessionEvent) -> Unit,
+    ) {
         stopped = false
         scope.launch {
             try {
@@ -69,14 +72,15 @@ class MllpServer : MllpServerDelegate {
                 android.util.Log.i("MllpServer", "Listening on port $port")
 
                 while (!ss.isClosed) {
-                    val client = try {
-                        ss.accept()
-                    } catch (e: SocketException) {
-                        if (!stopped && !ss.isClosed) throw e
-                        // ServerSocket.close() from stop() causes SocketException here —
-                        // this is the normal, expected exit path for a clean stop.
-                        break
-                    }
+                    val client =
+                        try {
+                            ss.accept()
+                        } catch (e: SocketException) {
+                            if (!stopped && !ss.isClosed) throw e
+                            // ServerSocket.close() from stop() causes SocketException here —
+                            // this is the normal, expected exit path for a clean stop.
+                            break
+                        }
 
                     // 30-second idle timeout per client — prevents infinite blocking on
                     // clients that connect but never send, or send unframed bytes.
@@ -129,8 +133,9 @@ class MllpServer : MllpServerDelegate {
                 // Read a complete MLLP frame. TCP may deliver bytes in multiple segments,
                 // so we accumulate byte-by-byte until the end-block sentinel (0x1C 0x0D).
                 // Returns null if the client disconnects before completing the frame.
-                val frameBytes = readMllpFrameFromStream(inputStream)
-                    ?: return // client disconnected mid-frame — nothing to ACK
+                val frameBytes =
+                    readMllpFrameFromStream(inputStream)
+                        ?: return // client disconnected mid-frame — nothing to ACK
 
                 // Parse: Mllp.strip() removes VT/FS+CR framing; HL7Parser tokenizes segments.
                 val parseResult = hl7.parseMllp(frameBytes)
@@ -149,18 +154,20 @@ class MllpServer : MllpServerDelegate {
                         val ackText = hl7.ack(message)
                         ackBytes = Mllp.wrap(ackText)
 
-                        info = MllpMessageInfo(
-                            messageType = "${message.messageCode}^${message.triggerEvent}",
-                            controlId = message.messageControlId,               // MSH-10
-                            senderFacility = message.sendingFacility,           // MSH-4
-                            senderApp = message.header?.sendingApplication ?: "", // MSH-3
-                            ackCode = validation.worst.code,                    // "AA" | "AE" | "AR"
-                            validationErrors = validation.issues
-                                .filter { it.severity.code != "AA" }
-                                .map { "[${it.segmentId ?: "?"}] ${it.errorText}" },
-                            rawSegments = message.typedSegments.map { it.segmentName },
-                            receivedAt = currentTimeString(),
-                        )
+                        info =
+                            MllpMessageInfo(
+                                messageType = "${message.messageCode}^${message.triggerEvent}",
+                                controlId = message.messageControlId, // MSH-10
+                                senderFacility = message.sendingFacility, // MSH-4
+                                senderApp = message.header?.sendingApplication ?: "", // MSH-3
+                                ackCode = validation.worst.code, // "AA" | "AE" | "AR"
+                                validationErrors =
+                                    validation.issues
+                                        .filter { it.severity.code != "AA" }
+                                        .map { "[${it.segmentId ?: "?"}] ${it.errorText}" },
+                                rawSegments = message.typedSegments.map { it.segmentName },
+                                receivedAt = currentTimeString(),
+                            )
                     }
 
                     is HL7ParseResult.Failure -> {
@@ -169,16 +176,17 @@ class MllpServer : MllpServerDelegate {
                         val errorText = parseResult.errors.firstOrNull()?.message ?: "Parse failure"
                         ackBytes = Mllp.wrap(buildMinimalArAck(escapeHl7Delimiters(errorText)))
 
-                        info = MllpMessageInfo(
-                            messageType = "UNKNOWN",
-                            controlId = "",
-                            senderFacility = "",
-                            senderApp = "",
-                            ackCode = "AR",
-                            validationErrors = listOf("Parse error: $errorText"),
-                            rawSegments = emptyList(),
-                            receivedAt = currentTimeString(),
-                        )
+                        info =
+                            MllpMessageInfo(
+                                messageType = "UNKNOWN",
+                                controlId = "",
+                                senderFacility = "",
+                                senderApp = "",
+                                ackCode = "AR",
+                                validationErrors = listOf("Parse error: $errorText"),
+                                rawSegments = emptyList(),
+                                receivedAt = currentTimeString(),
+                            )
                     }
                 }
 
@@ -187,7 +195,6 @@ class MllpServer : MllpServerDelegate {
                 outputStream.flush()
 
                 onEvent(MllpSessionEvent.MessageReceived(info))
-
             } catch (e: SocketTimeoutException) {
                 android.util.Log.w("MllpServer", "Client read timed out", e)
                 // Client connected but sent no data within CLIENT_TIMEOUT_MS.
@@ -247,7 +254,8 @@ class MllpServer : MllpServerDelegate {
      * adding extra fields or segments to the outbound HL7 frame.
      */
     private fun escapeHl7Delimiters(text: String): String =
-        text.replace("|", "&#124;")
+        text
+            .replace("|", "&#124;")
             .replace("^", "&#94;")
             .replace("~", "&#126;")
             .replace("\\", "&#92;")
@@ -260,8 +268,13 @@ class MllpServer : MllpServerDelegate {
      * no valid MSH to mirror.
      */
     private fun buildMinimalArAck(safeErrorText: String): String {
-        val ts = java.time.LocalDateTime.now()
-            .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+        val ts =
+            java.time.LocalDateTime
+                .now()
+                .format(
+                    java.time.format.DateTimeFormatter
+                        .ofPattern("yyyyMMddHHmmss"),
+                )
         return buildString {
             append("MSH|^~\\&|MllpServer||Unknown||$ts||ACK^R01|NACK-$ts|P|2.5.1\r")
             append("MSA|AR|UNKNOWN|$safeErrorText\r")
@@ -269,8 +282,12 @@ class MllpServer : MllpServerDelegate {
     }
 
     private fun currentTimeString(): String =
-        java.time.LocalTime.now()
-            .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"))
+        java.time.LocalTime
+            .now()
+            .format(
+                java.time.format.DateTimeFormatter
+                    .ofPattern("HH:mm:ss"),
+            )
 
     companion object {
         /** Maximum allowed MLLP frame size. Connections exceeding this are dropped. */
@@ -285,7 +302,8 @@ class MllpServer : MllpServerDelegate {
          */
         fun localAddresses(): List<String> =
             try {
-                NetworkInterface.getNetworkInterfaces()
+                NetworkInterface
+                    .getNetworkInterfaces()
                     ?.toList()
                     ?.flatMap { it.inetAddresses.toList() }
                     ?.filter { !it.isLoopbackAddress && it is java.net.Inet4Address }

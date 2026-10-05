@@ -21,18 +21,20 @@ import kotlin.test.assertTrue
  * ZCC extension, optional ZAD trailer, and invalid scenarios.
  */
 class InuU05MessageParsingTest {
-
-    private fun parser() = HL7Parser.Builder()
-        .registerCustomSegment(ZADSegment.Definition)
-        .registerCustomSegment(ZCCSegment.Definition)
-        .build()
+    private fun parser() =
+        HL7Parser
+            .Builder()
+            .registerCustomSegment(ZADSegment.Definition)
+            .registerCustomSegment(ZCCSegment.Definition)
+            .build()
 
     // --- messageKind ---
 
     @Test
     fun inuU05IsInventoryUpdateKind() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INU^U05|1|P|2.5\r" +
-            "INV|1|00069015505^Drug^NDC|||10|EA"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INU^U05|1|P|2.5\r" +
+                "INV|1|00069015505^Drug^NDC|||10|EA"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals(HL7MessageKind.INVENTORY_UPDATE, result.message.kind)
@@ -42,10 +44,11 @@ class InuU05MessageParsingTest {
 
     @Test
     fun parataMessageParsesInvIdentifier() {
-        val raw = "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
-            "EQU|1|ROBOT1^Parata Max 2^MFG|PHARM^Main Pharmacy^L|DISP^Dispensing Robot^L|A|20251113191400\r" +
-            "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
-            "OBX|1|NM|NDC001_SEALED^Sealed||5"
+        val raw =
+            "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
+                "EQU|1|ROBOT1^Parata Max 2^MFG|PHARM^Main Pharmacy^L|DISP^Dispensing Robot^L|A|20251113191400\r" +
+                "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
+                "OBX|1|NM|NDC001_SEALED^Sealed||5"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val inv = result.message.segment<INVSegment>("INV")!!
@@ -54,9 +57,10 @@ class InuU05MessageParsingTest {
 
     @Test
     fun parataMessageParsesInvQuantityOnHand() {
-        val raw = "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
-            "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
-            "OBX|1|NM|NDC001_SEALED^Sealed||5"
+        val raw =
+            "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
+                "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
+                "OBX|1|NM|NDC001_SEALED^Sealed||5"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals("55", result.message.segment<INVSegment>("INV")!!.deviceQuantityOnHand)
@@ -64,9 +68,10 @@ class InuU05MessageParsingTest {
 
     @Test
     fun parataMessageParsesInvLotNumber() {
-        val raw = "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
-            "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
-            "OBX|1|NM|NDC001_SEALED^Sealed||5"
+        val raw =
+            "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
+                "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
+                "OBX|1|NM|NDC001_SEALED^Sealed||5"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals("LOTLIS001", result.message.segment<INVSegment>("INV")!!.deviceLotNumber)
@@ -74,9 +79,10 @@ class InuU05MessageParsingTest {
 
     @Test
     fun parataMessageParsesObxValue() {
-        val raw = "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
-            "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
-            "OBX|1|NM|NDC001_SEALED^Sealed||5"
+        val raw =
+            "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
+                "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
+                "OBX|1|NM|NDC001_SEALED^Sealed||5"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val obx = result.message.segment<OBXSegment>("OBX")!!
@@ -86,12 +92,13 @@ class InuU05MessageParsingTest {
 
     @Test
     fun parataMessageMultipleInvGroupsParsed() {
-        val raw = "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
-            "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
-            "OBX|1|NM|NDC001_SEALED^Sealed||5\r" +
-            "OBX|2|NM|NDC001_OPEN^Open||50\r" +
-            "INV|00904201362^METFORMIN 500MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_B2^Cell B2^L|||7000|7000|7000|1|BOT^Bottles^UCUM|20260228|||LOTMET001\r" +
-            "OBX|3|NM|NDC002_SEALED^Sealed||7000"
+        val raw =
+            "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
+                "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
+                "OBX|1|NM|NDC001_SEALED^Sealed||5\r" +
+                "OBX|2|NM|NDC001_OPEN^Open||50\r" +
+                "INV|00904201362^METFORMIN 500MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_B2^Cell B2^L|||7000|7000|7000|1|BOT^Bottles^UCUM|20260228|||LOTMET001\r" +
+                "OBX|3|NM|NDC002_SEALED^Sealed||7000"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val invs = result.message.segments<INVSegment>("INV")
@@ -106,9 +113,10 @@ class InuU05MessageParsingTest {
 
     @Test
     fun inuU05WithZinParsesDispenseType() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INU^U05|1|P|2.5\r" +
-            "INV|1|12345678901^Drug^NDC|||10|EA\r" +
-            "ZIN|1|OPENED|50|LOT-A|20271031"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INU^U05|1|P|2.5\r" +
+                "INV|1|12345678901^Drug^NDC|||10|EA\r" +
+                "ZIN|1|OPENED|50|LOT-A|20271031"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val zin = result.message.segment<ZINSegment>("ZIN")!!
@@ -120,10 +128,11 @@ class InuU05MessageParsingTest {
 
     @Test
     fun inuU05WithZccParsesNdcCode() {
-        val raw = "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
-            "ZCC|00069-3820-20|LISINOPRIL 10MG TABLET|TABLET|MERCK SHARP DOHME|MSD001|00069382020005|" +
-            "CELL_A1|55|5|1|50|1|LOTLIS001|SN-2025-001-ABC|20260131|20231101|TAB^Tablets^UCUM|100|100|OK|" +
-            "/images/sealed.jpg~/images/open.jpg|COMPLETE|Maria Garcia|All verified"
+        val raw =
+            "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
+                "ZCC|00069-3820-20|LISINOPRIL 10MG TABLET|TABLET|MERCK SHARP DOHME|MSD001|00069382020005|" +
+                "CELL_A1|55|5|1|50|1|LOTLIS001|SN-2025-001-ABC|20260131|20231101|TAB^Tablets^UCUM|100|100|OK|" +
+                "/images/sealed.jpg~/images/open.jpg|COMPLETE|Maria Garcia|All verified"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val zcc = result.message.segment<ZCCSegment>(ZCCSegment.NAME)!!
@@ -135,10 +144,11 @@ class InuU05MessageParsingTest {
 
     @Test
     fun inuU05CanCarryTrailingZad() {
-        val raw = "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
-            "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
-            "OBX|1|NM|NDC001_SEALED^Sealed||55\r" +
-            "ZAD|1|LOSS|5|DAMAGED_IN_TRANSIT|20260101|JD"
+        val raw =
+            "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
+                "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001\r" +
+                "OBX|1|NM|NDC001_SEALED^Sealed||55\r" +
+                "ZAD|1|LOSS|5|DAMAGED_IN_TRANSIT|20260101|JD"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertNotNull(result.message.segment<ZADSegment>(ZADSegment.NAME))
@@ -146,8 +156,9 @@ class InuU05MessageParsingTest {
 
     @Test
     fun inuU05WithoutZadHasNullZad() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INU^U05|1|P|2.5\r" +
-            "INV|1|12345678901^Drug^NDC|||10|EA"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INU^U05|1|P|2.5\r" +
+                "INV|1|12345678901^Drug^NDC|||10|EA"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertNull(result.message.segment<ZADSegment>(ZADSegment.NAME))
@@ -157,9 +168,10 @@ class InuU05MessageParsingTest {
 
     @Test
     fun inuU05WithEquParsesId() {
-        val raw = "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
-            "EQU|1|ROBOT1^Parata Max 2^MFG|PHARM^Main Pharmacy^L|DISP^Dispensing Robot^L|A|20251113191400\r" +
-            "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001"
+        val raw =
+            "MSH|^~\\&|PARATA|ROBOT1|PRIMERX|MAINPHARM|20251113191500||INU^U05|MSG00003|P|2.5.1\r" +
+                "EQU|1|ROBOT1^Parata Max 2^MFG|PHARM^Main Pharmacy^L|DISP^Dispensing Robot^L|A|20251113191400\r" +
+                "INV|00904201361^LISINOPRIL 10MG^L|A^Active^HL70383|DRUG^Drug^HL70384|CELL_A1^Cell A1^L|||55|55|55|1|TAB^Tablets^UCUM|20260131|||LOTLIS001"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         val equ = result.message.segment<EQUSegment>("EQU")
@@ -170,8 +182,9 @@ class InuU05MessageParsingTest {
 
     @Test
     fun inuU05For231ParsesCorrectly() {
-        val raw = "MSH|^~\\&|A|B|C|D|20060101||INU^U05|1|P|2.3.1\r" +
-            "INV|1|00069015505^Drug^NDC|||100|EA"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20060101||INU^U05|1|P|2.3.1\r" +
+                "INV|1|00069015505^Drug^NDC|||100|EA"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals("2.3.1", result.message.version.wire)
@@ -180,8 +193,9 @@ class InuU05MessageParsingTest {
 
     @Test
     fun inuU05For251ParsesCorrectly() {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||INU^U05|1|P|2.5.1\r" +
-            "INV|1|00069015505^Drug^NDC|||200|EA"
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||INU^U05|1|P|2.5.1\r" +
+                "INV|1|00069015505^Drug^NDC|||200|EA"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals("2.5.1", result.message.version.wire)

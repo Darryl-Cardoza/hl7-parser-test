@@ -11,9 +11,8 @@ package org.rite.hl7
  * without needing a real TCP socket.
  */
 internal object MllpFrameReader {
-
-    private const val EB: Int = 0x1C  // End Block (File Separator)
-    private const val CR: Int = 0x0D  // Carriage Return
+    private const val EB: Int = 0x1C // End Block (File Separator)
+    private const val CR: Int = 0x0D // Carriage Return
 
     /**
      * Scans [bytes] for the MLLP end-block sentinel (0x1C followed by 0x0D)

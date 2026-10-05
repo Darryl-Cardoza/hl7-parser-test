@@ -9,7 +9,6 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class RegistryCleanupTest {
-
     // ZIN and ZPR remain registered because HL7Validator and OrderGroup consume them
     // as typed segments — unregistering breaks typed parsing. See ledger ruling Task 5.
 

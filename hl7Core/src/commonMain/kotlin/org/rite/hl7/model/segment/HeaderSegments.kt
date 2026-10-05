@@ -57,7 +57,9 @@ class PIDSegment(
     val patientId: String get() = component(3, 1)
     val patientIdAssigningAuthority: String get() = component(3, 4)
     val patientIdType: String get() = component(3, 5)
+
     fun patientIdList(): List<String> = repetitions(3)
+
     val race: String get() = fieldValue(10)
     val maritalStatus: String get() = fieldValue(16)
     val patientAccountNumber: String get() = component(18, 1)
@@ -125,7 +127,9 @@ class ORCSegment(
     /** ORC-7: quantity/timing (deprecated in 2.5.1, superseded by TQ1). */
     val quantityTiming: QuantityTiming get() = QuantityTiming(component(7, 6))
 
-    data class QuantityTiming(val priority: String)
+    data class QuantityTiming(
+        val priority: String,
+    )
 
     companion object {
         const val NAME = "ORC"

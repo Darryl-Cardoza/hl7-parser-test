@@ -15,7 +15,10 @@ interface MllpServerDelegate {
      * [MllpSessionEvent] emitted by the server loop (message received,
      * error, stopped). May be called from any thread.
      */
-    fun start(port: Int, onEvent: (MllpSessionEvent) -> Unit)
+    fun start(
+        port: Int,
+        onEvent: (MllpSessionEvent) -> Unit,
+    )
 
     /**
      * Closes the server socket. The accept loop exits on the next

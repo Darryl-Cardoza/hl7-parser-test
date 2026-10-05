@@ -3,9 +3,9 @@ package org.rite.hl7.model.segment
 import org.rite.hl7.model.SegmentDefinition
 import org.rite.hl7.model.TypedSegment
 import org.rite.hl7.model.ast.HL7Segment
-import org.rite.hl7.model.codedfield.SubstitutionStatus
 import org.rite.hl7.model.codedfield.ObsResultStatus
 import org.rite.hl7.model.codedfield.Priority
+import org.rite.hl7.model.codedfield.SubstitutionStatus
 
 /** RXE — Pharmacy/Treatment Encoded Order. */
 class RXESegment(
@@ -110,7 +110,9 @@ class RXRSegment(
 }
 
 /** TQ1 — Timing/Quantity. */
-class TQ1Segment(raw: HL7Segment) : TypedSegment(raw) {
+class TQ1Segment(
+    raw: HL7Segment,
+) : TypedSegment(raw) {
     val setId: String get() = fieldValue(1)
     val quantity: String get() = fieldValue(2)
     val repeatPattern: String get() = fieldValue(3)
@@ -119,6 +121,7 @@ class TQ1Segment(raw: HL7Segment) : TypedSegment(raw) {
     val serviceDuration: String get() = fieldValue(6)
     val startDateTime: String get() = fieldValue(7)
     val endDateTime: String get() = fieldValue(8)
+
     /** TQ1-9: priority (e.g. "R" routine, "S" stat). */
     val priority: Priority get() = Priority.from(priorityRaw)
     val priorityRaw: String get() = component(9, 1)

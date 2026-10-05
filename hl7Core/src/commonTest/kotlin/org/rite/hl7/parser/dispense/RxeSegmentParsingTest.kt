@@ -13,12 +13,15 @@ import kotlin.test.assertTrue
  * substitution status, and component fields across HL7 versions.
  */
 class RxeSegmentParsingTest {
-
     private fun parser() = HL7Parser.Builder().build()
 
-    private fun parseRxe(rxeLine: String, version: String = "2.5"): RXESegment {
-        val raw = "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|$version\r" +
-            "ORC|NW|RX-001\r$rxeLine"
+    private fun parseRxe(
+        rxeLine: String,
+        version: String = "2.5",
+    ): RXESegment {
+        val raw =
+            "MSH|^~\\&|A|B|C|D|20260101||RDE^O11|1|P|$version\r" +
+                "ORC|NW|RX-001\r$rxeLine"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success, "parse failed: ${(result as? HL7ParseResult.Failure)?.errors}")
         val rxe = result.message.segment<RXESegment>(RXESegment.NAME)

@@ -13,7 +13,6 @@ import kotlin.test.assertTrue
  * Covers valid values, missing fields, field ordering, and version detection.
  */
 class MshSegmentParsingTest {
-
     private fun parser() = HL7Parser.Builder().strictMode(false).build()
 
     // --- Sending/receiving application and facility ---
@@ -95,7 +94,12 @@ class MshSegmentParsingTest {
     fun defaultsVersionWhenMissingFromMsh() {
         // No MSH-12 field — parser default kicks in
         val raw = "MSH|^~\\&|A|B|C|D|20260101||RDS^O13|CTL|P"
-        val result = HL7Parser.Builder().defaultVersion("2.5").build().parse(raw)
+        val result =
+            HL7Parser
+                .Builder()
+                .defaultVersion("2.5")
+                .build()
+                .parse(raw)
         assertTrue(result is HL7ParseResult.Success)
         assertEquals("2.5", result.message.version.wire)
     }

@@ -13,10 +13,12 @@ import kotlin.test.assertTrue
  * component fields, and optional fields across versions 2.3.1, 2.5, 2.5.1.
  */
 class RxdSegmentParsingTest {
-
     private fun parser() = HL7Parser.Builder().build()
 
-    private fun parseRxd(rxdLine: String, version: String = "2.5"): RXDSegment {
+    private fun parseRxd(
+        rxdLine: String,
+        version: String = "2.5",
+    ): RXDSegment {
         val raw = "MSH|^~\\&|A|B|C|D|20260101||RDS^O13|1|P|$version\r$rxdLine"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success, "parse failed: ${(result as? HL7ParseResult.Failure)?.errors}")
@@ -125,7 +127,21 @@ class RxdSegmentParsingTest {
         fields[1] = "00093-0058-01"
         fields[3] = "90"
         fields[31 - 1] = "" // pad
-        val wire = "RXD|" + (0 until 31).map { if (it == 0) "1" else if (it == 1) "00093-0058-01" else if (it == 3) "90" else "" }.joinToString("|") + "|FILL"
+        val wire =
+            "RXD|" +
+                (0 until 31)
+                    .map {
+                        if (it == 0) {
+                            "1"
+                        } else if (it == 1) {
+                            "00093-0058-01"
+                        } else if (it == 3) {
+                            "90"
+                        } else {
+                            ""
+                        }
+                    }.joinToString("|") +
+                "|FILL"
         val rxd = parseRxd(wire)
         assertEquals("FILL", rxd.pharmacyOrderType)
     }

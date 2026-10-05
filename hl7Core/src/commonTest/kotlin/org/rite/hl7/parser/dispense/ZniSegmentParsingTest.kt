@@ -14,10 +14,13 @@ import kotlin.test.assertTrue
  * access for patient name, all modes (B/I/C/Q), and version variants 2.3.1 / 2.5.1.
  */
 class ZniSegmentParsingTest {
-
     private fun parser() = HL7Parser.Builder().build()
 
-    private fun parseZni(zniLine: String, msgType: String = "RDE^O01", version: String = "2.3.1"): ZNISegment {
+    private fun parseZni(
+        zniLine: String,
+        msgType: String = "RDE^O01",
+        version: String = "2.3.1",
+    ): ZNISegment {
         val raw = "MSH|^~\\&|eniClient||Eyecon||20060123090341||$msgType|1|P|$version\r$zniLine"
         val result = parser().parse(raw)
         assertTrue(result is HL7ParseResult.Success, "parse failed")
@@ -125,11 +128,12 @@ class ZniSegmentParsingTest {
 
     @Test
     fun zniFor251MessageParses() {
-        val zni = parseZni(
-            "ZNI|I|22233344455|223334445566|IBUPROFEN 200MG|A|MJONES|C|N|A0.1|SMITH^JOHN|RX5000|N|60|5000|1|",
-            msgType = "RDS^O13",
-            version = "2.5.1"
-        )
+        val zni =
+            parseZni(
+                "ZNI|I|22233344455|223334445566|IBUPROFEN 200MG|A|MJONES|C|N|A0.1|SMITH^JOHN|RX5000|N|60|5000|1|",
+                msgType = "RDS^O13",
+                version = "2.5.1",
+            )
         assertEquals("22233344455", zni.ndc)
         assertEquals("IBUPROFEN 200MG", zni.drugName)
     }

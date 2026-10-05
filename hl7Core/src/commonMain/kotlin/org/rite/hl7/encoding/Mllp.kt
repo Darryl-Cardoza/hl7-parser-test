@@ -42,7 +42,10 @@ object Mllp {
         return results
     }
 
-    private fun frameEnd(bytes: ByteArray, start: Int): Int {
+    private fun frameEnd(
+        bytes: ByteArray,
+        start: Int,
+    ): Int {
         var end = start
         while (end < bytes.size - 1 && !(bytes[end] == EB && bytes[end + 1] == CR)) end++
         return end

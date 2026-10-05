@@ -96,7 +96,7 @@ class INVSegment(
     val units: String get() = fieldValue(6)
 
     // --- Device Inventory Sync accessors (Parata, no leading Set-ID) ---
-    /** Item identifier in the device inventory layout (INV-1). */
+    // Item identifier in the device inventory layout (INV-1).
     val substanceIdentifier: String get() = component(1, 1)
     val substanceStatusRaw: String get() = component(2, 1)
     val substanceStatus: SubstanceStatus get() = SubstanceStatus.from(substanceStatusRaw)

@@ -12,10 +12,13 @@ import kotlin.test.assertTrue
  * Covers DISPENSE, DISPENSE_ORDER, CANCEL_ORDER, and UNKNOWN/invalid classifications.
  */
 class MessageKindDispenseTest {
-
     private fun parser() = HL7Parser.Builder().build()
 
-    private fun kindOf(msgType: String, version: String = "2.5", orcLine: String? = null): HL7MessageKind {
+    private fun kindOf(
+        msgType: String,
+        version: String = "2.5",
+        orcLine: String? = null,
+    ): HL7MessageKind {
         val orc = if (orcLine != null) "\r$orcLine" else ""
         val raw = "MSH|^~\\&|A|B|C|D|20260101||$msgType|1|P|$version$orc"
         val result = parser().parse(raw)
